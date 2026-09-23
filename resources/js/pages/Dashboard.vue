@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import WalletSummary from '@/components/WalletSummary.vue';
+import type { WalletSummaryData } from '@/components/WalletSummary.vue';
 import { dashboard } from '@/routes';
 import { index as checkout } from '@/routes/checkout';
 
@@ -10,6 +12,7 @@ defineProps<{
         status: string;
         package: string | null;
     } | null;
+    walletSummary: WalletSummaryData | null;
 }>();
 
 defineOptions({
@@ -55,6 +58,11 @@ defineOptions({
         >
             Member ID: <span class="font-medium">{{ member.code }}</span>
         </div>
+        <WalletSummary
+            v-if="walletSummary"
+            :summary="walletSummary"
+            show-link
+        />
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
             <div
                 class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"

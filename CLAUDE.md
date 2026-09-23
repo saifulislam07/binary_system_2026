@@ -147,7 +147,7 @@ CONVENTIONS:
   `OrderPaymentService::handle()` is the only place an order becomes paid:
   it locks the order, is idempotent, rejects amount mismatches (flags them in
   the activity log), activates pending members, creates the Sale, and fires
-  `SaleCompleted` *inside* the transaction (Phase 5 listeners hook there).
+  `SaleCompleted` _inside_ the transaction (Phase 5 listeners hook there).
   Never hold DB locks across gateway HTTP calls. `simulator` gateway is
   dev-only. Refunds go through `RefundService` → `ReverseCommissionForSale`.
 - **Commission engine (Phase 5):** BV lives in `volume_lots` (one per sale ×
@@ -158,8 +158,8 @@ CONVENTIONS:
   `volume_consumptions` rows. Tests assert this invariant via
   `Tests\Support\BuildsNetwork::assertLedgersConsistent()`.
   Binary commission: `MatchingService::runCycle()` (`php artisan
-  commission:run {date}`), one transaction per member, idempotent per
-  (member, cycle). Caps sum *paid* binary commission rows in the
+commission:run {date}`), one transaction per member, idempotent per
+  (member, cycle). Caps sum _paid_ binary commission rows in the
   day/week/month window; cap value ≤ 0 = no cap. Overflow: `void` → voided
   row; `carry_forward` → `binary_nodes.deferred_commission`, released first
   in later cycles. Weeks start on `config('business.week_starts_on')`
@@ -171,6 +171,15 @@ CONVENTIONS:
 - **Wallet:** all credits/debits go through `WalletService` (row lock,
   ledger row + cached balance in one transaction, activity log). Balance =
   Σcredits − Σdebits over non-voided rows.
+- **Wallet writes are guarded by a test:** `WalletLedgerTest::test_only_wallet_service_writes_to_wallets`
+  fails if anything outside `WalletService` creates ledger rows or writes a
+  wallet balance. Don't weaken it — route the new code through the service.
+- **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
+  so `now()` and model date casts return `CarbonImmutable`. Type-hint
+  `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.
+- **Morph map:** polymorphic columns store short names (`commission`,
+  `withdrawal`, `order`, …) — see `AppServiceProvider::boot()`; add new
+  models there when they become a morph target.
 - **Local dev:** Laragon, MySQL 8.4 at 127.0.0.1:3306 (`root`, no password),
   DB `binary_system`. Run `npm run build` before `php artisan test` (Inertia
   pages need the Vite manifest).

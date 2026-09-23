@@ -9,6 +9,8 @@ use App\Exceptions\InsufficientFundsException;
 use App\Models\Member;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
+use Carbon\CarbonInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -54,6 +56,29 @@ class WalletService
     public function balance(Member|Wallet $owner): int
     {
         return $this->walletFor($owner)->balance;
+    }
+
+    /**
+     * The wallet's ledger, newest first.
+     *
+     * @return LengthAwarePaginator<int, WalletTransaction>
+     */
+    public function history(
+        Member|Wallet $owner,
+        ?WalletTransactionType $type = null,
+        ?CarbonInterface $from = null,
+        ?CarbonInterface $to = null,
+        int $perPage = 20,
+    ): LengthAwarePaginator {
+        return WalletTransaction::query()
+            ->with('reference')
+            ->where('wallet_id', $this->walletFor($owner)->id)
+            ->when($type, fn ($q) => $q->where('type', $type))
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from->copy()->startOfDay()))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to->copy()->endOfDay()))
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
     }
 
     /**

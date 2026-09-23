@@ -18,8 +18,8 @@ use App\Models\TeamVolume;
 use App\Models\VolumeConsumption;
 use App\Models\VolumeLot;
 use App\Support\Money;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -43,7 +43,7 @@ class MatchingService
 
     public function __construct(private WalletService $wallets) {}
 
-    public function runCycle(Carbon $cycleDate): CommissionCycle
+    public function runCycle(CarbonInterface $cycleDate): CommissionCycle
     {
         $date = $cycleDate->copy()->startOfDay();
 
@@ -91,7 +91,7 @@ class MatchingService
     /**
      * @param  array{rate: int, daily_cap: int, weekly_cap: int, monthly_cap: int, carry_forward: bool, overflow: string}  $rules
      */
-    public function processMember(int $memberId, CommissionCycle $cycle, Carbon $date, array $rules): ?TeamVolume
+    public function processMember(int $memberId, CommissionCycle $cycle, CarbonInterface $date, array $rules): ?TeamVolume
     {
         return DB::transaction(function () use ($memberId, $cycle, $date, $rules) {
             $node = BinaryNode::query()->where('member_id', $memberId)->lockForUpdate()->firstOrFail();
@@ -145,7 +145,7 @@ class MatchingService
      *
      * @param  array{rate: int, daily_cap: int, weekly_cap: int, monthly_cap: int, carry_forward: bool, overflow: string}  $rules
      */
-    private function payCommission(BinaryNode $node, TeamVolume $teamVolume, CommissionCycle $cycle, Carbon $date, array $rules): void
+    private function payCommission(BinaryNode $node, TeamVolume $teamVolume, CommissionCycle $cycle, CarbonInterface $date, array $rules): void
     {
         $member = Member::query()->findOrFail($node->member_id);
 
@@ -198,7 +198,7 @@ class MatchingService
         ])->save();
     }
 
-    private function payRow(Member $member, TeamVolume $teamVolume, CommissionCycle $cycle, Carbon $date, int $amount, string $description): void
+    private function payRow(Member $member, TeamVolume $teamVolume, CommissionCycle $cycle, CarbonInterface $date, int $amount, string $description): void
     {
         $commission = Commission::query()->create([
             'member_id' => $member->id,
@@ -221,9 +221,9 @@ class MatchingService
      *
      * @param  array{daily_cap: int, weekly_cap: int, monthly_cap: int}  $rules
      */
-    public function capRoom(int $memberId, Carbon $date, array $rules): ?int
+    public function capRoom(int $memberId, CarbonInterface $date, array $rules): ?int
     {
-        $weekStart = (int) config('business.week_starts_on', Carbon::SATURDAY);
+        $weekStart = (int) config('business.week_starts_on', CarbonInterface::SATURDAY);
 
         $windows = [
             [$rules['daily_cap'], $date->copy()->startOfDay(), $date->copy()->endOfDay()],
