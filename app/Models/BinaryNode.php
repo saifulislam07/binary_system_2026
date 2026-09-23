@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'member_id', 'left_child_id', 'right_child_id',
     'left_volume', 'right_volume', 'left_volume_carry', 'right_volume_carry',
-    'left_lifetime_volume', 'right_lifetime_volume',
+    'left_lifetime_volume', 'right_lifetime_volume', 'deferred_commission',
 ])]
 class BinaryNode extends Model
 {
@@ -32,6 +32,7 @@ class BinaryNode extends Model
             'right_volume_carry' => 'integer',
             'left_lifetime_volume' => 'integer',
             'right_lifetime_volume' => 'integer',
+            'deferred_commission' => 'integer',
         ];
     }
 

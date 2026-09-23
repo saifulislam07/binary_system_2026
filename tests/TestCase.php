@@ -2,18 +2,18 @@
 
 namespace Tests;
 
-use Database\Seeders\RolesAndPermissionsSeeder;
+use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Laravel\Fortify\Features;
 
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * Roles and permissions are reference data every test relies on.
+     * Roles, permissions, commission rules, packages and ranks: reference data every test relies on.
      */
     protected bool $seed = true;
 
-    protected string $seeder = RolesAndPermissionsSeeder::class;
+    protected string $seeder = ReferenceDataSeeder::class;
 
     protected function skipUnlessFortifyHas(string $feature, ?string $message = null): void
     {

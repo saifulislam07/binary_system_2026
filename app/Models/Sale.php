@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  *
  * @property SaleStatus $status
  */
-#[Fillable(['order_id', 'member_id', 'package_id', 'amount', 'bv_value', 'status', 'refunded_at'])]
+#[Fillable(['order_id', 'member_id', 'package_id', 'amount', 'bv_value', 'status', 'refunded_at', 'reversed_at'])]
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */
@@ -30,6 +30,7 @@ class Sale extends Model
             'bv_value' => 'integer',
             'status' => SaleStatus::class,
             'refunded_at' => 'datetime',
+            'reversed_at' => 'datetime',
         ];
     }
 

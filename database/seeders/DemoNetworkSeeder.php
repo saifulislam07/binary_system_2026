@@ -8,7 +8,7 @@ use App\Enums\PaymentGateway;
 use App\Enums\PaymentStatus;
 use App\Enums\PlacementSide;
 use App\Enums\SaleStatus;
-use App\Models\BinaryNode;
+use App\Events\SaleCompleted;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Package;
@@ -20,8 +20,9 @@ use Illuminate\Support\Str;
 
 /**
  * Dev/test network: 20 active members in a complete binary tree, each with
- * a wallet and one paid package sale whose BV has been accrued up the
- * placement tree. Never run in production.
+ * a wallet and one paid package sale, processed by the real engine (BV
+ * accrued up the placement tree, referral bonus paid to the sponsor).
+ * No commission cycle is run. Never run in production.
  *
  * Tree (level order, index → member code MBR-1000{index+1}):
  *
@@ -83,7 +84,6 @@ class DemoNetworkSeeder extends Seeder
                 $this->recordPaidSale($member, $package, $activatedAt);
             }
 
-            $this->accrueVolumes($members);
         });
     }
 
@@ -139,44 +139,15 @@ class DemoNetworkSeeder extends Seeder
             'status' => PaymentStatus::Success,
         ]);
 
-        $order->sale()->create([
+        $sale = $order->sale()->create([
             'member_id' => $member->id,
             'package_id' => $package->id,
             'amount' => $package->price,
             'bv_value' => $package->bv_value,
             'status' => SaleStatus::Completed,
         ]);
-    }
 
-    /**
-     * Add each sale's BV to every placement ancestor, on the side the walk
-     * came up through. (Phase 5's TeamVolumeService does this for live sales.)
-     *
-     * @param  array<int, Member>  $members
-     */
-    private function accrueVolumes(array $members): void
-    {
-        $byId = collect($members)->keyBy('id');
-        $totals = []; // member_id => ['left' => int, 'right' => int]
-
-        foreach ($members as $member) {
-            $bv = (int) $member->sales()->where('status', SaleStatus::Completed)->sum('bv_value');
-            $current = $member;
-
-            while ($current->placement_parent_id !== null && $current->placement_side !== null) {
-                $side = $current->placement_side->value;
-                $totals[$current->placement_parent_id][$side] = ($totals[$current->placement_parent_id][$side] ?? 0) + $bv;
-                $current = $byId[$current->placement_parent_id];
-            }
-        }
-
-        foreach ($totals as $memberId => $volume) {
-            BinaryNode::query()->where('member_id', $memberId)->update([
-                'left_volume' => $volume['left'] ?? 0,
-                'right_volume' => $volume['right'] ?? 0,
-                'left_lifetime_volume' => $volume['left'] ?? 0,
-                'right_lifetime_volume' => $volume['right'] ?? 0,
-            ]);
-        }
+        // Same hooks as a live payment: volume accrual up the tree + referral bonus.
+        SaleCompleted::dispatch($sale);
     }
 }

@@ -150,6 +150,27 @@ CONVENTIONS:
   `SaleCompleted` *inside* the transaction (Phase 5 listeners hook there).
   Never hold DB locks across gateway HTTP calls. `simulator` gateway is
   dev-only. Refunds go through `RefundService` → `ReverseCommissionForSale`.
+- **Commission engine (Phase 5):** BV lives in `volume_lots` (one per sale ×
+  upline ancestor); `binary_nodes.{side}_volume` MUST always equal the sum of
+  that member's open lots (`remaining`) — every change goes through
+  `TeamVolumeService` (accrual), `MatchingService` (FIFO consumption,
+  flush) or `CommissionReversalService` (refunds), each writing
+  `volume_consumptions` rows. Tests assert this invariant via
+  `Tests\Support\BuildsNetwork::assertLedgersConsistent()`.
+  Binary commission: `MatchingService::runCycle()` (`php artisan
+  commission:run {date}`), one transaction per member, idempotent per
+  (member, cycle). Caps sum *paid* binary commission rows in the
+  day/week/month window; cap value ≤ 0 = no cap. Overflow: `void` → voided
+  row; `carry_forward` → `binary_nodes.deferred_commission`, released first
+  in later cycles. Weeks start on `config('business.week_starts_on')`
+  (Saturday).
+  Reversals are negative commission rows (status `reversed`,
+  `reverses_commission_id`) + wallet `reversal` debits, which may push a
+  wallet negative. Lock order everywhere: binary_nodes (ascending id) →
+  lots → wallets.
+- **Wallet:** all credits/debits go through `WalletService` (row lock,
+  ledger row + cached balance in one transaction, activity log). Balance =
+  Σcredits − Σdebits over non-voided rows.
 - **Local dev:** Laragon, MySQL 8.4 at 127.0.0.1:3306 (`root`, no password),
   DB `binary_system`. Run `npm run build` before `php artisan test` (Inertia
   pages need the Vite manifest).

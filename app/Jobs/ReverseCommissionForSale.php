@@ -2,12 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Models\Sale;
+use App\Services\CommissionReversalService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
 /**
  * Undo everything a refunded sale generated. Queued by RefundService after
- * the refund commits.
+ * the refund commits. Safe to retry: the reversal is idempotent.
  */
 class ReverseCommissionForSale implements ShouldQueue
 {
@@ -17,23 +19,8 @@ class ReverseCommissionForSale implements ShouldQueue
 
     public function __construct(public int $saleId) {}
 
-    /**
-     * TODO(Phase 5): implement with this exact signature, all in ONE DB transaction:
-     *
-     *   public function handle(TeamVolumeService $volumes, WalletService $wallets): void
-     *
-     *   1. $sale = Sale::findOrFail($this->saleId); bail if not SaleStatus::Refunded.
-     *   2. $volumes->reverseVolume($sale) — subtract the sale's bv_value from
-     *      each placement ancestor's side volume (lock nodes top-down, see
-     *      PlacementService), clamping unmatched volume at 0.
-     *   3. For every commission with source_sale_id = $sale->id (and binary
-     *      commissions whose matched volume included it): status → reversed,
-     *      and for each paid one write a `reversal` debit via $wallets.
-     *   4. Never delete or edit the original rows — reversal entries only.
-     *   5. Idempotent: skip commissions already reversed.
-     */
-    public function handle(): void
+    public function handle(CommissionReversalService $reversal): void
     {
-        // Intentionally empty until Phase 5 builds the commission engine.
+        $reversal->reverseSale(Sale::query()->findOrFail($this->saleId));
     }
 }
