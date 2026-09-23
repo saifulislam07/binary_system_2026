@@ -129,6 +129,18 @@ CONVENTIONS:
   parent's `binary_nodes.{left,right}_child_id` are the same fact stored
   twice — always update both in one transaction.
   `SeededNetworkTest` checks they agree in both directions.
+- **Activation (Phase 3):** `PlacementService::activateMember()` is the ONLY
+  way a member becomes active: it assigns the code (`MemberCodeGenerator` →
+  `sequences` row lock), places the member (BFS spillover under the sponsor
+  on `preferred_side`), creates the binary node + wallet, logs activity, and
+  is idempotent (safe for repeated payment callbacks). Seeders use it too.
+- **Tree lock order:** lock `binary_nodes` rows top-down (ancestors before
+  descendants = ascending `binary_nodes.id`), always with `lockForUpdate()`
+  reads inside the transaction. Volume accrual (Phase 5) must follow the
+  same order or it can deadlock with placement.
+- **Duplicates (rule #12):** mobile/NID may belong to only one *active*
+  member; pending sign-ups don't block. Phones are stored normalized
+  (`App\Support\PhoneNumber`, +8801XXXXXXXXX), NIDs as digits only.
 - **Local dev:** Laragon, MySQL 8.4 at 127.0.0.1:3306 (`root`, no password),
   DB `binary_system`. Run `npm run build` before `php artisan test` (Inertia
   pages need the Vite manifest).

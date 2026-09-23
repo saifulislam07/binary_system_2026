@@ -21,10 +21,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  *
  * @property MemberStatus $status
  * @property PlacementSide|null $placement_side
+ * @property PlacementSide|null $preferred_side
  */
 #[Fillable([
     'user_id', 'member_code', 'sponsor_id', 'placement_parent_id', 'placement_side',
-    'package_id', 'status', 'nid', 'address', 'activated_at',
+    'preferred_side', 'package_id', 'status', 'nid', 'address', 'activated_at',
 ])]
 class Member extends Model
 {
@@ -36,6 +37,7 @@ class Member extends Model
         return [
             'status' => MemberStatus::class,
             'placement_side' => PlacementSide::class,
+            'preferred_side' => PlacementSide::class,
             'activated_at' => 'datetime',
         ];
     }

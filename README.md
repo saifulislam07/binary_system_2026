@@ -8,15 +8,15 @@ Nagad and SSLCommerz).
 
 ## Stack
 
-| Layer | Choice |
-| --- | --- |
-| Framework | Laravel 13, PHP 8.3+ |
-| Database | MySQL 8 (InnoDB, needed for row locking) |
-| Member app | Vue 3 + Inertia.js v3 + Tailwind 4, built with Vite+ (official Laravel Vue starter kit, auth via Fortify) |
-| Admin panel | AdminLTE 4 + Blade (`jeroennoten/laravel-adminlte`) under `/admin`, with its own `admin` guard |
-| Packages | Spatie Permission, MediaLibrary, ActivityLog, Backup, Sluggable. Laravel Sanctum for the future mobile API |
-| Payments | bKash, SSLCommerz, Nagad (wired in Phase 4) |
-| Tests | PHPUnit against a MySQL test database |
+| Layer       | Choice                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| Framework   | Laravel 13, PHP 8.3+                                                                                       |
+| Database    | MySQL 8 (InnoDB, needed for row locking)                                                                   |
+| Member app  | Vue 3 + Inertia.js v3 + Tailwind 4, built with Vite+ (official Laravel Vue starter kit, auth via Fortify)  |
+| Admin panel | AdminLTE 4 + Blade (`jeroennoten/laravel-adminlte`) under `/admin`, with its own `admin` guard             |
+| Packages    | Spatie Permission, MediaLibrary, ActivityLog, Backup, Sluggable. Laravel Sanctum for the future mobile API |
+| Payments    | bKash, SSLCommerz, Nagad (wired in Phase 4)                                                                |
+| Tests       | PHPUnit against a MySQL test database                                                                      |
 
 ## Local setup
 
@@ -38,9 +38,9 @@ php artisan db:seed
 composer dev            # server + queue + logs + Vite
 ```
 
-| Area | URL | Seeded login |
-| --- | --- | --- |
-| Member app | http://localhost:8000/login | `test@example.com` / `password` |
+| Area        | URL                               | Seeded login                                                                            |
+| ----------- | --------------------------------- | --------------------------------------------------------------------------------------- |
+| Member app  | http://localhost:8000/login       | `test@example.com` / `password`                                                         |
 | Admin panel | http://localhost:8000/admin/login | `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env` (default `admin@example.com` / `password`) |
 
 > Change the admin password before deploying anywhere public.
@@ -58,17 +58,17 @@ against a MySQL 8.4 service container on every push to `main` and on every PR.
 
 ## Code layout
 
-| Path | What goes there |
-| --- | --- |
-| `app/Services` | Business logic services (placement, matching, wallet, …) |
-| `app/Actions` | Single-purpose actions (Fortify auth actions live in `Actions/Fortify`) |
-| `app/DTOs` | Typed data objects passed between services |
-| `app/Support` | Framework-agnostic helpers, e.g. `Money` |
-| `app/Enums` | Enums, e.g. `AdminPermission` |
-| `app/Http/Controllers/Admin` | Admin panel (Blade) controllers |
-| `routes/admin.php` | Admin routes. Registered in `bootstrap/app.php` with the `/admin` prefix, `admin.` names and the `admin` guard |
-| `resources/js/pages` | Member-facing Inertia pages |
-| `resources/views/admin` | Admin panel Blade views (extend `adminlte::page`) |
+| Path                         | What goes there                                                                                                |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `app/Services`               | Business logic services (placement, matching, wallet, …)                                                       |
+| `app/Actions`                | Single-purpose actions (Fortify auth actions live in `Actions/Fortify`)                                        |
+| `app/DTOs`                   | Typed data objects passed between services                                                                     |
+| `app/Support`                | Framework-agnostic helpers, e.g. `Money`                                                                       |
+| `app/Enums`                  | Enums, e.g. `AdminPermission`                                                                                  |
+| `app/Http/Controllers/Admin` | Admin panel (Blade) controllers                                                                                |
+| `routes/admin.php`           | Admin routes. Registered in `bootstrap/app.php` with the `/admin` prefix, `admin.` names and the `admin` guard |
+| `resources/js/pages`         | Member-facing Inertia pages                                                                                    |
+| `resources/views/admin`      | Admin panel Blade views (extend `adminlte::page`)                                                              |
 
 Keep controllers thin. Validate with Form Requests, authorize with Policies,
 and put business logic in Services or Actions.

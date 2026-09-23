@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PendingMemberController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,4 +21,10 @@ Route::middleware('auth:admin')->group(function () {
 
     Route::redirect('/', '/admin/dashboard');
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+    Route::middleware('can:manage-members')->group(function () {
+        // TEMPORARY (Phase 3) manual activation; Phase 4's payment callback replaces it.
+        Route::get('members/pending', [PendingMemberController::class, 'index'])->name('members.pending');
+        Route::post('members/{member}/activate', [PendingMemberController::class, 'activate'])->name('members.activate');
+    });
 });

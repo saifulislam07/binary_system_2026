@@ -784,6 +784,13 @@ return [
             'route' => 'admin.dashboard',
             'icon' => 'bi bi-speedometer2',
         ],
+        ['header' => 'MEMBERS', 'can' => 'manage-members'],
+        [
+            'text' => 'Pending Members',
+            'route' => 'admin.members.pending',
+            'icon' => 'bi bi-person-plus',
+            'can' => 'manage-members',
+        ],
     ],
 
     /*

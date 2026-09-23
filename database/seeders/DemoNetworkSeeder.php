@@ -13,6 +13,7 @@ use App\Models\Member;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\User;
+use App\Services\PlacementService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -44,7 +45,9 @@ class DemoNetworkSeeder extends Seeder
 
     public function run(): void
     {
-        DB::transaction(function () {
+        $placement = app(PlacementService::class);
+
+        DB::transaction(function () use ($placement) {
             $packages = Package::query()->orderBy('sort_order')->get()->values();
             $startedAt = now()->subDays(self::MEMBER_COUNT);
 
@@ -52,13 +55,6 @@ class DemoNetworkSeeder extends Seeder
             $members = [];
 
             for ($i = 0; $i < self::MEMBER_COUNT; $i++) {
-                $parentIndex = $i === 0 ? null : intdiv($i - 1, 2);
-                $side = $i % 2 === 1 ? PlacementSide::Left : PlacementSide::Right; // unused for the root
-                $sponsorIndex = match (true) {
-                    $i === 0 => null,
-                    $i <= 6 => 0,
-                    default => $parentIndex,
-                };
                 $package = $packages[$i % $packages->count()];
                 $activatedAt = $startedAt->copy()->addDays($i);
 
@@ -67,34 +63,55 @@ class DemoNetworkSeeder extends Seeder
                     : []);
                 $user->assignRole('member');
 
+                $sponsorIndex = self::sponsorIndex($i);
+
                 $member = Member::query()->create([
                     'user_id' => $user->id,
-                    'member_code' => 'MBR-'.(self::FIRST_CODE + $i),
                     'sponsor_id' => $sponsorIndex === null ? null : $members[$sponsorIndex]->id,
-                    'placement_parent_id' => $parentIndex === null ? null : $members[$parentIndex]->id,
-                    'placement_side' => $parentIndex === null ? null : $side,
+                    'preferred_side' => self::preferredSide($i),
                     'package_id' => $package->id,
-                    'status' => MemberStatus::Active,
+                    'status' => MemberStatus::Pending,
                     'nid' => fake()->unique()->numerify('##########'),
                     'address' => fake()->address(),
-                    'activated_at' => $activatedAt,
                 ]);
+
+                // The real engine assigns the code and resolves spillover.
+                $member = $placement->activateMember($member);
+                $member->forceFill(['activated_at' => $activatedAt])->save();
                 $members[$i] = $member;
-
-                BinaryNode::query()->create(['member_id' => $member->id]);
-                $member->wallet()->create();
-
-                if ($parentIndex !== null) {
-                    BinaryNode::query()
-                        ->where('member_id', $members[$parentIndex]->id)
-                        ->update([$side->childColumn() => $member->id]);
-                }
 
                 $this->recordPaidSale($member, $package, $activatedAt);
             }
 
             $this->accrueVolumes($members);
         });
+    }
+
+    /**
+     * The root personally sponsors 1–6; everyone else is sponsored by their
+     * (documented) placement parent.
+     */
+    private static function sponsorIndex(int $i): ?int
+    {
+        return match (true) {
+            $i === 0 => null,
+            $i <= 6 => 0,
+            default => intdiv($i - 1, 2),
+        };
+    }
+
+    /**
+     * Sides chosen so BFS spillover reproduces the documented level-order
+     * tree: 3 and 4 (preferring left) spill under 1, 5 and 6 (preferring
+     * right) spill under 2; from 7 on the sponsor's direct slot is free.
+     */
+    private static function preferredSide(int $i): ?PlacementSide
+    {
+        return match (true) {
+            $i === 0 => null,
+            $i <= 6 => in_array($i, [1, 3, 4], true) ? PlacementSide::Left : PlacementSide::Right,
+            default => $i % 2 === 1 ? PlacementSide::Left : PlacementSide::Right,
+        };
     }
 
     private function recordPaidSale(Member $member, Package $package, \DateTimeInterface $paidAt): void
