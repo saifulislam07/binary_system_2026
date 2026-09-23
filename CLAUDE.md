@@ -112,6 +112,23 @@ CONVENTIONS:
   live on the `admin` guard; the `member` role lives on the `web` guard.
 - **Tests:** PHPUnit (not Pest), against MySQL database `binary_system_test`
   — row-locking and concurrency tests need real InnoDB.
+- **Enums:** status/type columns are MySQL `enum`s with literal values in the
+  migration, cast to PHP enums in `app/Enums` (add an `@property` line on the
+  model for each enum cast so PHPStan sees the enum type). `PayoutStatus` is
+  shared by `commissions` and `bonuses`.
+- **Mass assignment:** columns only services may change (wallet `balance`,
+  withdrawal `status`/`admin_id`, KYC review fields) are deliberately NOT in
+  `#[Fillable]` — set them with `forceFill()` inside the owning service.
+- **Seeders:** `ReferenceDataSeeder` (roles, packages, commission_rules,
+  ranks, settings, admin) is idempotent and production-safe — it never
+  overwrites admin-edited values. `DemoNetworkSeeder` (20-member tree
+  MBR-100001…MBR-100020, root = test@example.com) runs outside production
+  only. Phase 3's member-code sequence must start after the highest existing
+  code.
+- **Tree integrity:** `members.placement_parent_id/placement_side` and the
+  parent's `binary_nodes.{left,right}_child_id` are the same fact stored
+  twice — always update both in one transaction.
+  `SeededNetworkTest` checks they agree in both directions.
 - **Local dev:** Laragon, MySQL 8.4 at 127.0.0.1:3306 (`root`, no password),
   DB `binary_system`. Run `npm run build` before `php artisan test` (Inertia
   pages need the Vite manifest).
