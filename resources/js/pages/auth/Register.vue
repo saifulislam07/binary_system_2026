@@ -2,7 +2,6 @@
 import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import TeamInvitationAlert from '@/components/TeamInvitationAlert.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import type { TeamInvitationContext } from '@/types';
 
 defineProps<{
     passwordRules: string;
-    teamInvitation?: TeamInvitationContext | null;
 }>();
 
 defineOptions({
@@ -27,12 +24,6 @@ defineOptions({
 
 <template>
     <Head title="Register" />
-
-    <TeamInvitationAlert
-        v-if="teamInvitation"
-        :invitation="teamInvitation"
-        action="Register"
-    />
 
     <Form
         v-bind="store.form()"
@@ -113,18 +104,10 @@ defineOptions({
         <div class="text-center text-sm text-muted-foreground">
             Already have an account?
             <TextLink
-                :href="
-                    teamInvitation
-                        ? login.url({
-                              query: {
-                                  invitation: teamInvitation.code,
-                              },
-                          })
-                        : login()
-                "
+                :href="login()"
                 class="underline underline-offset-4"
                 :tabindex="6"
-                data-test="team-invitation-login-link"
+                data-test="login-link"
             >
                 Log in
             </TextLink>
