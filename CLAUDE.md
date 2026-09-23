@@ -138,9 +138,18 @@ CONVENTIONS:
   descendants = ascending `binary_nodes.id`), always with `lockForUpdate()`
   reads inside the transaction. Volume accrual (Phase 5) must follow the
   same order or it can deadlock with placement.
-- **Duplicates (rule #12):** mobile/NID may belong to only one *active*
+- **Duplicates (rule #12):** mobile/NID may belong to only one _active_
   member; pending sign-ups don't block. Phones are stored normalized
   (`App\Support\PhoneNumber`, +8801XXXXXXXXX), NIDs as digits only.
+- **Payments (Phase 4):** gateways implement `App\Payments\Contracts\PaymentGateway`
+  and MUST verify callbacks server-to-server (bKash execute/status,
+  SSLCommerz validation API, Nagad verify) — never trust query/POST data.
+  `OrderPaymentService::handle()` is the only place an order becomes paid:
+  it locks the order, is idempotent, rejects amount mismatches (flags them in
+  the activity log), activates pending members, creates the Sale, and fires
+  `SaleCompleted` *inside* the transaction (Phase 5 listeners hook there).
+  Never hold DB locks across gateway HTTP calls. `simulator` gateway is
+  dev-only. Refunds go through `RefundService` → `ReverseCommissionForSale`.
 - **Local dev:** Laragon, MySQL 8.4 at 127.0.0.1:3306 (`root`, no password),
   DB `binary_system`. Run `npm run build` before `php artisan test` (Inertia
   pages need the Vite manifest).

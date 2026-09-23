@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property PaymentGateway $gateway
  * @property PaymentStatus $status
+ * @property array<string, mixed>|null $raw_response
  */
 #[Fillable(['order_id', 'withdrawal_id', 'gateway', 'gateway_ref', 'amount', 'status', 'raw_response'])]
 class Payment extends Model

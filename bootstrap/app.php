@@ -28,6 +28,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) use ($isAdminRequest): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // Payment gateways POST back cross-site; those requests are verified with the gateway instead.
+        $middleware->validateCsrfTokens(except: ['payments/*/callback']);
+
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,

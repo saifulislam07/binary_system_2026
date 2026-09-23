@@ -46,6 +46,17 @@ final class Money
     }
 
     /**
+     * Plain decimal string for gateway APIs: 125050 → "1250.50".
+     */
+    public static function toDecimalString(int $poysha): string
+    {
+        $sign = $poysha < 0 ? '-' : '';
+        $abs = abs($poysha);
+
+        return $sign.intdiv($abs, self::SCALE).'.'.str_pad((string) ($abs % self::SCALE), 2, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Format poysha for display: 125050 → "৳1,250.50".
      */
     public static function format(int $poysha, bool $symbol = true): string

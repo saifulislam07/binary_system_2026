@@ -10,9 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 /**
  * @property OrderStatus $status
+ * @property Carbon|null $paid_at
  */
 #[Fillable(['order_number', 'member_id', 'package_id', 'amount', 'status', 'paid_at'])]
 class Order extends Model

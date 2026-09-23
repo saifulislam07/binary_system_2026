@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
 import { dashboard } from '@/routes';
+import { index as checkout } from '@/routes/checkout';
 
 defineProps<{
     member: {
@@ -40,6 +41,12 @@ defineOptions({
             <br />
             আপনার অ্যাকাউন্টটি অপেক্ষমাণ। সক্রিয় করতে প্যাকেজের মূল্য পরিশোধ
             করুন।
+            <Link
+                :href="checkout()"
+                class="mt-2 block font-semibold underline"
+                data-test="pay-now"
+                >Pay now · এখনই পেমেন্ট করুন</Link
+            >
         </div>
         <div
             v-else-if="member?.code"
