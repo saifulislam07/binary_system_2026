@@ -77,7 +77,8 @@ class WalletLedgerTest extends TestCase
         $forbidden = [
             '/WalletTransaction::(query\(\)->)?(create|insert|forceCreate|updateOrCreate|firstOrCreate)\b/',
             '/->transactions\(\)->(create|insert|forceCreate|createMany|save)\b/',
-            '/[\'"]balance[\'"]\s*=>\s*+(?![\'"]integer[\'"])/', // assignments, not the model's cast
+            // 'balance' inside a write call (not display props or the model's cast)
+            '/(forceFill|update|fill|create|insert|updateOrCreate)\(\s*\[[^\]]*[\'"]balance[\'"]\s*=>/s',
             '/->balance\s*(\+|-)?=[^=]/',
             '/Wallet::query\(\)(->[a-zA-Z]+\([^)]*\))*->(update|increment|decrement|incrementEach)\(/',
             '/->wallet\(\)->(update|increment|decrement)\(/',

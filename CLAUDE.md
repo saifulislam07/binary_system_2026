@@ -174,6 +174,14 @@ commission:run {date}`), one transaction per member, idempotent per
 - **Wallet writes are guarded by a test:** `WalletLedgerTest::test_only_wallet_service_writes_to_wallets`
   fails if anything outside `WalletService` creates ledger rows or writes a
   wallet balance. Don't weaken it — route the new code through the service.
+- **Withdrawals (Phase 7):** `WithdrawalService` only. `request()` writes the
+  withdrawal + a *pending* wallet debit (the hold, `withdrawals.wallet_transaction_id`)
+  in one transaction. Transitions follow `WithdrawalStatus::allowedTransitions()`
+  and require an `Admin` with `manage-withdrawals` (checked in the service).
+  `markPaid()` → hold `completed`; `reject()` (reason required) → hold
+  `voided` via `WalletService::void()`, which restores the balance. We void
+  instead of writing a credit-back — doing both would double-refund.
+  Lock order: withdrawal row → wallet.
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.

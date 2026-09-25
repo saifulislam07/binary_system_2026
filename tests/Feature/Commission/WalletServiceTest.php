@@ -59,6 +59,15 @@ class WalletServiceTest extends TestCase
         $this->assertSame(-5_000, $this->wallets->ledgerBalance($this->member));
     }
 
+    public function test_balance_of_a_member_without_a_wallet_yet_is_zero()
+    {
+        $pending = Member::factory()->create();
+        $this->assertNull($pending->wallet()->first());
+
+        $this->assertSame(0, $this->wallets->balance($pending));
+        $this->assertSame(0, $this->wallets->ledgerBalance($pending));
+    }
+
     public function test_amounts_must_be_positive()
     {
         $this->expectException(InvalidArgumentException::class);

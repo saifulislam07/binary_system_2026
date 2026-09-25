@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\WithdrawalMethodType;
 use App\Enums\WithdrawalStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\WithdrawalFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property WithdrawalMethodType $method
  * @property WithdrawalStatus $status
+ * @property array<string, string> $account_details
+ * @property CarbonInterface|null $processed_at
  */
 #[Fillable(['member_id', 'amount', 'method', 'account_details'])]
 class Withdrawal extends Model
@@ -44,6 +47,16 @@ class Withdrawal extends Model
     public function admin(): BelongsTo
     {
         return $this->belongsTo(Admin::class);
+    }
+
+    /**
+     * The pending wallet debit holding the funds.
+     *
+     * @return BelongsTo<WalletTransaction, $this>
+     */
+    public function holdTransaction(): BelongsTo
+    {
+        return $this->belongsTo(WalletTransaction::class, 'wallet_transaction_id');
     }
 
     /** @return HasMany<Payment, $this> */

@@ -7,6 +7,7 @@ use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\PaymentSimulatorController;
 use App\Http\Controllers\SponsorLookupController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\WithdrawalController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -24,6 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders/{order:order_number}', [OrderController::class, 'show'])->name('orders.show');
 
     Route::get('wallet', [WalletController::class, 'index'])->name('wallet.index');
+
+    Route::get('withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
+    Route::post('withdrawals', [WithdrawalController::class, 'store'])->middleware('throttle:5,1')->name('withdrawals.store');
 });
 
 // Gateway redirects + IPNs: no auth, CSRF-exempt (see bootstrap/app.php); verified server-to-server.

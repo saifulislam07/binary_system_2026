@@ -10,8 +10,8 @@ use App\Models\Member;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use Carbon\CarbonInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -48,6 +48,25 @@ class WalletService
         bool $allowNegative = false,
     ): WalletTransaction {
         return $this->post($owner, TransactionDirection::Debit, $amount, $type, $reference, $description, $status, $allowNegative);
+    }
+
+    /**
+     * pending → completed (e.g. a withdrawal hold that was paid out). The
+     * balance already reflects a pending row, so it does not change.
+     */
+    public function complete(WalletTransaction $transaction): WalletTransaction
+    {
+        return $this->settlePending($transaction, WalletTransactionStatus::Completed);
+    }
+
+    /**
+     * pending → voided (e.g. a rejected withdrawal). Voided rows are excluded
+     * from the balance, so the held amount comes back exactly. The original
+     * row is kept for the audit trail; only its status changes.
+     */
+    public function void(WalletTransaction $transaction): WalletTransaction
+    {
+        return $this->settlePending($transaction, WalletTransactionStatus::Voided);
     }
 
     /**
@@ -151,12 +170,46 @@ class WalletService
         }, 3);
     }
 
+    private function settlePending(WalletTransaction $transaction, WalletTransactionStatus $to): WalletTransaction
+    {
+        return DB::transaction(function () use ($transaction, $to) {
+            // Same lock order as post(): wallet first, then its row.
+            $wallet = Wallet::query()->lockForUpdate()->findOrFail($transaction->wallet_id);
+            $transaction = WalletTransaction::query()->lockForUpdate()->findOrFail($transaction->id);
+
+            if ($transaction->status !== WalletTransactionStatus::Pending) {
+                throw new InvalidArgumentException("Only pending transactions can be settled; [{$transaction->id}] is {$transaction->status->value}.");
+            }
+
+            $transaction->forceFill(['status' => $to])->save();
+
+            if ($to === WalletTransactionStatus::Voided) {
+                $wallet->forceFill(['balance' => $wallet->balance - $transaction->signedAmount()])->save();
+            }
+
+            activity('wallet')
+                ->performedOn($wallet)
+                ->withProperties([
+                    'transaction_id' => $transaction->id,
+                    'status' => $to->value,
+                    'amount' => $transaction->amount,
+                    'balance' => $wallet->balance,
+                ])
+                ->log("Wallet transaction {$to->value}");
+
+            return $transaction;
+        }, 3);
+    }
+
     private function walletFor(Member|Wallet $owner): Wallet
     {
         if ($owner instanceof Wallet) {
             return $owner;
         }
 
-        return $owner->wallet()->firstOrCreate();
+        $wallet = $owner->wallet()->firstOrCreate();
+
+        // A freshly inserted model doesn't carry DB defaults (balance = 0) until reloaded.
+        return $wallet->wasRecentlyCreated ? $wallet->refresh() : $wallet;
     }
 }

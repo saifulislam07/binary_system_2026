@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid, Package, Wallet } from '@lucide/vue';
+import {
+    ArrowDownToLine,
+    BookOpen,
+    FolderGit2,
+    LayoutGrid,
+    Package,
+    Wallet,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -18,6 +25,7 @@ import {
 import { dashboard } from '@/routes';
 import { index as checkout } from '@/routes/checkout';
 import { index as wallet } from '@/routes/wallet';
+import { index as withdrawals } from '@/routes/withdrawals';
 import type { NavItem } from '@/types';
 
 const dashboardUrl = dashboard().url;
@@ -32,6 +40,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: 'Wallet',
         href: wallet().url,
         icon: Wallet,
+    },
+    {
+        title: 'Withdrawals',
+        href: withdrawals().url,
+        icon: ArrowDownToLine,
     },
     {
         title: 'Packages',

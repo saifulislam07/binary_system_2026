@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property WithdrawalMethodType $type
+ * @property array<string, string> $details
+ * @property bool $is_default
  */
 #[Fillable(['member_id', 'type', 'details', 'is_default'])]
 class WithdrawalMethod extends Model
