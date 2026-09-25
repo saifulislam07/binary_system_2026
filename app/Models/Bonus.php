@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property BonusType $type
  * @property PayoutStatus $status
  */
-#[Fillable(['member_id', 'type', 'amount', 'cycle_date', 'status', 'description'])]
+#[Fillable(['member_id', 'bonus_rule_id', 'type', 'amount', 'cycle_date', 'status', 'description', 'awarded_by'])]
 class Bonus extends Model
 {
     /** @use HasFactory<BonusFactory> */
@@ -34,5 +34,17 @@ class Bonus extends Model
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);
+    }
+
+    /** @return BelongsTo<BonusRule, $this> */
+    public function rule(): BelongsTo
+    {
+        return $this->belongsTo(BonusRule::class, 'bonus_rule_id');
+    }
+
+    /** @return BelongsTo<Admin, $this> */
+    public function awardedBy(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'awarded_by');
     }
 }

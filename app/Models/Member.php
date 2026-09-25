@@ -144,6 +144,12 @@ class Member extends Model
         return $this->hasMany(RankAchievement::class);
     }
 
+    /** @return BelongsTo<Rank, $this> */
+    public function currentRank(): BelongsTo
+    {
+        return $this->belongsTo(Rank::class, 'current_rank_id');
+    }
+
     /** @return BelongsToMany<Rank, $this> */
     public function ranks(): BelongsToMany
     {
