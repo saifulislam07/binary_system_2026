@@ -200,6 +200,19 @@ commission:run {date}`), one transaction per member, idempotent per
   are defined once in `AdminDashboardService` — reuse it for reports.
   Seeded limited roles: `support` (members, KYC), `finance` (sales,
   withdrawals, reports).
+- **Admin management (Phase 10):** member changes go through
+  `MemberAdminService` (reason required for status/package changes; logs
+  old/new values). Tree moves go through `PlacementAdjustmentService`:
+  moves a member + downline to a vacant slot and transfers the subtree's
+  volume lots to the new upline (consumption kind `transferred`); refused
+  once any of that volume was matched/flushed, into own downline, or into a
+  taken slot. Reports come from `FinancialReportService` (same shape for
+  every report + CSV export), whose P&L reuses
+  `AdminDashboardService::metricsForRange()`. Business settings (rates,
+  caps, overflow behavior, carry-forward, min withdrawal) are edited on
+  `/admin/settings` (`manage-settings`); UI takes % and taka, stores bps
+  and poysha. Blade admin pages must not use Vue — plain JS with
+  `textContent` only (see the tree browser).
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.

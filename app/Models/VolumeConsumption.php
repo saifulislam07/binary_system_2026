@@ -26,6 +26,8 @@ class VolumeConsumption extends Model
 
     public const DISSOLVED = 'dissolved';
 
+    public const TRANSFERRED = 'transferred';
+
     protected function casts(): array
     {
         return [

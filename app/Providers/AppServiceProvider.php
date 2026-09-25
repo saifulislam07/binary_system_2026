@@ -14,6 +14,7 @@ use App\Models\Wallet;
 use App\Models\Withdrawal;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -57,6 +58,9 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        // Blade pagination links (admin panel) use AdminLTE 4's Bootstrap 5 markup.
+        Paginator::useBootstrapFive();
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

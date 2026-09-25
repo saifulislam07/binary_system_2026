@@ -64,7 +64,17 @@ class AdminDashboardService
     public function metrics(string $period = 'month', ?CarbonInterface $now = null): array
     {
         $now ??= now();
-        $range = $this->range($period, $now);
+
+        return $this->metricsForRange($this->range($period, $now), $now);
+    }
+
+    /**
+     * @param  array{0: CarbonInterface, 1: CarbonInterface}|null  $range  null = all time
+     * @return array<string, int>
+     */
+    public function metricsForRange(?array $range, ?CarbonInterface $now = null): array
+    {
+        $now ??= now();
 
         $completedSales = fn () => $this->within(Sale::query()->where('sales.status', SaleStatus::Completed), 'sales.created_at', $range);
 
