@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import {
     ArrowDownToLine,
-    BookOpen,
-    FolderGit2,
+    BadgeCheck,
+    ChartColumn,
     LayoutGrid,
+    Network,
     Package,
+    Share2,
     Wallet,
 } from '@lucide/vue';
-import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -24,46 +24,25 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as checkout } from '@/routes/checkout';
+import { index as income } from '@/routes/income';
+import { index as kyc } from '@/routes/kyc';
+import { index as referral } from '@/routes/referral';
+import { index as team } from '@/routes/team';
 import { index as wallet } from '@/routes/wallet';
 import { index as withdrawals } from '@/routes/withdrawals';
 import type { NavItem } from '@/types';
 
 const dashboardUrl = dashboard().url;
 
-const mainNavItems = computed<NavItem[]>(() => [
-    {
-        title: 'Dashboard',
-        href: dashboardUrl,
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Wallet',
-        href: wallet().url,
-        icon: Wallet,
-    },
-    {
-        title: 'Withdrawals',
-        href: withdrawals().url,
-        icon: ArrowDownToLine,
-    },
-    {
-        title: 'Packages',
-        href: checkout().url,
-        icon: Package,
-    },
-]);
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
+const mainNavItems: NavItem[] = [
+    { title: 'Dashboard', href: dashboardUrl, icon: LayoutGrid },
+    { title: 'Income', href: income().url, icon: ChartColumn },
+    { title: 'Team', href: team().url, icon: Network },
+    { title: 'Wallet', href: wallet().url, icon: Wallet },
+    { title: 'Withdrawals', href: withdrawals().url, icon: ArrowDownToLine },
+    { title: 'Referral link', href: referral().url, icon: Share2 },
+    { title: 'Profile & KYC', href: kyc().url, icon: BadgeCheck },
+    { title: 'Packages', href: checkout().url, icon: Package },
 ];
 </script>
 
@@ -86,7 +65,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

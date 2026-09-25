@@ -175,13 +175,22 @@ commission:run {date}`), one transaction per member, idempotent per
   fails if anything outside `WalletService` creates ledger rows or writes a
   wallet balance. Don't weaken it — route the new code through the service.
 - **Withdrawals (Phase 7):** `WithdrawalService` only. `request()` writes the
-  withdrawal + a *pending* wallet debit (the hold, `withdrawals.wallet_transaction_id`)
+  withdrawal + a _pending_ wallet debit (the hold, `withdrawals.wallet_transaction_id`)
   in one transaction. Transitions follow `WithdrawalStatus::allowedTransitions()`
   and require an `Admin` with `manage-withdrawals` (checked in the service).
   `markPaid()` → hold `completed`; `reject()` (reason required) → hold
   `voided` via `WalletService::void()`, which restores the balance. We void
   instead of writing a credit-back — doing both would double-refund.
   Lock order: withdrawal row → wallet.
+- **Member dashboard (Phase 8):** pages that need a placed member (team,
+  income, referral) sit behind the `member.active` middleware (pending →
+  checkout, suspended → 403). Tree data comes from `TeamService`
+  (`legCounts()` recursive CTE, `subtree()` level-by-level, max depth 4);
+  `team.tree` JSON only serves nodes in the viewer's own downline
+  (`isInDownline()`). Charts follow the dataviz skill: slot-1 blue
+  `#2a78d6` / dark `#3987e5`, tokens in an *unscoped* `<style>` block so
+  the app's `.dark` class can override them (scoped `:global(.dark)` does
+  not work), drawn at measured pixel width (never a scaled viewBox).
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.

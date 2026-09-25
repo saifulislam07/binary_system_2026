@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import IncomeChart from '@/components/IncomeChart.vue';
+import type { IncomePoint } from '@/components/IncomeChart.vue';
 import WalletSummary from '@/components/WalletSummary.vue';
 import type { WalletSummaryData } from '@/components/WalletSummary.vue';
 import { dashboard } from '@/routes';
 import { index as checkout } from '@/routes/checkout';
+import { index as team } from '@/routes/team';
+
+type LegCount = { total: number; active: number };
 
 defineProps<{
     member: {
@@ -13,6 +17,18 @@ defineProps<{
         package: string | null;
     } | null;
     walletSummary: WalletSummaryData | null;
+    overview: {
+        totalIncome: string;
+        available: string;
+        personalSales: string;
+        leftTeamBv: string;
+        rightTeamBv: string;
+        teamSize: number;
+        activeTeam: number;
+        leftTeam: LegCount;
+        rightTeam: LegCount;
+        chart: IncomePoint[];
+    } | null;
 }>();
 
 defineOptions({
@@ -30,9 +46,7 @@ defineOptions({
 <template>
     <Head title="Dashboard" />
 
-    <div
-        class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-    >
+    <div class="flex h-full min-w-0 flex-1 flex-col gap-4 rounded-xl p-4">
         <div
             v-if="member?.status === 'pending'"
             class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
@@ -57,33 +71,74 @@ defineOptions({
             data-test="member-code"
         >
             Member ID: <span class="font-medium">{{ member.code }}</span>
+            <span v-if="member.package"> · {{ member.package }} package</span>
         </div>
+
         <WalletSummary
             v-if="walletSummary"
             :summary="walletSummary"
             show-link
         />
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+
+        <template v-if="overview">
+            <section
+                class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                aria-label="Team overview"
             >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-        </div>
-        <div
-            class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
-        >
-            <PlaceholderPattern />
-        </div>
+                <div class="rounded-xl border p-4" data-test="personal-sales">
+                    <p class="text-sm text-muted-foreground">
+                        Personal sales · ব্যক্তিগত বিক্রয়
+                    </p>
+                    <p class="mt-1 text-2xl font-semibold">
+                        {{ overview.personalSales }}
+                    </p>
+                </div>
+                <div class="rounded-xl border p-4" data-test="left-team">
+                    <p class="text-sm text-muted-foreground">
+                        Left team sales · বাম দল
+                    </p>
+                    <p class="mt-1 text-2xl font-semibold">
+                        {{ overview.leftTeamBv }} BV
+                    </p>
+                    <p class="text-xs text-muted-foreground">
+                        {{ overview.leftTeam.total }} members ·
+                        {{ overview.leftTeam.active }} active
+                    </p>
+                </div>
+                <div class="rounded-xl border p-4" data-test="right-team">
+                    <p class="text-sm text-muted-foreground">
+                        Right team sales · ডান দল
+                    </p>
+                    <p class="mt-1 text-2xl font-semibold">
+                        {{ overview.rightTeamBv }} BV
+                    </p>
+                    <p class="text-xs text-muted-foreground">
+                        {{ overview.rightTeam.total }} members ·
+                        {{ overview.rightTeam.active }} active
+                    </p>
+                </div>
+                <div class="rounded-xl border p-4" data-test="team-size">
+                    <p class="text-sm text-muted-foreground">
+                        Team size · দলের সদস্য
+                    </p>
+                    <p class="mt-1 text-2xl font-semibold">
+                        {{ overview.teamSize }}
+                    </p>
+                    <p class="text-xs text-muted-foreground">
+                        {{ overview.activeTeam }} active ·
+                        <Link
+                            :href="team()"
+                            class="underline underline-offset-4"
+                            >View tree</Link
+                        >
+                    </p>
+                </div>
+            </section>
+
+            <IncomeChart
+                :points="overview.chart"
+                title="Net income, last 6 cycles · আয়"
+            />
+        </template>
     </div>
 </template>

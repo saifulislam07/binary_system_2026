@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveMember;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\UseAdminGuard;
@@ -30,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Payment gateways POST back cross-site; those requests are verified with the gateway instead.
         $middleware->validateCsrfTokens(except: ['payments/*/callback']);
+
+        $middleware->alias(['member.active' => EnsureActiveMember::class]);
 
         $middleware->web(append: [
             HandleAppearance::class,
