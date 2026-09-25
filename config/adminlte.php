@@ -778,18 +778,62 @@ return [
             'topnav_right' => true,
         ],
 
-        // Sidebar items (each gated by an admin-guard permission via 'can'):
+        // Sidebar items. Each 'can' must match the route's can: middleware in routes/admin.php.
         [
             'text' => 'Dashboard',
             'route' => 'admin.dashboard',
             'icon' => 'bi bi-speedometer2',
         ],
-        ['header' => 'MEMBERS', 'can' => 'manage-members'],
         [
-            'text' => 'Pending Members',
-            'route' => 'admin.members.pending',
-            'icon' => 'bi bi-person-plus',
+            'text' => 'Members',
+            'icon' => 'bi bi-people',
             'can' => 'manage-members',
+            'submenu' => [
+                ['text' => 'All members', 'route' => 'admin.members.index', 'icon' => 'bi bi-list-ul'],
+                ['text' => 'Pending activation', 'route' => 'admin.members.pending', 'icon' => 'bi bi-person-plus'],
+            ],
+        ],
+        [
+            'text' => 'Binary Tree',
+            'route' => 'admin.tree.index',
+            'icon' => 'bi bi-diagram-3',
+            'can' => 'manage-tree',
+        ],
+        [
+            'text' => 'Sales',
+            'route' => 'admin.sales.index',
+            'icon' => 'bi bi-bag-check',
+            'can' => 'manage-sales',
+        ],
+        [
+            'text' => 'Financial',
+            'route' => 'admin.financial.index',
+            'icon' => 'bi bi-cash-stack',
+            'can' => 'view-reports',
+        ],
+        [
+            'text' => 'Withdrawals',
+            'route' => 'admin.withdrawals.index',
+            'icon' => 'bi bi-box-arrow-up-right',
+            'can' => 'manage-withdrawals',
+        ],
+        [
+            'text' => 'KYC',
+            'route' => 'admin.kyc.index',
+            'icon' => 'bi bi-person-vcard',
+            'can' => 'manage-kyc',
+        ],
+        [
+            'text' => 'Reports',
+            'route' => 'admin.reports.index',
+            'icon' => 'bi bi-graph-up',
+            'can' => 'view-reports',
+        ],
+        [
+            'text' => 'Settings',
+            'route' => 'admin.settings.index',
+            'icon' => 'bi bi-gear',
+            'can' => 'manage-settings',
         ],
     ],
 

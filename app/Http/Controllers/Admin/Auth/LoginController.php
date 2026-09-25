@@ -10,6 +10,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Admin login on its own session guard (`admin`), separate from members.
+ *
+ * TODO(2FA): admin two-factor authentication is out of scope for Phase 9.
+ * When added, challenge after authenticate() and before regenerate(), and
+ * store the secret on the `admins` table (not `users`).
+ */
 class LoginController extends Controller
 {
     public function create(): View

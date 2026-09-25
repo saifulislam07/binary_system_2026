@@ -191,6 +191,15 @@ commission:run {date}`), one transaction per member, idempotent per
   `#2a78d6` / dark `#3987e5`, tokens in an *unscoped* `<style>` block so
   the app's `.dark` class can override them (scoped `:global(.dark)` does
   not work), drawn at measured pixel width (never a scaled viewBox).
+- **Admin panel (Phase 9):** every admin route group is gated with
+  `can:<permission>` in `routes/admin.php`, and the matching menu item in
+  `config/adminlte.php` carries the same `'can'` — keep them in sync
+  (`AdminNavigationTest` checks both per role). Sections not built yet use
+  `SectionPlaceholderController`; replace the route when the section lands.
+  Company metrics (revenue, cost of goods, commission, expenses, profit)
+  are defined once in `AdminDashboardService` — reuse it for reports.
+  Seeded limited roles: `support` (members, KYC), `finance` (sales,
+  withdrawals, reports).
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.
