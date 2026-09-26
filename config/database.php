@@ -62,6 +62,13 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            // Spatie Backup's mysqldump: a consistent InnoDB snapshot without locking tables.
+            'dump' => [
+                'dump_binary_path' => env('DB_DUMP_BINARY_PATH', ''), // folder holding mysqldump/mysql, if not on PATH
+                'use_single_transaction',
+                'add_extra_option' => '--no-tablespaces', // needs no PROCESS privilege
+                'timeout' => 1800,
+            ],
         ],
 
         'mariadb' => [

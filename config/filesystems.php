@@ -30,6 +30,14 @@ return [
 
     'disks' => [
 
+        // Spatie Backup's default destination (BACKUP_DISKS). Add s3 for an offsite copy.
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('app/backups'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

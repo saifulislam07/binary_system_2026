@@ -848,6 +848,12 @@ return [
             'icon' => 'bi bi-journal-text',
             'can' => 'manage-settings',
         ],
+        [
+            'text' => 'System health',
+            'route' => 'admin.health',
+            'icon' => 'bi bi-heart-pulse',
+            'can' => 'manage-settings',
+        ],
     ],
 
     /*

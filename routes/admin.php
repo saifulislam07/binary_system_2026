@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\BonusController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FinancialController;
 use App\Http\Controllers\Admin\FraudFlagController;
+use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\KycController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\PendingMemberController;
@@ -103,6 +104,7 @@ Route::middleware('auth:admin')->group(function () {
         Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
         Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
+        Route::get('health', HealthController::class)->name('health');
         // Discretionary payouts are super-admin only.
         Route::post('members/{member}/performance-bonus', [BonusController::class, 'performance'])->name('members.performance-bonus');
     });

@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Bangladesh-only business: the commission day, daily caps, report days and
+    // the scheduler's 00:15 / 00:45 runs all follow Dhaka time.
+    'timezone' => env('APP_TIMEZONE', 'Asia/Dhaka'),
 
     /*
     |--------------------------------------------------------------------------

@@ -1,0 +1,8 @@
+# /etc/cron.d/binary-system  (file mode 0644, owned by root)
+#
+# Laravel's scheduler: one entry, every minute. It runs everything listed by
+# `php artisan schedule:list` — commission cycle 00:15, rank evaluation 00:45,
+# backups 01:30–03:00, fraud scan hourly, health heartbeats.
+# Those times are in APP_TIMEZONE (Asia/Dhaka); the server's own timezone doesn't matter.
+
+* * * * * deploy cd /var/www/binary-system/current && php artisan schedule:run >> /dev/null 2>&1

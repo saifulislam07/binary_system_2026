@@ -25,6 +25,19 @@ return [
         'scan_days' => (int) env('FRAUD_SCAN_DAYS', 30),
     ],
 
+    // Operational health (/up and /admin/health). Turn require_workers on in
+    // production once cron and the queue worker run: /up then fails when
+    // either stops.
+    'health' => [
+        'require_workers' => (bool) env('HEALTH_REQUIRE_WORKERS', false),
+        'scheduler_max_minutes' => 3,
+        'queue_max_minutes' => 15,
+    ],
+
+    // Weekly automatic restore test (backup:verify-restore). Needs a DB user
+    // allowed to create/drop `<database>_restore_check` — enable on staging.
+    'backup_verify_restore' => (bool) env('BACKUP_VERIFY_RESTORE', false),
+
     // Extra members LoadTestNetworkSeeder adds (dev/staging performance runs only).
     'load_test_members' => (int) env('LOAD_TEST_MEMBERS', 1000),
 
