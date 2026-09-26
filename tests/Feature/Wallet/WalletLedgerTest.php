@@ -9,9 +9,11 @@ use App\Models\WalletTransaction;
 use App\Services\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Finder\Finder;
 use Tests\TestCase;
 
+#[Group('rule-8')]
 class WalletLedgerTest extends TestCase
 {
     use RefreshDatabase;

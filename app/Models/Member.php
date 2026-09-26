@@ -24,11 +24,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property PlacementSide|null $placement_side
  * @property PlacementSide|null $preferred_side
  * @property CarbonImmutable|null $activated_at
+ *
+ * member_code, status, placement_parent_id/placement_side, activated_at and
+ * current_rank_id are deliberately not fillable: only PlacementService,
+ * PlacementAdjustmentService, MemberAdminService and RankService set them
+ * (forceFill), so no request data can ever move a member or change status.
  */
-#[Fillable([
-    'user_id', 'member_code', 'sponsor_id', 'placement_parent_id', 'placement_side',
-    'preferred_side', 'package_id', 'status', 'nid', 'phone', 'address', 'activated_at',
-])]
+#[Fillable(['user_id', 'sponsor_id', 'preferred_side', 'package_id', 'nid', 'phone', 'address'])]
 class Member extends Model
 {
     /** @use HasFactory<MemberFactory> */

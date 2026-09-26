@@ -9,6 +9,7 @@ use App\Models\Member;
 use App\Services\PlacementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
@@ -18,6 +19,8 @@ use Tests\TestCase;
  * committed for the child processes to see it, so this class opts out of
  * the per-test transaction and forces a fresh migration afterwards.
  */
+#[Group('rule-2')]
+#[Group('rule-3')]
 class MemberActivationConcurrencyTest extends TestCase
 {
     use RefreshDatabase;

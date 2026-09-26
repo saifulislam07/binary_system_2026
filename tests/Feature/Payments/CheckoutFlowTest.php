@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
@@ -31,6 +32,8 @@ use Tests\TestCase;
  * (its callback is trusted only in non-production; real gateways verify
  * server-to-server and are tested with Http::fake in their own tests).
  */
+#[Group('rule-2')]
+#[Group('rule-4')]
 class CheckoutFlowTest extends TestCase
 {
     use RefreshDatabase;

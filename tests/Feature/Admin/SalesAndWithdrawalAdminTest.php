@@ -17,9 +17,12 @@ use App\Services\WalletService;
 use App\Services\WithdrawalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Support\BuildsNetwork;
 use Tests\TestCase;
 
+#[Group('rule-9')]
+#[Group('rule-10')]
 class SalesAndWithdrawalAdminTest extends TestCase
 {
     use BuildsNetwork, RefreshDatabase;

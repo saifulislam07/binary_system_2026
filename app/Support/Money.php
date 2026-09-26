@@ -46,6 +46,24 @@ final class Money
     }
 
     /**
+     * Parse a percent string into basis points: "10" → 1000, "2.5" → 250.
+     * Same ×100 fixed-point parse as fromTaka(), so no float ever touches a rate.
+     */
+    public static function bpsFromPercent(string $percent): int
+    {
+        return self::fromTaka($percent);
+    }
+
+    /**
+     * A ×100 integer (poysha or basis points) as a short form value for
+     * inputs: 125050 → "1250.5", 1000 → "10".
+     */
+    public static function toInputString(int $scaled): string
+    {
+        return rtrim(rtrim(self::toDecimalString($scaled), '0'), '.');
+    }
+
+    /**
      * Plain decimal string for gateway APIs: 125050 → "1250.50".
      */
     public static function toDecimalString(int $poysha): string

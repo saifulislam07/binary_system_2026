@@ -10,8 +10,11 @@ use App\Models\User;
 use App\Services\PlacementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('rule-1')]
+#[Group('rule-12')]
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;

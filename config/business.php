@@ -25,6 +25,9 @@ return [
         'scan_days' => (int) env('FRAUD_SCAN_DAYS', 30),
     ],
 
+    // Extra members LoadTestNetworkSeeder adds (dev/staging performance runs only).
+    'load_test_members' => (int) env('LOAD_TEST_MEMBERS', 1000),
+
     // Initial super-admin created by DatabaseSeeder. Change the password in production.
     'seed_admin' => [
         'email' => env('ADMIN_EMAIL', 'admin@example.com'),

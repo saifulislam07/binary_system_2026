@@ -13,8 +13,10 @@ use App\Services\WalletService;
 use App\Services\WithdrawalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('rule-9')]
 class WithdrawalPageTest extends TestCase
 {
     use RefreshDatabase;

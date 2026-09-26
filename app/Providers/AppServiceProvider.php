@@ -14,6 +14,7 @@ use App\Models\Sale;
 use App\Models\Wallet;
 use App\Models\Withdrawal;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Date;
@@ -67,6 +68,10 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
+
+        // N+1 guard: outside production, lazy-loading a relation on a model
+        // that came from a collection throws, so tests and local use catch it.
+        Model::preventLazyLoading(! app()->isProduction());
 
         Password::defaults(fn (): ?Password => app()->isProduction()
             ? Password::min(12)

@@ -12,9 +12,11 @@ use App\Models\Sale;
 use App\Services\RefundService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
+#[Group('rule-10')]
 class RefundServiceTest extends TestCase
 {
     use RefreshDatabase;

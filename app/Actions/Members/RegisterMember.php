@@ -32,15 +32,15 @@ class RegisterMember
             ]);
             $user->assignRole('member');
 
-            $member = $user->member()->create([
+            $member = $user->member()->make([
                 'sponsor_id' => $data['sponsor_id'],
                 'preferred_side' => $data['preferred_side'],
                 'package_id' => $data['package_id'],
                 'nid' => $data['nid'],
                 'phone' => $data['phone'], // mirrored for the active-member unique index
                 'address' => $data['address'],
-                'status' => MemberStatus::Pending,
             ]);
+            $member->forceFill(['status' => MemberStatus::Pending])->save();
 
             activity('registration')
                 ->performedOn($member)

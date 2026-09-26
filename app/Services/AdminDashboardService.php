@@ -77,6 +77,52 @@ class AdminDashboardService
     {
         $now ??= now();
 
+        $pnl = $this->pnlForRange($range);
+        $completedSales = fn () => $this->within(Sale::query()->where('sales.status', SaleStatus::Completed), 'sales.created_at', $range);
+
+        $today = [$now->copy()->startOfDay(), $now->copy()->endOfDay()];
+        $openWithdrawals = Withdrawal::query()->whereIn('status', [
+            WithdrawalStatus::Pending, WithdrawalStatus::Approved, WithdrawalStatus::Processing,
+        ]);
+
+        return [
+            // Members (totals are all-time; "new" follows the period).
+            'members_total' => Member::query()->count(),
+            'members_active' => Member::query()->where('status', MemberStatus::Active)->count(),
+            'members_pending' => Member::query()->where('status', MemberStatus::Pending)->count(),
+            'members_new' => $this->within(Member::query()->whereNotNull('activated_at'), 'activated_at', $range)->count(),
+
+            // Sales
+            'sales_amount' => $pnl['sales_amount'],
+            'sales_count' => $completedSales()->count(),
+            'sales_today_amount' => (int) $this->within(Sale::query()->where('status', SaleStatus::Completed), 'created_at', $today)->sum('amount'),
+            'sales_today_count' => $this->within(Sale::query()->where('status', SaleStatus::Completed), 'created_at', $today)->count(),
+            'refunded_amount' => (int) $this->within(Sale::query()->where('status', SaleStatus::Refunded), 'refunded_at', $range)->sum('amount'),
+
+            // Payouts
+            'commission_paid' => $pnl['commission_paid'],
+            'withdrawals_open_amount' => (int) (clone $openWithdrawals)->sum('amount'),
+            'withdrawals_open_count' => (clone $openWithdrawals)->count(),
+
+            // P&L
+            'revenue' => $pnl['revenue'],
+            'other_income' => $pnl['other_income'],
+            'cost_of_goods' => $pnl['cost_of_goods'],
+            'expenses' => $pnl['expenses'],
+            'gross_profit' => $pnl['gross_profit'],
+            'net_profit' => $pnl['net_profit'],
+        ];
+    }
+
+    /**
+     * The profit & loss figures alone — the single definition shared by the
+     * dashboard and the P&L report (which calls it once per period row).
+     *
+     * @param  array{0: CarbonInterface, 1: CarbonInterface}|null  $range  null = all time
+     * @return array{sales_amount: int, other_income: int, revenue: int, cost_of_goods: int, gross_profit: int, commission_paid: int, expenses: int, net_profit: int}
+     */
+    public function pnlForRange(?array $range): array
+    {
         $completedSales = fn () => $this->within(Sale::query()->where('sales.status', SaleStatus::Completed), 'sales.created_at', $range);
 
         $salesAmount = (int) $completedSales()->sum('sales.amount');
@@ -98,36 +144,14 @@ class AdminDashboardService
         $revenue = $salesAmount + $otherIncome;
         $grossProfit = $revenue - $costOfGoods;
 
-        $today = [$now->copy()->startOfDay(), $now->copy()->endOfDay()];
-        $openWithdrawals = Withdrawal::query()->whereIn('status', [
-            WithdrawalStatus::Pending, WithdrawalStatus::Approved, WithdrawalStatus::Processing,
-        ]);
-
         return [
-            // Members (totals are all-time; "new" follows the period).
-            'members_total' => Member::query()->count(),
-            'members_active' => Member::query()->where('status', MemberStatus::Active)->count(),
-            'members_pending' => Member::query()->where('status', MemberStatus::Pending)->count(),
-            'members_new' => $this->within(Member::query()->whereNotNull('activated_at'), 'activated_at', $range)->count(),
-
-            // Sales
             'sales_amount' => $salesAmount,
-            'sales_count' => $completedSales()->count(),
-            'sales_today_amount' => (int) $this->within(Sale::query()->where('status', SaleStatus::Completed), 'created_at', $today)->sum('amount'),
-            'sales_today_count' => $this->within(Sale::query()->where('status', SaleStatus::Completed), 'created_at', $today)->count(),
-            'refunded_amount' => (int) $this->within(Sale::query()->where('status', SaleStatus::Refunded), 'refunded_at', $range)->sum('amount'),
-
-            // Payouts
-            'commission_paid' => $commission,
-            'withdrawals_open_amount' => (int) (clone $openWithdrawals)->sum('amount'),
-            'withdrawals_open_count' => (clone $openWithdrawals)->count(),
-
-            // P&L
-            'revenue' => $revenue,
             'other_income' => $otherIncome,
+            'revenue' => $revenue,
             'cost_of_goods' => $costOfGoods,
-            'expenses' => $expenses,
             'gross_profit' => $grossProfit,
+            'commission_paid' => $commission,
+            'expenses' => $expenses,
             'net_profit' => $grossProfit - $commission - $expenses,
         ];
     }

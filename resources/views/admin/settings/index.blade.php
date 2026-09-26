@@ -2,8 +2,8 @@
 
 @php
     use App\Models\CommissionRule as R;
-    $pct = fn (?string $bps) => rtrim(rtrim(number_format(((int) $bps) / 100, 2, '.', ''), '0'), '.');
-    $taka = fn (int|string|null $poysha) => rtrim(rtrim(number_format(((int) $poysha) / 100, 2, '.', ''), '0'), '.');
+    $pct = fn (?string $bps) => \App\Support\Money::toInputString((int) $bps);
+    $taka = fn (int|string|null $poysha) => \App\Support\Money::toInputString((int) $poysha);
 @endphp
 
 @section('title', 'Settings')

@@ -13,9 +13,13 @@ use App\Models\WalletTransaction;
 use App\Services\ReferralBonusService;
 use App\Services\TeamVolumeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Support\BuildsNetwork;
 use Tests\TestCase;
 
+#[Group('rule-1')]
+#[Group('rule-5')]
+#[Group('rule-7')]
 class TeamVolumeAndReferralTest extends TestCase
 {
     use BuildsNetwork, RefreshDatabase;

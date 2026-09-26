@@ -9,6 +9,7 @@ use App\Models\WalletTransaction;
 use App\Services\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
@@ -18,6 +19,7 @@ use Tests\TestCase;
  * data is required, so this class skips the per-test transaction and forces
  * a fresh migration for whatever runs next.
  */
+#[Group('rule-8')]
 class WalletConcurrencyTest extends TestCase
 {
     use RefreshDatabase;

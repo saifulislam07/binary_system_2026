@@ -17,9 +17,11 @@ use App\Services\WithdrawalService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
+#[Group('rule-9')]
 class WithdrawalServiceTest extends TestCase
 {
     use RefreshDatabase;

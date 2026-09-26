@@ -124,7 +124,7 @@ class FinancialReportService
         return [
             array_map(fn (string $label) => ['label' => $label, 'money' => true], array_values($keys)),
             function (CarbonInterface $start, CarbonInterface $end) use ($keys) {
-                $m = $this->dashboard->metricsForRange([$start, $end], $end);
+                $m = $this->dashboard->pnlForRange([$start, $end]);
 
                 return array_map(fn (string $key) => $m[$key], array_keys($keys));
             },

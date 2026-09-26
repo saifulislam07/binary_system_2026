@@ -21,6 +21,11 @@ defineOptions({
     },
 });
 
+const props = defineProps<{
+    // Members hold a tree position, wallet and ledgers: support closes those accounts.
+    canDeleteAccount: boolean;
+}>();
+
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 </script>
@@ -79,5 +84,13 @@ const user = computed(() => page.props.auth.user);
         </Form>
     </div>
 
-    <DeleteUser />
+    <DeleteUser v-if="props.canDeleteAccount" />
+    <p
+        v-else
+        class="text-sm text-muted-foreground"
+        data-test="delete-account-note"
+    >
+        To close your member account, contact support · অ্যাকাউন্ট বন্ধ করতে
+        সাপোর্টে যোগাযোগ করুন
+    </p>
 </template>

@@ -90,5 +90,16 @@ class FortifyServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by($throttleKey);
         });
+
+        // Applied by App\Http\Middleware\ThrottleAuthEndpoints (Fortify has no hook for these).
+        RateLimiter::for('registration', fn (Request $request) => [
+            Limit::perMinute(5)->by('register|'.$request->ip()),
+            Limit::perHour(20)->by('register-hour|'.$request->ip()),
+        ]);
+
+        RateLimiter::for('password-reset', fn (Request $request) => [
+            Limit::perMinute(5)->by('reset|'.$request->ip()),
+            Limit::perHour(10)->by('reset-email|'.Str::lower((string) $request->input('email'))),
+        ]);
     }
 }

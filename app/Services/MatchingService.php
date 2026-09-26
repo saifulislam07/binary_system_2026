@@ -225,27 +225,41 @@ class MatchingService
     {
         $weekStart = (int) config('business.week_starts_on', CarbonInterface::SATURDAY);
 
-        $windows = [
-            [$rules['daily_cap'], $date->copy()->startOfDay(), $date->copy()->endOfDay()],
-            [$rules['weekly_cap'], $date->copy()->startOfWeek($weekStart), $date->copy()->endOfWeek(($weekStart + 6) % 7)],
-            [$rules['monthly_cap'], $date->copy()->startOfMonth(), $date->copy()->endOfMonth()],
-        ];
+        $windows = array_filter([
+            [$rules['daily_cap'], $date->copy()->startOfDay()->toDateString(), $date->copy()->endOfDay()->toDateString()],
+            [$rules['weekly_cap'], $date->copy()->startOfWeek($weekStart)->toDateString(), $date->copy()->endOfWeek(($weekStart + 6) % 7)->toDateString()],
+            [$rules['monthly_cap'], $date->copy()->startOfMonth()->toDateString(), $date->copy()->endOfMonth()->toDateString()],
+        ], fn (array $window) => $window[0] > 0);
+
+        if ($windows === []) {
+            return null;
+        }
+
+        // One query for all windows: SUM(CASE WHEN cycle_date in window …) per cap.
+        $select = [];
+        $bindings = [];
+        $earliest = $latest = $date->toDateString(); // Y-m-d strings compare chronologically
+
+        foreach (array_values($windows) as $i => [, $from, $to]) {
+            $select[] = "COALESCE(SUM(CASE WHEN cycle_date BETWEEN ? AND ? THEN amount ELSE 0 END), 0) AS w{$i}";
+            array_push($bindings, $from, $to);
+            $earliest = min($earliest, $from);
+            $latest = max($latest, $to);
+        }
+
+        $used = (array) Commission::query()
+            ->toBase()
+            ->selectRaw(implode(', ', $select), $bindings)
+            ->where('member_id', $memberId)
+            ->where('type', CommissionType::Binary)
+            ->where('status', PayoutStatus::Paid)
+            ->whereBetween('cycle_date', [$earliest, $latest])
+            ->first();
 
         $room = null;
 
-        foreach ($windows as [$cap, $from, $to]) {
-            if ($cap <= 0) {
-                continue;
-            }
-
-            $used = (int) Commission::query()
-                ->where('member_id', $memberId)
-                ->where('type', CommissionType::Binary)
-                ->where('status', PayoutStatus::Paid)
-                ->whereBetween('cycle_date', [$from->toDateString(), $to->toDateString()])
-                ->sum('amount');
-
-            $windowRoom = max(0, $cap - $used);
+        foreach (array_values($windows) as $i => [$cap]) {
+            $windowRoom = max(0, $cap - (int) $used["w{$i}"]);
             $room = $room === null ? $windowRoom : min($room, $windowRoom);
         }
 
@@ -275,10 +289,19 @@ class MatchingService
 
             $now = now();
             $rows = [];
+            $emptied = [];
 
             foreach ($lots as $lot) {
                 $take = min($lot->remaining, $left);
-                $lot->decrement('remaining', $take);
+
+                // FIFO: every lot but possibly the last is used up entirely,
+                // so those are zeroed in one statement below.
+                if ($take === $lot->remaining) {
+                    $emptied[] = $lot->id;
+                } else {
+                    $lot->decrement('remaining', $take);
+                }
+
                 $rows[] = [
                     'volume_lot_id' => $lot->id,
                     'team_volume_id' => $teamVolume->id,
@@ -292,6 +315,10 @@ class MatchingService
                 if ($left === 0) {
                     break;
                 }
+            }
+
+            if ($emptied !== []) {
+                VolumeLot::query()->whereKey($emptied)->update(['remaining' => 0, 'updated_at' => $now]);
             }
 
             VolumeConsumption::query()->insert($rows);

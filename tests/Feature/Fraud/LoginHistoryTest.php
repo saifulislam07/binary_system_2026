@@ -10,8 +10,10 @@ use App\Models\User;
 use App\Notifications\NewDeviceLogin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('rule-12')]
 class LoginHistoryTest extends TestCase
 {
     use RefreshDatabase;

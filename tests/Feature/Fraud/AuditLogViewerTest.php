@@ -10,9 +10,11 @@ use App\Services\MemberAdminService;
 use App\Services\WalletService;
 use App\Services\WithdrawalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
+#[Group('rule-12')]
 class AuditLogViewerTest extends TestCase
 {
     use RefreshDatabase;

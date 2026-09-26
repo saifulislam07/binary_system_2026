@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\MemberStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentGateway;
 use App\Enums\PaymentStatus;
@@ -71,7 +70,6 @@ class DemoNetworkSeeder extends Seeder
                     'sponsor_id' => $sponsorIndex === null ? null : $members[$sponsorIndex]->id,
                     'preferred_side' => self::preferredSide($i),
                     'package_id' => $package->id,
-                    'status' => MemberStatus::Pending,
                     'nid' => fake()->unique()->numerify('##########'),
                     'phone' => $user->phone,
                     'address' => fake()->address(),
@@ -115,7 +113,7 @@ class DemoNetworkSeeder extends Seeder
         };
     }
 
-    private function recordPaidSale(Member $member, Package $package, \DateTimeInterface $paidAt): void
+    protected function recordPaidSale(Member $member, Package $package, \DateTimeInterface $paidAt): void
     {
         $order = Order::query()->create([
             'order_number' => 'ORD-'.Str::upper(Str::random(12)),

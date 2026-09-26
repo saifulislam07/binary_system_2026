@@ -18,9 +18,12 @@ use App\Models\VolumeLot;
 use App\Services\MatchingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Support\BuildsNetwork;
 use Tests\TestCase;
 
+#[Group('rule-5')]
+#[Group('rule-6')]
 class MatchingServiceTest extends TestCase
 {
     use BuildsNetwork, RefreshDatabase;

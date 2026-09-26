@@ -18,6 +18,7 @@ use App\Services\RankService;
 use App\Services\RefundService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\Support\BuildsNetwork;
 use Tests\TestCase;
@@ -26,6 +27,7 @@ use Tests\TestCase;
  * Seeded ranks: Member (0) → Bronze (personal ৳5,000, team ৳50,000, 2 active,
  * bonus ৳1,000) → Silver (৳10,000, ৳200,000, 5 active, bonus ৳3,000) → …
  */
+#[Group('rule-11')]
 class RankAndBonusTest extends TestCase
 {
     use BuildsNetwork, RefreshDatabase;

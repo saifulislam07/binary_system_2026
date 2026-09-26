@@ -31,22 +31,22 @@ class SettingsController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'binary_rate' => ['required', 'numeric', 'min:0', 'max:100'],
-            'referral_rate' => ['required', 'numeric', 'min:0', 'max:100'],
-            'daily_cap' => ['required', 'numeric', 'min:0'],
-            'weekly_cap' => ['required', 'numeric', 'min:0'],
-            'monthly_cap' => ['required', 'numeric', 'min:0'],
+            'binary_rate' => ['required', 'decimal:0,2', 'min:0', 'max:100'],
+            'referral_rate' => ['required', 'decimal:0,2', 'min:0', 'max:100'],
+            'daily_cap' => ['required', 'decimal:0,2', 'min:0'],
+            'weekly_cap' => ['required', 'decimal:0,2', 'min:0'],
+            'monthly_cap' => ['required', 'decimal:0,2', 'min:0'],
             'carry_forward_enabled' => ['required', 'boolean'],
             'cap_overflow_behavior' => ['required', Rule::in(['void', 'carry_forward'])],
-            'min_withdrawal' => ['required', 'numeric', 'min:1'],
+            'min_withdrawal' => ['required', 'decimal:0,2', 'min:1'],
         ]);
 
         $admin = $request->user('admin');
         abort_unless($admin instanceof Admin, 403);
 
-        // Percent → basis points, taka → poysha (integers only from here on).
-        $bps = fn (string $percent) => (int) round(((float) $percent) * 100);
-        $poysha = fn (string $taka) => Money::fromTaka(number_format((float) $taka, 2, '.', ''));
+        // Percent → basis points, taka → poysha: string parsing, integers only from here on.
+        $bps = fn (string $percent) => Money::bpsFromPercent($percent);
+        $poysha = fn (string $taka) => Money::fromTaka($taka);
 
         $newRules = [
             CommissionRule::BINARY_RATE_BPS => (string) $bps($data['binary_rate']),

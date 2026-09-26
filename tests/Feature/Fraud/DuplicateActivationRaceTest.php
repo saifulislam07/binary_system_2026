@@ -7,6 +7,7 @@ use App\Models\Member;
 use App\Services\PlacementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
@@ -16,6 +17,7 @@ use Tests\TestCase;
  * them concurrently against the real MySQL test database; the unique index
  * on members.active_nid must let exactly one through.
  */
+#[Group('rule-12')]
 class DuplicateActivationRaceTest extends TestCase
 {
     use RefreshDatabase;

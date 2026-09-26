@@ -15,10 +15,12 @@ use App\Services\WalletService;
 use App\Services\WithdrawalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\Support\BuildsNetwork;
 use Tests\TestCase;
 
+#[Group('rule-12')]
 class SuspiciousWithdrawalTest extends TestCase
 {
     use BuildsNetwork, RefreshDatabase;

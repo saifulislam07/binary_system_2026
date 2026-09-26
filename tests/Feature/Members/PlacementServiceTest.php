@@ -9,9 +9,13 @@ use App\Models\BinaryNode;
 use App\Models\Member;
 use App\Services\PlacementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
+#[Group('rule-1')]
+#[Group('rule-2')]
+#[Group('rule-3')]
 class PlacementServiceTest extends TestCase
 {
     use RefreshDatabase;

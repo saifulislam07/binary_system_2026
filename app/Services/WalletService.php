@@ -169,7 +169,8 @@ class WalletService
 
             if ($direction === TransactionDirection::Credit && $status === WalletTransactionStatus::Completed
                 && in_array($type, IncomeReceived::TYPES, true)) {
-                $wallet->member()->firstOrFail()->user()->firstOrFail()->notify(new IncomeReceived($transaction));
+                $member = $owner instanceof Member ? $owner : $wallet->member()->firstOrFail();
+                $member->user()->firstOrFail()->notify(new IncomeReceived($transaction));
             }
 
             return $transaction;

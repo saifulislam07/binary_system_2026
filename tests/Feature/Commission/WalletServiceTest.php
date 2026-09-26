@@ -9,9 +9,11 @@ use App\Models\Member;
 use App\Services\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
+#[Group('rule-8')]
 class WalletServiceTest extends TestCase
 {
     use RefreshDatabase;

@@ -17,6 +17,7 @@ use App\Services\RefundService;
 use App\Services\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Support\BuildsNetwork;
 use Tests\TestCase;
 
@@ -25,6 +26,7 @@ use Tests\TestCase;
  * generated, via explicit reversal entries, so money and volume end up
  * exactly as if the sale had never happened.
  */
+#[Group('rule-10')]
 class RefundReversalTest extends TestCase
 {
     use BuildsNetwork, RefreshDatabase;

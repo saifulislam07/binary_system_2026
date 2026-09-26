@@ -25,6 +25,9 @@ use Illuminate\Support\Facades\DB;
  */
 class RankService
 {
+    /** @var Collection<int, Rank>|null */
+    private ?Collection $ranks = null;
+
     public function __construct(
         private MemberStatsService $stats,
         private WalletService $wallets,
@@ -107,9 +110,10 @@ class RankService
      */
     public function qualifyingRanks(MemberStats $stats): Collection
     {
-        return Rank::query()
-            ->orderBy('sort_order')
-            ->get()
+        // Loaded once per service instance: the nightly run evaluates every member.
+        $this->ranks ??= Rank::query()->orderBy('sort_order')->get();
+
+        return $this->ranks
             ->filter(fn (Rank $rank) => $stats->personalSales >= $rank->min_personal_sales
                 && $stats->teamSales >= $rank->min_team_sales
                 && $stats->activeTeam >= $rank->min_active_team)

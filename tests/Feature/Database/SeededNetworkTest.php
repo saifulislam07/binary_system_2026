@@ -19,8 +19,11 @@ use Database\Seeders\DemoNetworkSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('rule-1')]
+#[Group('rule-3')]
 class SeededNetworkTest extends TestCase
 {
     use RefreshDatabase;
