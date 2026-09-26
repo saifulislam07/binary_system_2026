@@ -30,3 +30,6 @@ if (config('business.commission_cycle') === 'weekly') {
 } else {
     $ranks->dailyAt('00:45');
 }
+
+// Suspicious-activity scan (rule #12): flags for admin review, never blocks.
+Schedule::command('fraud:scan')->hourly()->withoutOverlapping()->onOneServer();

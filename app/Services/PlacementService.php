@@ -5,9 +5,11 @@ namespace App\Services;
 use App\DTOs\PlacementSlot;
 use App\Enums\MemberStatus;
 use App\Enums\PlacementSide;
+use App\Exceptions\DuplicateMemberException;
 use App\Exceptions\PlacementException;
 use App\Models\BinaryNode;
 use App\Models\Member;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -122,11 +124,18 @@ class PlacementService
                 $this->placeAsRoot($member);
             }
 
-            $member->forceFill([
-                'member_code' => $code,
-                'status' => MemberStatus::Active,
-                'activated_at' => now(),
-            ])->save();
+            try {
+                $member->forceFill([
+                    'member_code' => $code,
+                    'status' => MemberStatus::Active,
+                    'activated_at' => now(),
+                ])->save();
+            } catch (UniqueConstraintViolationException) {
+                // The DB's active_phone/active_nid unique indexes caught a duplicate
+                // (e.g. two pending sign-ups with one NID activating at once).
+                // Throwing rolls back the placement and releases the member code.
+                throw new DuplicateMemberException('Another active member already uses this mobile number or NID.');
+            }
 
             $member->wallet()->firstOrCreate();
 

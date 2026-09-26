@@ -9,7 +9,9 @@ use App\Enums\PaymentGateway as GatewayName;
 use App\Enums\PaymentStatus;
 use App\Enums\SaleStatus;
 use App\Events\SaleCompleted;
+use App\Exceptions\DuplicateMemberException;
 use App\Exceptions\PaymentException;
+use App\Models\FraudFlag;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Payment;
@@ -74,7 +76,26 @@ class OrderPaymentService
         if ($member->status === MemberStatus::Pending) {
             // The paid package becomes their joining package; activation assigns code + placement.
             $member->forceFill(['package_id' => $order->package_id])->save();
-            $member = $this->placement->activateMember($member);
+
+            try {
+                $member = $this->placement->activateMember($member);
+            } catch (DuplicateMemberException $e) {
+                // The money is real, so the order stays paid — but a duplicate
+                // mobile/NID must not become a second active member. No sale,
+                // no BV, no commission; an admin decides (usually a refund).
+                FraudFlag::raise($member, FraudFlag::ACTIVATION_BLOCKED_DUPLICATE, $order, [
+                    'order_number' => $order->order_number,
+                    'amount' => $order->amount,
+                    'reason' => $e->getMessage(),
+                ]);
+
+                activity('payments')
+                    ->performedOn($order)
+                    ->withProperties(['member_id' => $member->id, 'reason' => $e->getMessage()])
+                    ->log('Payment received but activation blocked (duplicate) — needs admin review');
+
+                return $order;
+            }
         }
 
         $package = $order->package()->firstOrFail();

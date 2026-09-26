@@ -17,6 +17,14 @@ return [
     // Bangladesh's working week starts on Saturday.
     'week_starts_on' => (int) env('WEEK_STARTS_ON', 6),
 
+    // Suspicious-activity scanner (rule #12). Flags for review, never blocks.
+    'fraud' => [
+        // A withdrawal requested this soon after activation is flagged.
+        'rapid_withdrawal_hours' => (int) env('FRAUD_RAPID_WITHDRAWAL_HOURS', 72),
+        // How far back the scheduled scan looks at withdrawals.
+        'scan_days' => (int) env('FRAUD_SCAN_DAYS', 30),
+    ],
+
     // Initial super-admin created by DatabaseSeeder. Change the password in production.
     'seed_admin' => [
         'email' => env('ADMIN_EMAIL', 'admin@example.com'),

@@ -27,7 +27,10 @@ use Illuminate\Support\Facades\DB;
  */
 class WithdrawalService
 {
-    public function __construct(private WalletService $wallets) {}
+    public function __construct(
+        private WalletService $wallets,
+        private FraudScanService $fraud,
+    ) {}
 
     public function minimumAmount(): int
     {
@@ -76,6 +79,9 @@ class WithdrawalService
                 ->causedBy($member->user)
                 ->withProperties(['amount' => $amount, 'method' => $method->value])
                 ->log('Withdrawal requested');
+
+            // Flag (never block) anything suspicious so it shows up in the admin review queue right away.
+            $this->fraud->scanWithdrawal($withdrawal);
 
             return $withdrawal;
         }, 3);

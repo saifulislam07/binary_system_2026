@@ -28,7 +28,8 @@ class MemberFactory extends Factory
             'placement_side' => null,
             'package_id' => Package::factory(),
             'status' => MemberStatus::Pending,
-            'nid' => fake()->numerify('##########'),
+            'nid' => fake()->unique()->numerify('##########'),
+            'phone' => fn (array $attributes) => User::query()->whereKey($attributes['user_id'])->value('phone'),
             'address' => fake()->address(),
             'activated_at' => null,
         ];

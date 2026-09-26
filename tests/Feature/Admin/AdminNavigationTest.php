@@ -21,6 +21,7 @@ class AdminNavigationTest extends TestCase
     private const SECTIONS = [
         'admin.members.index' => 'manage-members',
         'admin.members.pending' => 'manage-members',
+        'admin.fraud.index' => 'manage-members',
         'admin.tree.index' => 'manage-tree',
         'admin.sales.index' => 'manage-sales',
         'admin.financial.index' => 'view-reports',
@@ -28,6 +29,7 @@ class AdminNavigationTest extends TestCase
         'admin.kyc.index' => 'manage-kyc',
         'admin.reports.index' => 'view-reports',
         'admin.settings.index' => 'manage-settings',
+        'admin.audit.index' => 'manage-settings',
     ];
 
     /**
@@ -74,13 +76,5 @@ class AdminNavigationTest extends TestCase
 
         $this->assertEqualsCanonicalizing(['manage-members', 'manage-kyc'], $support->getAllPermissions()->pluck('name')->all());
         $this->assertEqualsCanonicalizing(['manage-sales', 'manage-withdrawals', 'view-reports'], $finance->getAllPermissions()->pluck('name')->all());
-    }
-
-    public function test_placeholder_sections_say_when_they_arrive()
-    {
-        $this->actingAs(Admin::factory()->superAdmin()->create(), 'admin')
-            ->get(route('admin.kyc.index'))
-            ->assertOk()
-            ->assertSee('Coming in Phase 12');
     }
 }

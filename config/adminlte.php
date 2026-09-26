@@ -791,6 +791,7 @@ return [
             'submenu' => [
                 ['text' => 'All members', 'route' => 'admin.members.index', 'icon' => 'bi bi-list-ul'],
                 ['text' => 'Pending activation', 'route' => 'admin.members.pending', 'icon' => 'bi bi-person-plus'],
+                ['text' => 'Fraud flags', 'route' => 'admin.fraud.index', 'icon' => 'bi bi-flag'],
             ],
         ],
         [
@@ -833,6 +834,12 @@ return [
             'text' => 'Settings',
             'route' => 'admin.settings.index',
             'icon' => 'bi bi-gear',
+            'can' => 'manage-settings',
+        ],
+        [
+            'text' => 'Audit log',
+            'route' => 'admin.audit.index',
+            'icon' => 'bi bi-journal-text',
             'can' => 'manage-settings',
         ],
     ],

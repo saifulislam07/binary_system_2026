@@ -64,6 +64,11 @@ class ReferralBonusService
                 $this->wallets->credit($sponsor, $amount, WalletTransactionType::ReferralBonus, $commission, $commission->description);
             }
 
+            activity('commission')
+                ->performedOn($sponsor)
+                ->withProperties(['commission_id' => $commission->id, 'sale_id' => $sale->id, 'amount' => $amount, 'paid' => $payable])
+                ->log($payable ? 'Referral bonus paid' : 'Referral bonus voided (sponsor not active)');
+
             return $commission;
         }, 3);
     }

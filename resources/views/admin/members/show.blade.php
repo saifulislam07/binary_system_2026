@@ -28,6 +28,14 @@
 @section('content')
     @include('admin.partials.flash')
 
+    @if ($openFlags > 0)
+        <div class="alert alert-warning d-flex align-items-center gap-2">
+            <i class="bi bi-flag-fill"></i>
+            This member has {{ $openFlags }} open fraud flag(s).
+            @can('manage-members')<a href="{{ route('admin.fraud.index') }}" class="alert-link">Review</a>@endcan
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-lg-6">
             <div class="card">
@@ -198,6 +206,31 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Sign-in history</h3></div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-sm mb-0">
+                <thead><tr><th>When</th><th>Event</th><th>IP</th><th>Device</th><th></th></tr></thead>
+                <tbody>
+                    @forelse ($logins as $login)
+                        <tr>
+                            <td class="text-nowrap">{{ $login->created_at?->format('d M Y H:i') }}</td>
+                            <td>@include('admin.partials.status-badge', ['status' => $login->event === 'failed' ? 'failed' : ($login->event === 'registered' ? 'registered' : 'success')])</td>
+                            <td class="text-nowrap">{{ $login->ip ?? '—' }}</td>
+                            <td class="small text-break">{{ \Illuminate\Support\Str::limit($login->user_agent ?? '—', 80) }}</td>
+                            <td class="text-nowrap">
+                                @if ($login->new_device)<span class="badge text-bg-warning">new device</span>@endif
+                                @if ($login->new_ip)<span class="badge text-bg-warning">new IP</span>@endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="text-center text-body-secondary py-3">No sign-ins recorded.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 @stop

@@ -73,6 +73,7 @@ class DemoNetworkSeeder extends Seeder
                     'package_id' => $package->id,
                     'status' => MemberStatus::Pending,
                     'nid' => fake()->unique()->numerify('##########'),
+                    'phone' => $user->phone,
                     'address' => fake()->address(),
                 ]);
 

@@ -1,14 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\BonusController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FinancialController;
+use App\Http\Controllers\Admin\FraudFlagController;
+use App\Http\Controllers\Admin\KycController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\PendingMemberController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SaleController;
-use App\Http\Controllers\Admin\SectionPlaceholderController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TreeController;
 use App\Http\Controllers\Admin\WithdrawalController;
@@ -45,6 +47,9 @@ Route::middleware('auth:admin')->group(function () {
         Route::post('members/{member}/suspend', [MemberController::class, 'suspend'])->name('members.suspend');
         Route::post('members/{member}/reinstate', [MemberController::class, 'reinstate'])->name('members.reinstate');
         Route::post('members/{member}/package', [MemberController::class, 'changePackage'])->name('members.package');
+
+        Route::get('fraud', [FraudFlagController::class, 'index'])->name('fraud.index');
+        Route::post('fraud/{flag}/review', [FraudFlagController::class, 'review'])->name('fraud.review');
     });
 
     Route::middleware('can:manage-tree')->group(function () {
@@ -68,7 +73,11 @@ Route::middleware('auth:admin')->group(function () {
     });
 
     Route::middleware('can:manage-kyc')->group(function () {
-        Route::get('kyc', SectionPlaceholderController::class)->defaults('section', 'KYC Review')->defaults('phase', 12)->name('kyc.index');
+        Route::get('kyc', [KycController::class, 'index'])->name('kyc.index');
+        Route::get('kyc/{document}', [KycController::class, 'show'])->name('kyc.show');
+        Route::get('kyc/{document}/media/{media}', [KycController::class, 'media'])->name('kyc.media');
+        Route::post('kyc/{document}/approve', [KycController::class, 'approve'])->name('kyc.approve');
+        Route::post('kyc/{document}/reject', [KycController::class, 'reject'])->name('kyc.reject');
     });
 
     Route::middleware('can:view-reports')->group(function () {
@@ -86,6 +95,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::middleware('can:manage-settings')->group(function () {
         Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
         // Discretionary payouts are super-admin only.
         Route::post('members/{member}/performance-bonus', [BonusController::class, 'performance'])->name('members.performance-bonus');
     });

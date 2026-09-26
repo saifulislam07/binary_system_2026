@@ -64,6 +64,11 @@ class TeamVolumeService
                 'created_at' => $now,
                 'updated_at' => $now,
             ])->values()->all());
+
+            activity('commission')
+                ->performedOn($sale)
+                ->withProperties(['bv' => $sale->bv_value, 'upline_nodes' => $ancestors->count()])
+                ->log('Sale volume accrued up the tree');
         }, 3);
     }
 

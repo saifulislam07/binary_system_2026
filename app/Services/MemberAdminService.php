@@ -29,7 +29,7 @@ class MemberAdminService
                 'email' => $data['email'],
                 'phone' => $data['phone'],
             ])->save();
-            $member->fill(['nid' => $data['nid'], 'address' => $data['address']])->save();
+            $member->fill(['nid' => $data['nid'], 'phone' => $data['phone'], 'address' => $data['address']])->save();
 
             $after = $this->snapshot($member->refresh()->load('user'));
             $changed = array_keys(array_diff_assoc($after, $before));

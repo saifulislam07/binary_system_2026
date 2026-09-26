@@ -194,9 +194,7 @@ commission:run {date}`), one transaction per member, idempotent per
 - **Admin panel (Phase 9):** every admin route group is gated with
   `can:<permission>` in `routes/admin.php`, and the matching menu item in
   `config/adminlte.php` carries the same `'can'` — keep them in sync
-  (`AdminNavigationTest` checks both per role). Sections not built yet use
-  `SectionPlaceholderController`; replace the route when the section lands.
-  Company metrics (revenue, cost of goods, commission, expenses, profit)
+  (`AdminNavigationTest` checks both per role). Company metrics (revenue, cost of goods, commission, expenses, profit)
   are defined once in `AdminDashboardService` — reuse it for reports.
   Seeded limited roles: `support` (members, KYC), `finance` (sales,
   withdrawals, reports).
@@ -225,6 +223,25 @@ commission:run {date}`), one transaction per member, idempotent per
   `ranks:evaluate` (00:45, after `commission:run`) uses
   `MemberStatsService::forAll()` bulk queries; `forMember()` must stay in
   agreement (`MemberStatsTest`).
+- **Fraud & audit (Phase 12):** duplicate mobile/NID is enforced by the DB:
+  stored generated columns `members.active_phone` / `active_nid` (value only
+  while `status = active`) carry unique indexes. `members.phone` mirrors
+  `users.phone` — set it wherever a member's phone is written. A violation
+  at activation becomes `DuplicateMemberException` (a `PlacementException`);
+  `OrderPaymentService` then keeps the order paid, creates no sale, and
+  raises a `FraudFlag` (`activation_blocked_duplicate`) for an admin.
+  `login_history` records registration, logins and failed attempts on
+  both guards (`RecordAuthenticationActivity` → `LoginAuditService`); a
+  member login from an unseen device/IP is flagged and the member notified
+  (`NewDeviceLogin`), never blocked. `FraudScanService` flags rapid
+  withdrawals and withdrawals exceeding legitimate earnings (paid commission
+  net of reversals + paid bonuses; deferred/voided/adjustments excluded), at
+  request time and hourly via `fraud:scan`. `FraudFlag::raise()` is
+  idempotent per (member, type, subject). Flags only inform — nothing
+  auto-blocks. Admin KYC review goes through `KycReviewService`; files are
+  streamed from the private disk by `KycController::media()` only. The
+  audit viewer (`/admin/audit`, `manage-settings`) reads Spatie's
+  `activity_log`; every money/tree/status change must log there.
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.

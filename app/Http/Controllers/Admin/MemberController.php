@@ -7,6 +7,7 @@ use App\Exceptions\MemberAdminException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateMemberRequest;
 use App\Models\Admin;
+use App\Models\LoginHistory;
 use App\Models\Member;
 use App\Models\Package;
 use App\Models\WalletTransaction;
@@ -81,6 +82,13 @@ class MemberController extends Controller
                 ->limit(20)
                 ->get(),
             'packages' => Package::query()->orderBy('sort_order')->get(['id', 'name']),
+            'logins' => LoginHistory::query()
+                ->where('guard', 'web')
+                ->where('authenticatable_id', $member->user_id)
+                ->latest('id')
+                ->limit(15)
+                ->get(),
+            'openFlags' => $member->fraudFlags()->where('status', 'open')->count(),
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\MemberStatus;
 use App\Enums\PlacementSide;
+use Carbon\CarbonImmutable;
 use Database\Factories\MemberFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,10 +23,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property MemberStatus $status
  * @property PlacementSide|null $placement_side
  * @property PlacementSide|null $preferred_side
+ * @property CarbonImmutable|null $activated_at
  */
 #[Fillable([
     'user_id', 'member_code', 'sponsor_id', 'placement_parent_id', 'placement_side',
-    'preferred_side', 'package_id', 'status', 'nid', 'address', 'activated_at',
+    'preferred_side', 'package_id', 'status', 'nid', 'phone', 'address', 'activated_at',
 ])]
 class Member extends Model
 {
@@ -130,6 +132,12 @@ class Member extends Model
     public function kycDocuments(): HasMany
     {
         return $this->hasMany(KycDocument::class);
+    }
+
+    /** @return HasMany<FraudFlag, $this> */
+    public function fraudFlags(): HasMany
+    {
+        return $this->hasMany(FraudFlag::class);
     }
 
     /** @return HasMany<TeamVolume, $this> */
