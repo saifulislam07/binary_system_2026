@@ -837,6 +837,12 @@ return [
             'can' => 'manage-settings',
         ],
         [
+            'text' => 'Announcements',
+            'route' => 'admin.announcements.index',
+            'icon' => 'bi bi-megaphone',
+            'can' => 'send-announcements',
+        ],
+        [
             'text' => 'Audit log',
             'route' => 'admin.audit.index',
             'icon' => 'bi bi-journal-text',

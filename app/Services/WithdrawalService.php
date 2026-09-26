@@ -15,6 +15,7 @@ use App\Models\Member;
 use App\Models\Setting;
 use App\Models\WalletTransaction;
 use App\Models\Withdrawal;
+use App\Notifications\WithdrawalStatusChanged;
 use App\Support\Money;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -82,6 +83,8 @@ class WithdrawalService
 
             // Flag (never block) anything suspicious so it shows up in the admin review queue right away.
             $this->fraud->scanWithdrawal($withdrawal);
+
+            $this->notifyMember($withdrawal);
 
             return $withdrawal;
         }, 3);
@@ -153,8 +156,15 @@ class WithdrawalService
                 ->withProperties(['from' => $from->value, 'to' => $to->value, 'amount' => $withdrawal->amount, ...$logProperties])
                 ->log("Withdrawal {$to->value}");
 
+            $this->notifyMember($withdrawal);
+
             return $withdrawal;
         }, 3);
+    }
+
+    private function notifyMember(Withdrawal $withdrawal): void
+    {
+        $withdrawal->member()->firstOrFail()->user()->firstOrFail()->notify(new WithdrawalStatusChanged($withdrawal));
     }
 
     private function hold(Withdrawal $withdrawal): WalletTransaction

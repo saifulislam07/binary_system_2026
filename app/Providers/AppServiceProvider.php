@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Announcement;
 use App\Models\Bonus;
 use App\Models\Commission;
 use App\Models\CommissionCycle;
@@ -49,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
             'wallet' => Wallet::class,
             'commission_cycle' => CommissionCycle::class,
             'kyc_document' => KycDocument::class,
+            'announcement' => Announcement::class,
         ]);
     }
 

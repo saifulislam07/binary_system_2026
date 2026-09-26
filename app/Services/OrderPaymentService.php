@@ -16,6 +16,7 @@ use App\Models\Member;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Sale;
+use App\Notifications\OrderCompleted;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -122,6 +123,8 @@ class OrderPaymentService
 
         // Listeners run synchronously inside this transaction (Phase 5: volume accrual, referral bonus).
         SaleCompleted::dispatch($sale);
+
+        $member->user()->firstOrFail()->notify(new OrderCompleted($sale));
 
         return $order;
     }

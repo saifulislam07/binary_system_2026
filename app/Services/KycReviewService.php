@@ -6,6 +6,7 @@ use App\Enums\KycStatus;
 use App\Exceptions\MemberAdminException;
 use App\Models\Admin;
 use App\Models\KycDocument;
+use App\Notifications\KycStatusChanged;
 use Illuminate\Support\Facades\DB;
 
 class KycReviewService
@@ -45,6 +46,8 @@ class KycReviewService
                 ->causedBy($admin)
                 ->withProperties(['member_id' => $document->member_id, 'status' => $to->value, 'reason' => $reason])
                 ->log("KYC {$to->value}");
+
+            $document->member()->firstOrFail()->user()->firstOrFail()->notify(new KycStatusChanged($document));
 
             return $document;
         });

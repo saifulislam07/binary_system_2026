@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\BonusController;
@@ -90,6 +91,12 @@ Route::middleware('auth:admin')->group(function () {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
         Route::get('reports/ranks', [ReportController::class, 'ranks'])->name('reports.ranks');
+    });
+
+    Route::middleware('can:send-announcements')->group(function () {
+        Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::get('announcements/preview', [AnnouncementController::class, 'preview'])->name('announcements.preview');
+        Route::post('announcements', [AnnouncementController::class, 'store'])->middleware('throttle:10,1')->name('announcements.store');
     });
 
     Route::middleware('can:manage-settings')->group(function () {

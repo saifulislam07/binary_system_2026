@@ -9,6 +9,7 @@ use App\Exceptions\InsufficientFundsException;
 use App\Models\Member;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
+use App\Notifications\IncomeReceived;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -165,6 +166,11 @@ class WalletService
                     'balance_after' => $newBalance,
                 ])
                 ->log("Wallet {$direction->value}");
+
+            if ($direction === TransactionDirection::Credit && $status === WalletTransactionStatus::Completed
+                && in_array($type, IncomeReceived::TYPES, true)) {
+                $wallet->member()->firstOrFail()->user()->firstOrFail()->notify(new IncomeReceived($transaction));
+            }
 
             return $transaction;
         }, 3);

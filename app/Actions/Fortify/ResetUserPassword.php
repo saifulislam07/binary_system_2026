@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
 use App\Models\User;
+use App\Notifications\PasswordChanged;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
 
@@ -30,5 +31,7 @@ class ResetUserPassword implements ResetsUserPasswords
             ->causedBy($user)
             ->withProperties(['ip' => request()->ip()])
             ->log('Password reset');
+
+        $user->notify(new PasswordChanged);
     }
 }

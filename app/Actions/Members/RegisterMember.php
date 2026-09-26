@@ -6,6 +6,7 @@ use App\Enums\MemberStatus;
 use App\Enums\PlacementSide;
 use App\Models\Member;
 use App\Models\User;
+use App\Notifications\RegistrationReceived;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -46,6 +47,8 @@ class RegisterMember
                 ->causedBy($user)
                 ->withProperties(['ip' => $ip, 'device' => $device, 'sponsor_id' => $data['sponsor_id']])
                 ->log('Member registered');
+
+            $user->notify(new RegistrationReceived($member));
 
             return $member;
         });

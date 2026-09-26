@@ -9,6 +9,7 @@ use App\Exceptions\DuplicateMemberException;
 use App\Exceptions\PlacementException;
 use App\Models\BinaryNode;
 use App\Models\Member;
+use App\Notifications\MemberActivated;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -149,6 +150,8 @@ class PlacementService
                     'preferred_side' => $member->preferred_side?->value,
                 ])
                 ->log('Member activated and placed');
+
+            $member->user()->firstOrFail()->notify(new MemberActivated($member));
 
             return $member;
         });

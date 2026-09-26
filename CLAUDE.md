@@ -242,6 +242,25 @@ commission:run {date}`), one transaction per member, idempotent per
   streamed from the private disk by `KycController::media()` only. The
   audit viewer (`/admin/audit`, `manage-settings`) reads Spatie's
   `activity_log`; every money/tree/status change must log there.
+- **Notifications (Phase 13):** member notifications extend
+  `App\Notifications\MemberNotification` (queued, `afterCommit()` — call
+  `parent::__construct()`; bilingual `title()`, `message()`, relative
+  `path()`; `urgent()` ones also go by SMS/WhatsApp). Channels implement
+  `Notifications\Channels\NotificationChannel`: `EmailChannel` (Laravel
+  Mail), `SmsChannel`/`WhatsAppChannel` are log-only stubs — swap a gateway
+  by binding the channel class in AppServiceProvider; on/off switches in
+  `config/notifications.php`. Sent from the owning service: `RegisterMember`
+  (registration), `PlacementService::activateMember` (activation),
+  `OrderPaymentService` (purchase), `WalletService` (income credits of
+  `IncomeReceived::TYPES`), `WithdrawalService` (request + every
+  transition), `KycReviewService`, password reset/change
+  (`ResetPasswordLink` is email-only — never store the token in-app).
+  Broadcasts: `AnnouncementService` (segment = status, rank-and-above,
+  package; `send-announcements` permission; delivery via the
+  `SendAnnouncement` job, idempotent). In-app bell reads
+  `notifications.recent`; the unread count is the shared Inertia prop
+  `unreadNotifications`. Never give a page prop the same name as a shared
+  prop — the page prop silently wins.
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.

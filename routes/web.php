@@ -4,6 +4,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\KycController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\PaymentSimulatorController;
@@ -36,6 +37,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('kyc', [KycController::class, 'index'])->name('kyc.index');
     Route::post('kyc', [KycController::class, 'store'])->middleware('throttle:5,1')->name('kyc.store');
     Route::patch('kyc/address', [KycController::class, 'updateAddress'])->name('kyc.address');
+
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/recent', [NotificationController::class, 'recent'])->middleware('throttle:60,1')->name('notifications.recent');
+    Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('notifications/{id}/read', [NotificationController::class, 'read'])->whereUuid('id')->name('notifications.read');
 
     Route::middleware('member.active')->group(function () {
         Route::get('income', [IncomeController::class, 'index'])->name('income.index');

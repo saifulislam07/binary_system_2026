@@ -18,4 +18,5 @@ enum AdminPermission: string
     case ManageKyc = 'manage-kyc';
     case ManageSettings = 'manage-settings';
     case ViewReports = 'view-reports';
+    case SendAnnouncements = 'send-announcements';
 }

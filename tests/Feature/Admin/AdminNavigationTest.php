@@ -30,6 +30,7 @@ class AdminNavigationTest extends TestCase
         'admin.reports.index' => 'view-reports',
         'admin.settings.index' => 'manage-settings',
         'admin.audit.index' => 'manage-settings',
+        'admin.announcements.index' => 'send-announcements',
     ];
 
     /**
