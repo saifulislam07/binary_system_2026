@@ -9,7 +9,10 @@
 @section('title', 'Reports')
 
 @section('content_header')
-    <h1>Reports</h1>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h1 class="m-0">Reports</h1>
+        <a href="{{ route('admin.reports.ranks') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-award"></i> Rank report</a>
+    </div>
 @stop
 
 @section('content')

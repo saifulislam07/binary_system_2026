@@ -16,3 +16,17 @@ if (config('business.commission_cycle') === 'weekly') {
 } else {
     $cycle->dailyAt('00:15');
 }
+
+/*
+| Rank promotions + leadership/sales threshold bonuses (rule #11), on the
+| same cadence, after the commission cycle has settled.
+*/
+$ranks = Schedule::command('ranks:evaluate')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+if (config('business.commission_cycle') === 'weekly') {
+    $ranks->weeklyOn((int) config('business.week_starts_on'), '00:45');
+} else {
+    $ranks->dailyAt('00:45');
+}

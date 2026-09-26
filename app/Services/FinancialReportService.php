@@ -6,6 +6,7 @@ use App\Enums\CommissionType;
 use App\Enums\PayoutStatus;
 use App\Enums\SaleStatus;
 use App\Enums\WithdrawalStatus;
+use App\Models\Bonus;
 use App\Models\Commission;
 use App\Models\Package;
 use App\Models\Sale;
@@ -156,7 +157,15 @@ class FinancialReportService
                     ->whereBetween('cycle_date', [$start->toDateString(), $end->toDateString()])
                     ->sum('amount');
 
-                $byType = array_map(fn (CommissionType $t) => (int) ($net[$t->value] ?? 0), $types);
+                // Leadership / sales / performance are paid from the bonuses table.
+                $bonuses = Bonus::query()
+                    ->where('status', PayoutStatus::Paid)
+                    ->whereBetween('cycle_date', [$start->toDateString(), $end->toDateString()])
+                    ->selectRaw('type, SUM(amount) AS total')
+                    ->groupBy('type')
+                    ->pluck('total', 'type');
+
+                $byType = array_map(fn (CommissionType $t) => (int) ($net[$t->value] ?? 0) + (int) ($bonuses[$t->value] ?? 0), $types);
 
                 return [...$byType, array_sum($byType), $voided];
             },

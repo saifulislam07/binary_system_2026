@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BonusType;
 use App\Enums\PayoutStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\BonusFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property BonusType $type
  * @property PayoutStatus $status
+ * @property CarbonInterface|null $cycle_date
  */
 #[Fillable(['member_id', 'bonus_rule_id', 'type', 'amount', 'cycle_date', 'status', 'description', 'awarded_by'])]
 class Bonus extends Model

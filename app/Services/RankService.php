@@ -91,7 +91,7 @@ class RankService
 
             $highest = $qualified->last();
 
-            if ($highest !== null && $member->current_rank_id !== $highest->id
+            if ($member->current_rank_id !== $highest->id
                 && ($member->currentRank === null || $highest->sort_order > $member->currentRank->sort_order)) {
                 $member->forceFill(['current_rank_id' => $highest->id])->save();
             }

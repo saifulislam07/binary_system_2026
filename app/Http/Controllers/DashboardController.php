@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\MemberStatus;
 use App\Services\IncomeSummaryService;
 use App\Services\MemberOverviewService;
+use App\Services\RankService;
 use App\Support\Money;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +13,7 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request, IncomeSummaryService $income, MemberOverviewService $overview): Response
+    public function __invoke(Request $request, IncomeSummaryService $income, MemberOverviewService $overview, RankService $ranks): Response
     {
         $member = $request->user('web')?->member()->with('package:id,name')->first();
         $active = $member !== null && $member->status === MemberStatus::Active;
@@ -43,6 +44,28 @@ class DashboardController extends Controller
                     'formatted' => Money::format($p['amount']),
                 ], $stats['chart']),
             ],
+            'rank' => $active ? self::formatRank($ranks->progress($member->load('currentRank'))) : null,
         ]);
+    }
+
+    /**
+     * @param  array{current: string, next: string|null, progress: list<array{label: string, have: int, need: int, money: bool}>}  $progress
+     * @return array<string, mixed>
+     */
+    private static function formatRank(array $progress): array
+    {
+        $format = fn (int $value, bool $money) => $money ? Money::format($value) : number_format($value);
+
+        return [
+            'current' => $progress['current'],
+            'next' => $progress['next'],
+            'requirements' => array_map(fn (array $r) => [
+                'label' => $r['label'],
+                'have' => $format($r['have'], $r['money']),
+                'need' => $format($r['need'], $r['money']),
+                'percent' => $r['need'] <= 0 ? 100 : min(100, intdiv($r['have'] * 100, $r['need'])),
+                'met' => $r['have'] >= $r['need'],
+            ], $progress['progress']),
+        ];
     }
 }

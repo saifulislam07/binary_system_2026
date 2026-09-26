@@ -91,7 +91,7 @@
             <div class="info-box" data-metric="commission_paid">
                 <span class="info-box-icon text-bg-secondary shadow-sm"><i class="bi bi-diagram-3-fill"></i></span>
                 <div class="info-box-content">
-                    <span class="info-box-text">Commission paid (net)</span>
+                    <span class="info-box-text">Commission &amp; bonuses (net)</span>
                     <span class="info-box-number">{{ $money($m['commission_paid']) }}</span>
                 </div>
             </div>
@@ -134,7 +134,7 @@
                                 <td class="text-end" style="font-variant-numeric: tabular-nums" data-value="gross_profit">{{ $money($m['gross_profit']) }}</td>
                             </tr>
                             <tr>
-                                <td>− Commission paid (net)</td>
+                                <td>− Commission &amp; bonuses (net)</td>
                                 <td class="text-end" style="font-variant-numeric: tabular-nums">{{ $money($m['commission_paid']) }}</td>
                             </tr>
                             <tr>

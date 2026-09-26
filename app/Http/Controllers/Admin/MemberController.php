@@ -60,7 +60,7 @@ class MemberController extends Controller
 
     public function show(Member $member, TeamService $team, WalletService $wallets): View
     {
-        $member->load(['user', 'package', 'sponsor.user:id,name', 'placementParent:id,member_code', 'binaryNode']);
+        $member->load(['user', 'package', 'sponsor.user:id,name', 'placementParent:id,member_code', 'binaryNode', 'currentRank:id,name']);
 
         return view('admin.members.show', [
             'member' => $member,

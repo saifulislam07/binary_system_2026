@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\CommissionType;
+use App\Enums\MemberStatus;
+use App\Enums\PayoutStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use App\Models\Commission;
+use App\Models\Member;
+use App\Models\Rank;
 use App\Services\FinancialReportService;
 use App\Support\Money;
 use Carbon\CarbonInterface;
@@ -60,6 +66,44 @@ class ReportController extends Controller
             fputcsv($out, ['Total', ...array_map($cell, $data['totals'], array_keys($data['totals']))]);
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * How active members are spread across ranks, and what each rank's
+     * bonus has cost so far.
+     */
+    public function ranks(): View
+    {
+        $holders = Member::query()
+            ->where('status', MemberStatus::Active)
+            ->selectRaw('current_rank_id, COUNT(*) AS n')
+            ->groupBy('current_rank_id')
+            ->toBase()
+            ->get()
+            ->mapWithKeys(fn (object $row) => [(int) ($row->current_rank_id ?? 0) => (int) $row->n]);
+
+        $bonusPaid = Commission::query()
+            ->where('type', CommissionType::Rank)
+            ->where('status', PayoutStatus::Paid)
+            ->selectRaw('description, SUM(amount) AS total')
+            ->groupBy('description')
+            ->toBase()
+            ->pluck('total', 'description');
+
+        $ranks = Rank::query()->withCount('achievements')->orderBy('sort_order')->get();
+        $lowest = $ranks->first();
+        $activeTotal = max(1, $holders->sum());
+
+        $rows = $ranks->map(fn (Rank $rank) => [
+            'name' => $rank->name,
+            // Members with no rank yet count toward the base rank.
+            'members' => ($holders[$rank->id] ?? 0) + ($rank->is($lowest) ? ($holders[0] ?? 0) : 0),
+            'achieved' => $rank->achievements_count,
+            'bonus_each' => $rank->bonus_amount,
+            'bonus_paid' => (int) ($bonusPaid["Rank bonus: {$rank->name}"] ?? 0),
+        ])->map(fn (array $row) => [...$row, 'share' => intdiv($row['members'] * 1000, $activeTotal) / 10]);
+
+        return view('admin.reports.ranks', ['rows' => $rows, 'activeTotal' => $holders->sum()]);
     }
 
     /**

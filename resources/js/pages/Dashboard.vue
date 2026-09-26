@@ -2,6 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import IncomeChart from '@/components/IncomeChart.vue';
 import type { IncomePoint } from '@/components/IncomeChart.vue';
+import RankProgress from '@/components/RankProgress.vue';
+import type { RankData } from '@/components/RankProgress.vue';
 import WalletSummary from '@/components/WalletSummary.vue';
 import type { WalletSummaryData } from '@/components/WalletSummary.vue';
 import { dashboard } from '@/routes';
@@ -29,6 +31,7 @@ defineProps<{
         rightTeam: LegCount;
         chart: IncomePoint[];
     } | null;
+    rank: RankData | null;
 }>();
 
 defineOptions({
@@ -135,10 +138,15 @@ defineOptions({
                 </div>
             </section>
 
-            <IncomeChart
-                :points="overview.chart"
-                title="Net income, last 6 cycles · আয়"
-            />
+            <div class="grid min-w-0 gap-4 lg:grid-cols-3">
+                <div class="min-w-0 lg:col-span-2">
+                    <IncomeChart
+                        :points="overview.chart"
+                        title="Net income, last 6 cycles · আয়"
+                    />
+                </div>
+                <RankProgress v-if="rank" :rank="rank" />
+            </div>
         </template>
     </div>
 </template>

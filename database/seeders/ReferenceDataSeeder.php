@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Admin;
+use App\Models\BonusRule;
 use App\Models\CommissionRule;
 use App\Models\Package;
 use App\Models\Rank;
@@ -23,6 +24,7 @@ class ReferenceDataSeeder extends Seeder
         $this->seedCommissionRules();
         $this->seedRanks();
         $this->seedSettings();
+        $this->seedBonusRules();
         $this->seedAdmin();
     }
 
@@ -86,6 +88,22 @@ class ReferenceDataSeeder extends Seeder
                 'min_active_team' => $active,
                 'bonus_amount' => $bonus,
             ]);
+        }
+    }
+
+    private function seedBonusRules(): void
+    {
+        // [type, name, threshold, amount] — leadership threshold = active team
+        // members; sales threshold = personal sales in poysha. Paid once each.
+        $rules = [
+            [BonusRule::LEADERSHIP, 'Leadership: 10 active in team', 10, 200_000],
+            [BonusRule::LEADERSHIP, 'Leadership: 50 active in team', 50, 1_000_000],
+            [BonusRule::SALES, 'Sales: ৳50,000 personal sales', 5_000_000, 100_000],
+            [BonusRule::SALES, 'Sales: ৳200,000 personal sales', 20_000_000, 500_000],
+        ];
+
+        foreach ($rules as [$type, $name, $threshold, $amount]) {
+            BonusRule::query()->firstOrCreate(['name' => $name], compact('type', 'threshold', 'amount'));
         }
     }
 

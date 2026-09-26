@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\PayoutStatus;
 use App\Enums\SaleStatus;
+use App\Models\Bonus;
 use App\Models\Commission;
 use App\Models\Member;
 use Carbon\CarbonInterface;
@@ -85,16 +86,27 @@ class MemberOverviewService
             ->groupBy('cycle_date')
             ->pluck('total', 'cycle_date');
 
-        foreach ($totals as $date => $total) {
-            $date = substr((string) $date, 0, 10);
+        // Leadership / sales / performance bonuses live in the bonuses table.
+        $bonuses = Bonus::query()
+            ->where('member_id', $member->id)
+            ->where('status', PayoutStatus::Paid)
+            ->whereBetween('cycle_date', [$periods[0]['from'], $periods[self::CHART_PERIODS - 1]['to']])
+            ->selectRaw('cycle_date, SUM(amount) AS total')
+            ->groupBy('cycle_date')
+            ->pluck('total', 'cycle_date');
 
-            foreach ($periods as &$period) {
-                if ($date >= $period['from'] && $date <= $period['to']) {
-                    $period['amount'] += (int) $total;
-                    break;
+        foreach ([$totals, $bonuses] as $series) {
+            foreach ($series as $date => $total) {
+                $date = substr((string) $date, 0, 10);
+
+                foreach ($periods as &$period) {
+                    if ($date >= $period['from'] && $date <= $period['to']) {
+                        $period['amount'] += (int) $total;
+                        break;
+                    }
                 }
+                unset($period);
             }
-            unset($period);
         }
 
         return $periods;

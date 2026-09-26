@@ -188,7 +188,7 @@ commission:run {date}`), one transaction per member, idempotent per
   (`legCounts()` recursive CTE, `subtree()` level-by-level, max depth 4);
   `team.tree` JSON only serves nodes in the viewer's own downline
   (`isInDownline()`). Charts follow the dataviz skill: slot-1 blue
-  `#2a78d6` / dark `#3987e5`, tokens in an *unscoped* `<style>` block so
+  `#2a78d6` / dark `#3987e5`, tokens in an _unscoped_ `<style>` block so
   the app's `.dark` class can override them (scoped `:global(.dark)` does
   not work), drawn at measured pixel width (never a scaled viewBox).
 - **Admin panel (Phase 9):** every admin route group is gated with
@@ -213,6 +213,18 @@ commission:run {date}`), one transaction per member, idempotent per
   `/admin/settings` (`manage-settings`); UI takes % and taka, stores bps
   and poysha. Blade admin pages must not use Vue — plain JS with
   `textContent` only (see the tree browser).
+- **Ranks & bonuses (Phase 11):** `RankService::evaluate()` promotes to the
+  highest rank whose personal sales, team sales (both legs' lifetime BV) and
+  active team thresholds are all met; never demotes; ranks passed on the way
+  are each recorded and paid once (unique member+rank); bonus = commission
+  row type `rank` + wallet `rank_bonus`; `members.current_rank_id` holds the
+  highest. Leadership/sales bonuses come from `bonus_rules` (paid once per
+  rule — unique member+rule on `bonuses`); performance bonuses are
+  admin-awarded (`manage-settings`). All bonuses = `bonuses` row + wallet
+  credit via `BonusService`, and count as payouts in the P&L. The nightly
+  `ranks:evaluate` (00:45, after `commission:run`) uses
+  `MemberStatsService::forAll()` bulk queries; `forMember()` must stay in
+  agreement (`MemberStatsTest`).
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.

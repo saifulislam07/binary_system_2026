@@ -7,6 +7,7 @@ use App\Enums\MemberStatus;
 use App\Enums\PayoutStatus;
 use App\Enums\SaleStatus;
 use App\Enums\WithdrawalStatus;
+use App\Models\Bonus;
 use App\Models\Commission;
 use App\Models\Expense;
 use App\Models\IncomeTransaction;
@@ -81,8 +82,12 @@ class AdminDashboardService
         $salesAmount = (int) $completedSales()->sum('sales.amount');
         $otherIncome = (int) $this->within(IncomeTransaction::query(), 'date', $range, dateOnly: true)->sum('amount');
         $costOfGoods = (int) $completedSales()->join('packages', 'packages.id', '=', 'sales.package_id')->sum('packages.cost_of_goods');
+        // Commissions (net of reversals) plus leadership/sales/performance bonuses.
         $commission = (int) $this->within(
             Commission::query()->whereIn('status', [PayoutStatus::Paid, PayoutStatus::Reversed]),
+            'cycle_date', $range, dateOnly: true,
+        )->sum('amount') + (int) $this->within(
+            Bonus::query()->where('status', PayoutStatus::Paid),
             'cycle_date', $range, dateOnly: true,
         )->sum('amount');
         $expenses = (int) $this->within(

@@ -31,7 +31,7 @@ class EvaluateRanks extends Command
                 }
             });
 
-        $this->info("Evaluated ".count($all)." members: {$promotions} promotions, {$bonusesPaid} threshold bonuses paid.");
+        $this->info('Evaluated '.count($all)." members: {$promotions} promotions, {$bonusesPaid} threshold bonuses paid.");
 
         return self::SUCCESS;
     }

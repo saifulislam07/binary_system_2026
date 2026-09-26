@@ -39,6 +39,7 @@
                         <dt class="col-sm-4">NID</dt><dd class="col-sm-8">{{ $member->nid ?? '—' }}</dd>
                         <dt class="col-sm-4">Address</dt><dd class="col-sm-8">{{ $member->address ?? '—' }}</dd>
                         <dt class="col-sm-4">Package</dt><dd class="col-sm-8">{{ $member->package?->name ?? '—' }}</dd>
+                        <dt class="col-sm-4">Rank</dt><dd class="col-sm-8">{{ $member->currentRank?->name ?? 'Member' }}</dd>
                         <dt class="col-sm-4">Registered</dt><dd class="col-sm-8">{{ $member->created_at?->format('d M Y H:i') }}</dd>
                         <dt class="col-sm-4">Activated</dt><dd class="col-sm-8">{{ $member->activated_at?->format('d M Y H:i') ?? '—' }}</dd>
                         <dt class="col-sm-4">Registration IP</dt><dd class="col-sm-8">{{ $member->user->ip_registered ?? '—' }}</dd>
@@ -130,6 +131,18 @@
                         <button class="btn btn-outline-primary btn-sm text-nowrap">Change package</button>
                     </form>
                     <p class="small text-body-secondary mb-0">Changing the package only relabels the member; it creates no sale, BV or commission.</p>
+
+                    @can('manage-settings')
+                        @if ($member->status->value === 'active')
+                            <form method="POST" action="{{ route('admin.members.performance-bonus', $member) }}" class="d-flex gap-2"
+                                  onsubmit="return confirm('Pay this performance bonus into the member’s wallet?')">
+                                @csrf
+                                <input name="amount" class="form-control form-control-sm" style="max-width: 8rem" placeholder="৳ amount" aria-label="Bonus amount in taka" inputmode="decimal" required>
+                                <input name="reason" class="form-control form-control-sm" placeholder="Reason (e.g. top seller in March)" aria-label="Bonus reason" required minlength="5">
+                                <button class="btn btn-outline-success btn-sm text-nowrap">Pay performance bonus</button>
+                            </form>
+                        @endif
+                    @endcan
                 </div>
             </div>
         </div>
