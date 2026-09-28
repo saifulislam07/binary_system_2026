@@ -90,7 +90,7 @@ composer install --no-dev --prefer-dist --no-interaction --no-progress --optimiz
 npm ci --no-audit --no-fund
 npm run build
 rm -rf node_modules
-"$PHP" artisan storage:link --relative --force
+"$PHP" artisan storage:link --force
 
 # Caches are built inside the new release, before it goes live.
 "$PHP" artisan optimize

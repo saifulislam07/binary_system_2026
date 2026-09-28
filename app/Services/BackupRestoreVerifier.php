@@ -32,11 +32,11 @@ class BackupRestoreVerifier
     /** Tables whose restored row count is compared with the live database. */
     private const KEY_TABLES = ['members', 'binary_nodes', 'wallets', 'wallet_transactions', 'commissions', 'sales', 'withdrawals', 'volume_lots'];
 
+    public function __construct(private BackupConfig $config) {}
+
     /**
      * @return array{backup: string, created_at: string, checks: list<array{check: string, ok: bool, detail: string}>, ok: bool}
      */
-    public function __construct(private BackupConfig $config) {}
-
     public function verify(?string $disk = null): array
     {
         // Same settings object backup:run uses, so both look in the same place.

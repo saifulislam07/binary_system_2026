@@ -262,33 +262,58 @@ commission:run {date}`), one transaction per member, idempotent per
   `unreadNotifications`. Never give a page prop the same name as a shared
   prop — the page prop silently wins.
 - **Hardening (Phase 14):**
-  - **N+1:** `Model::preventLazyLoading()` is on outside production — eager
-    load (`with()`) anything read in a loop. `Performance\QueryBudgetTest`
-    fails if an endpoint's query count grows with network size; add new
-    list/dashboard endpoints to it.
-  - **Load test:** `php artisan db:seed --class=LoadTestNetworkSeeder` adds
-    `LOAD_TEST_MEMBERS` (default 1,000) members via the real engine. At 1,020
-    members `commission:run` took ~15 s (~21 queries per paid member) and
-    `ranks:evaluate` ~15 s.
-  - **Business rules:** each rule's test classes carry `#[Group('rule-N')]`,
-    so `php artisan test --group=rule-6` runs one rule;
-    `Unit\BusinessRuleCoverageTest` requires all 12 to stay tagged.
-  - **Security:** `Security\HardeningTest` checks every admin route has
-    `auth:admin` + a `can:` gate, that models are guarded, and the rate
-    limits. `Security\AdminAuditTrailTest` enumerates every admin write
-    route and requires an activity entry caused by the admin — a new admin
-    POST/PUT/DELETE must be added there.
-  - **Mass assignment:** Member `member_code`/`status`/placement/
-    `activated_at`/`current_rank_id` are not fillable; set them with
-    `forceFill()`.
-  - **Rate limits:** registration and password-reset endpoints are
-    throttled by `ThrottleAuthEndpoints` (named limiters in
-    `FortifyServiceProvider`).
-  - **Account deletion:** members cannot delete their own account (they own
-    tree/ledger rows); support closes accounts.
-  - **Money input:** parse % and taka from strings with
-    `Money::bpsFromPercent()` / `Money::fromTaka()`, validate with
-    `decimal:0,2` — no `(float)` anywhere in money code.
+    - **N+1:** `Model::preventLazyLoading()` is on outside production — eager
+      load (`with()`) anything read in a loop. `Performance\QueryBudgetTest`
+      fails if an endpoint's query count grows with network size; add new
+      list/dashboard endpoints to it.
+    - **Load test:** `php artisan db:seed --class=LoadTestNetworkSeeder` adds
+      `LOAD_TEST_MEMBERS` (default 1,000) members via the real engine. At 1,020
+      members `commission:run` took ~15 s (~21 queries per paid member) and
+      `ranks:evaluate` ~15 s.
+    - **Business rules:** each rule's test classes carry `#[Group('rule-N')]`,
+      so `php artisan test --group=rule-6` runs one rule;
+      `Unit\BusinessRuleCoverageTest` requires all 12 to stay tagged.
+    - **Security:** `Security\HardeningTest` checks every admin route has
+      `auth:admin` + a `can:` gate, that models are guarded, and the rate
+      limits. `Security\AdminAuditTrailTest` enumerates every admin write
+      route and requires an activity entry caused by the admin — a new admin
+      POST/PUT/DELETE must be added there.
+    - **Mass assignment:** Member `member_code`/`status`/placement/
+      `activated_at`/`current_rank_id` are not fillable; set them with
+      `forceFill()`.
+    - **Rate limits:** registration and password-reset endpoints are
+      throttled by `ThrottleAuthEndpoints` (named limiters in
+      `FortifyServiceProvider`).
+    - **Account deletion:** members cannot delete their own account (they own
+      tree/ledger rows); support closes accounts.
+    - **Money input:** parse % and taka from strings with
+      `Money::bpsFromPercent()` / `Money::fromTaka()`, validate with
+      `decimal:0,2` — no `(float)` anywhere in money code.
+- **Deployment & operations (Phase 15):** the README's "Production" and
+  "Operations" sections are the runbook — keep them true when you change
+  the schedule, queues or config.
+    - **Timezone:** `APP_TIMEZONE` defaults to `Asia/Dhaka`; the commission
+      day, caps, report days and the schedule all follow it.
+    - **Deploys:** `deploy/deploy.sh` builds releases under
+      `releases/<ts>`, shares `.env` and `storage/`, and switches the
+      `current` symlink atomically. It uses maintenance mode only when
+      migrations are pending, and seeds `ReferenceDataSeeder` every time —
+      so that seeder must stay idempotent and must never use factories/Faker
+      (dev-only).
+    - **Workflows:** `.github/workflows/deploy.yml` deploys staging (only when
+      `vars.AUTO_DEPLOY_STAGING`) and production (manual). `deploy-smoke.yml`
+      rehearses deploy → `/up` → backup/restore → rollback on a clean runner.
+    - **Health:** `SystemHealth` checks drive `/up` (via the
+      `DiagnosingHealth` listener; cron/queue heartbeats count only when
+      `HEALTH_REQUIRE_WORKERS`) and `/admin/health`. New scheduled work that
+      matters should get a check there.
+    - **Backups:** Spatie Backup covers the database + `storage/app` onto
+      `BACKUP_DISKS`, with only failures mailed. `backup:verify-restore`
+      (`BackupRestoreVerifier`) imports the newest archive into
+      `<db>_restore_check` and checks the ledgers and tree; it reads Spatie's
+      `Config` object, not `config()`, so it looks where `backup:run` wrote.
+    - **Sentry:** a no-op without a DSN; `send_default_pii` is false and
+      `max_request_body_size` is `never` — keep it that way.
 - **Dates are immutable:** the starter kit calls `Date::use(CarbonImmutable::class)`,
   so `now()` and model date casts return `CarbonImmutable`. Type-hint
   `Carbon\CarbonInterface`, never `Illuminate\Support\Carbon`.

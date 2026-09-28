@@ -1,6 +1,8 @@
 name: deploy
 
-# Staging: deploys automatically after the `tests` workflow passes on main.
+# Staging: deploys automatically after the `tests` workflow passes on main,
+# once the repository variable AUTO_DEPLOY_STAGING is set to `true`
+# (Settings → Secrets and variables → Actions → Variables).
 # Production: only by hand (Actions → deploy → Run workflow), and the
 # `production` GitHub environment should require a reviewer's approval.
 #
@@ -36,7 +38,9 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && vars.AUTO_DEPLOY_STAGING == 'true')
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'staging' }}
 
