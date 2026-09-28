@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\BonusController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FinancialController;
 use App\Http\Controllers\Admin\FraudFlagController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\KycController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\PendingMemberController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RankController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SaleController;
@@ -127,6 +129,20 @@ Route::middleware(['auth:admin', EnsureAdminIsActive::class])->group(function ()
         Route::put('bonus-rules/{rule}', [RankController::class, 'updateBonusRule'])->name('bonus-rules.update');
         // Discretionary payouts are super-admin only.
         Route::post('members/{member}/performance-bonus', [BonusController::class, 'performance'])->name('members.performance-bonus');
+    });
+
+    // Shop catalog: categories and products shown on the public shop.
+    Route::middleware('can:manage-catalog')->group(function () {
+        Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
+        Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+        Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::get('products', [ProductController::class, 'index'])->name('products.index');
+        Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
     });
 
     Route::middleware('can:manage-admins')->group(function () {

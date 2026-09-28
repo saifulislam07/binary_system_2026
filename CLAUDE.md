@@ -345,6 +345,27 @@ commission:run {date}`), one transaction per member, idempotent per
     - **Inertia errors** (`bootstrap/app.php`): a 419 goes back with a toast.
       Outside debug mode, a failed GET reloads fully (showing the Blade error
       page) and a failed POST goes back with a toast.
+- **Shop catalog (Phase 18):**
+    - **Model:** `categories` and `products` (with `category_id`, `slug`,
+      `brand`, `description`, `highlights` (one per line), `compare_at_price`
+      and `is_featured`). Photos are media collection `images` (public disk,
+      `card` 4:3 and `large` conversions); categories have an optional
+      `image`.
+    - **Selling:** products are sold only through packages (`package_product`
+      with quantity, picked on the package form). Buying a single product
+      would bypass the BV/commission engine, so don't add it without the
+      owner's decision.
+    - **Writes:** go through `CatalogAdminService` (`manage-catalog`); nothing
+      is deleted, only hidden.
+    - **Public side:** `ShopCatalog` decides what's visible (active product in
+      an active or no category) and presents cards. Shop pages (`Welcome`,
+      `shop/*`, `membership/*`) use `ShopLayout.vue`, fed by the shared
+      Inertia prop `shop` (categories, contact, canRegister), which is only
+      set on those routes. A `?ref=` code is remembered in sessionStorage by
+      `lib/shop.ts` for the sign-up links.
+    - **Demo data:** `CatalogSeeder` (non-production) uses the CC0 photos in
+      `database/seeders/catalog-images` (sources in `CREDITS.md`). Tests that
+      need it fake the `public` disk (`CatalogSeederTest`).
 - **Deployment & operations (Phase 15):** the README's "Production" and
   "Operations" sections are the runbook — keep them true when you change
   the schedule, queues or config.

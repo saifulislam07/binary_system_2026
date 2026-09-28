@@ -2,6 +2,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import ShopLayout from '@/layouts/ShopLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
@@ -11,9 +12,11 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            // Public pages bring their own header.
-            case name === 'Welcome' || name.startsWith('membership/'):
-                return null;
+            // Public shop pages: shop header (search, categories) and footer.
+            case name === 'Welcome' ||
+                name.startsWith('shop/') ||
+                name.startsWith('membership/'):
+                return ShopLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

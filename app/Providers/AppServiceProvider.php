@@ -5,12 +5,14 @@ namespace App\Providers;
 use App\Models\Announcement;
 use App\Models\Bonus;
 use App\Models\BonusRule;
+use App\Models\Category;
 use App\Models\Commission;
 use App\Models\CommissionCycle;
 use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Package;
+use App\Models\Product;
 use App\Models\Rank;
 use App\Models\Refund;
 use App\Models\Sale;
@@ -58,6 +60,8 @@ class AppServiceProvider extends ServiceProvider
             'package' => Package::class,
             'rank' => Rank::class,
             'bonus_rule' => BonusRule::class,
+            'category' => Category::class,
+            'product' => Product::class,
         ]);
     }
 

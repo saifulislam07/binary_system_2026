@@ -11,6 +11,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\PaymentSimulatorController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SponsorLookupController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\WalletController;
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 // The full membership and commission rules, linked from the shop footer and registration.
 Route::get('membership', MembershipController::class)->name('membership');
+
+// Public shop: products by category; purchases go through packages.
+Route::get('shop', [ShopController::class, 'index'])->name('shop.index');
+Route::get('shop/{product:slug}', [ShopController::class, 'show'])->name('shop.show');
 
 Route::get('sponsors/{code}', SponsorLookupController::class)
     ->middleware('throttle:30,1')

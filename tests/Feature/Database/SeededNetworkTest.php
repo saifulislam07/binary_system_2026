@@ -14,7 +14,6 @@ use App\Models\Rank;
 use App\Models\Setting;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
-use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoNetworkSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,9 +31,10 @@ class SeededNetworkTest extends TestCase
     {
         parent::setUp();
 
-        // RefreshDatabase seeds once per process (roles only); seed the full
-        // dataset inside this test's transaction so it is rolled back after.
-        $this->seed(DatabaseSeeder::class);
+        // RefreshDatabase seeds once per process (roles only); seed the reference
+        // data and demo network inside this test's transaction so it is rolled
+        // back after. The demo catalog (photos) has its own CatalogSeederTest.
+        $this->seed([ReferenceDataSeeder::class, DemoNetworkSeeder::class]);
     }
 
     public function test_seeds_twenty_active_members_with_sequential_codes()

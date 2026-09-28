@@ -74,6 +74,29 @@
                         <option value="0" @selected((string) old('is_active', (int) $package->is_active) === '0')>Inactive — hidden at sign-up and checkout</option>
                     </select>
                 </div>
+
+                @if ($products->isNotEmpty())
+                    <fieldset class="col-12">
+                        <legend class="form-label fs-6 mb-1">What's inside <span class="text-body-secondary small">(quantity; leave blank for products not in this package)</span></legend>
+                        <p class="form-text mt-0">The shop shows each product's packages, so members can buy it through them.</p>
+                        <div class="row g-2">
+                            @foreach ($products as $categoryName => $group)
+                                <div class="col-12"><div class="small fw-semibold text-body-secondary mt-2">{{ $categoryName }}</div></div>
+                                @foreach ($group as $item)
+                                    <div class="col-md-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text flex-grow-1 text-truncate" style="max-width: 80%">
+                                                {{ $item->name }} @unless ($item->is_active)<span class="badge text-bg-secondary ms-1">hidden</span>@endunless
+                                            </span>
+                                            <input type="number" name="products[{{ $item->id }}]" min="0" max="99" class="form-control" style="max-width: 5rem"
+                                                   value="{{ old('products.'.$item->id, $included[$item->id] ?? '') }}" aria-label="Quantity of {{ $item->name }}">
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endforeach
+                        </div>
+                    </fieldset>
+                @endif
             </div>
         </div>
         <div class="card-footer d-flex gap-2">

@@ -6,8 +6,11 @@ use App\Enums\PlacementSide;
 use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalMethodType;
 use App\Models\Admin;
+use App\Models\Category;
 use App\Models\KycDocument;
 use App\Models\Member;
+use App\Models\Package;
+use App\Models\Product;
 use App\Services\MatchingService;
 use App\Services\WalletService;
 use App\Services\WithdrawalService;
@@ -31,6 +34,11 @@ class QueryBudgetTest extends TestCase
 
     private Member $root;
 
+    /** @var list<Category> */
+    private array $categories = [];
+
+    private Product $product;
+
     /** @var list<Member> */
     private array $members = [];
 
@@ -42,7 +50,12 @@ class QueryBudgetTest extends TestCase
         $this->admin = Admin::factory()->superAdmin()->create();
         $this->root = $this->root();
         $this->members = [$this->root];
+        $this->categories = [
+            Category::query()->create(['name' => 'Audio', 'sort_order' => 1]),
+            Category::query()->create(['name' => 'Wearables', 'sort_order' => 2]),
+        ];
         $this->grow(32);
+        $this->product = Product::query()->orderBy('id')->firstOrFail();
     }
 
     /**
@@ -61,6 +74,13 @@ class QueryBudgetTest extends TestCase
                 app(WalletService::class)->credit($member, 300_000, WalletTransactionType::ReferralBonus);
                 app(WithdrawalService::class)->request($member, 100_000, WithdrawalMethodType::MobileBanking, ['provider' => 'bkash', 'mobile_number' => '+8801712345678']);
                 KycDocument::factory()->create(['member_id' => $member->id]);
+
+                // Shop catalog grows too: a featured product in a category, sold in a package.
+                $product = Product::factory()->create([
+                    'category_id' => $this->categories[$i % 2]->id,
+                    'is_featured' => true,
+                ]);
+                Package::query()->firstOrFail()->products()->attach($product->id, ['quantity' => 1]);
             }
         }
 
@@ -93,6 +113,11 @@ class QueryBudgetTest extends TestCase
             'admin packages' => ['admin', fn () => route('admin.packages.index')],
             'admin ranks & bonus rules' => ['admin', fn () => route('admin.ranks.index')],
             'admin accounts & roles' => ['admin', fn () => route('admin.admins.index')],
+            'admin products' => ['admin', fn () => route('admin.products.index')],
+            'admin categories' => ['admin', fn () => route('admin.categories.index')],
+            'shop home' => ['web', fn () => route('home')],
+            'shop listing' => ['web', fn () => route('shop.index')],
+            'shop product page' => ['web', fn () => route('shop.show', $this->product)],
         ];
     }
 

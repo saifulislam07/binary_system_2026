@@ -38,7 +38,8 @@ mysql -uroot -e "CREATE DATABASE binary_system CHARACTER SET utf8mb4 COLLATE utf
 # 2. Install, configure, migrate, publish AdminLTE assets and build the frontend
 composer setup          # copies .env.example → .env if it doesn't exist yet
 
-# 3. Seed reference data, the first admin and a 20-member demo network
+# 3. Seed reference data, the first admin, a 20-member demo network and a
+#    demo electronics catalog (19 products with photos)
 php artisan db:seed
 
 # 4. Run it
@@ -119,12 +120,19 @@ decisions every phase follows are recorded in [`CLAUDE.md`](CLAUDE.md).
       plus leadership and sales bonus rules.
     - _Admins & roles_ (`/admin/admins`): admin accounts, their roles, and
       what each role may do.
+- **Shop catalog** (_Shop catalog_ menu, `manage-catalog`): categories and
+  products with photos, prices, an optional "was" price, key features and a
+  featured flag. The public shop (`/`, `/shop`, `/shop/{product}`) shows
+  them by category. Products are bought through packages: each package's
+  form lists what's inside, and every product page lists the packages that
+  include it.
 - **Members** use the `web` guard (`App\Models\User`, role `member`).
   **Admins** use the `admin` guard (`App\Models\Admin`) at `/admin/login`.
   Every admin can change their own password under _My account_.
 - **Admin permissions** (`App\Enums\AdminPermission`): `manage-members`,
   `manage-tree`, `manage-sales`, `manage-withdrawals`, `manage-kyc`,
-  `manage-settings`, `view-reports`, `send-announcements`, `manage-admins`.
+  `manage-settings`, `view-reports`, `send-announcements`, `manage-admins`,
+  `manage-catalog`.
     - The `admin` role always holds all of them. `support` and `finance` are
       seeded examples; edit them or add roles at `/admin/admins`.
     - No change can lock the panel out: admins can't deactivate or re-role

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Package;
+use App\Models\Product;
 use App\Support\Money;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -36,6 +37,9 @@ class SavePackageRequest extends FormRequest
             // Product photo for the shop; cropped to a 4:3 card.
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:min_width=400,min_height=300'],
             'remove_image' => ['nullable', 'boolean'],
+            // What's inside: product id => quantity (0 or blank = not included).
+            'products' => ['nullable', 'array'],
+            'products.*' => ['nullable', 'integer', 'min:0', 'max:99'],
         ];
     }
 
@@ -54,5 +58,20 @@ class SavePackageRequest extends FormRequest
             'is_active' => $this->boolean('is_active'),
             'sort_order' => $this->integer('sort_order'),
         ];
+    }
+
+    /**
+     * @return array<int, int>|null product id => quantity; null when the form had no product list
+     */
+    public function packageProducts(): ?array
+    {
+        if (! $this->has('products')) {
+            return null;
+        }
+
+        $wanted = array_filter(array_map('intval', (array) $this->input('products', [])), fn (int $q) => $q > 0);
+        $known = Product::query()->whereKey(array_keys($wanted))->pluck('id')->all();
+
+        return array_intersect_key($wanted, array_flip($known));
     }
 }

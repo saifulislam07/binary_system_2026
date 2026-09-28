@@ -34,8 +34,8 @@ class PublicSiteTest extends TestCase
                 ->where('packages.0.image', null)
                 ->where('startingPrice', '৳1,000.00')
                 ->where('sponsorCode', null)
-                ->where('canRegister', true)
-                ->where('contact', []));
+                ->where('shop.canRegister', true)
+                ->where('shop.contact', []));
     }
 
     public function test_the_membership_page_discloses_the_rules_with_the_live_rates()
@@ -121,7 +121,7 @@ class PublicSiteTest extends TestCase
         config(['business.contact' => ['phone' => '+8801711000000', 'email' => 'help@example.com', 'address' => '  ', 'hours' => null]]);
 
         $this->get('/')->assertInertia(fn (Assert $page) => $page
-            ->where('contact', ['phone' => '+8801711000000', 'email' => 'help@example.com']));
+            ->where('shop.contact', ['phone' => '+8801711000000', 'email' => 'help@example.com']));
     }
 
     public function test_a_referral_link_to_the_home_page_carries_the_sponsor_code()

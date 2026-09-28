@@ -831,6 +831,15 @@ return [
             'can' => 'view-reports',
         ],
         [
+            'text' => 'Shop catalog',
+            'icon' => 'bi bi-shop',
+            'can' => 'manage-catalog',
+            'submenu' => [
+                ['text' => 'Products', 'route' => 'admin.products.index', 'icon' => 'bi bi-phone', 'can' => 'manage-catalog'],
+                ['text' => 'Categories', 'route' => 'admin.categories.index', 'icon' => 'bi bi-tags', 'can' => 'manage-catalog'],
+            ],
+        ],
+        [
             'text' => 'Settings',
             'icon' => 'bi bi-gear',
             'can' => ['manage-settings', 'manage-admins'],

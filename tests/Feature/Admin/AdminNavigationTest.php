@@ -35,6 +35,8 @@ class AdminNavigationTest extends TestCase
         'admin.packages.index' => 'manage-settings',
         'admin.ranks.index' => 'manage-settings',
         'admin.admins.index' => 'manage-admins',
+        'admin.products.index' => 'manage-catalog',
+        'admin.categories.index' => 'manage-catalog',
     ];
 
     /**

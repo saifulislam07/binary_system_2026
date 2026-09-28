@@ -9,12 +9,14 @@ use App\Enums\WithdrawalMethodType;
 use App\Http\Controllers\Admin\FinancialController;
 use App\Models\Admin;
 use App\Models\BonusRule;
+use App\Models\Category;
 use App\Models\Expense;
 use App\Models\FraudFlag;
 use App\Models\IncomeTransaction;
 use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Package;
+use App\Models\Product;
 use App\Models\Rank;
 use App\Models\Withdrawal;
 use App\Services\WalletService;
@@ -167,6 +169,16 @@ class AdminAuditTrailTest extends TestCase
             ]],
             'admin.roles.store' => fn () => ['POST', route('admin.roles.store'), ['name' => 'accounts', 'permissions' => ['view-reports']]],
             'admin.roles.update' => fn () => ['PUT', route('admin.roles.update', Role::findByName('support', 'admin')), ['permissions' => ['manage-members']]],
+            'admin.categories.store' => fn () => ['POST', route('admin.categories.store'), ['name' => 'Audio', 'sort_order' => '1', 'is_active' => '1']],
+            'admin.categories.update' => fn () => ['PUT', route('admin.categories.update', Category::query()->create(['name' => 'Gadgets'])), [
+                'name' => 'Gadgets & more', 'sort_order' => '2', 'is_active' => '1',
+            ]],
+            'admin.products.store' => fn () => ['POST', route('admin.products.store'), [
+                'name' => 'Earbuds', 'sku' => 'EB-1', 'price' => '2450', 'is_active' => '1', 'is_featured' => '0', 'sort_order' => '1',
+            ]],
+            'admin.products.update' => fn () => ['PUT', route('admin.products.update', Product::factory()->create()), [
+                'name' => 'Renamed product', 'sku' => 'EB-2', 'price' => '999', 'is_active' => '1', 'is_featured' => '1', 'sort_order' => '1',
+            ]],
             'admin.account.password' => fn () => ['PUT', route('admin.account.password'), [
                 'current_password' => 'password', 'password' => 'N3w-admin-pass', 'password_confirmation' => 'N3w-admin-pass',
             ]],

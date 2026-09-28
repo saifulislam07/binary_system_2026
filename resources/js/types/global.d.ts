@@ -21,6 +21,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             unreadNotifications?: number;
+            shop?: import('@/lib/shop').ShopNavigation | null;
             [key: string]: unknown;
         };
     }

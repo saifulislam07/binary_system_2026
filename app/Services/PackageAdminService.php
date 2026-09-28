@@ -20,11 +20,16 @@ class PackageAdminService
 
     /**
      * @param  array{name: string, description: string|null, price: int, bv_value: int, cost_of_goods: int, is_qualifying: bool, is_active: bool, sort_order: int}  $data
+     * @param  array<int, int>|null  $products  what's inside: product id => quantity (null = leave as is)
      */
-    public function create(array $data, Admin $admin, ?UploadedFile $image = null): Package
+    public function create(array $data, Admin $admin, ?UploadedFile $image = null, ?array $products = null): Package
     {
-        return DB::transaction(function () use ($data, $admin, $image) {
+        return DB::transaction(function () use ($data, $admin, $image, $products) {
             $package = Package::query()->create($data);
+
+            if ($products !== null) {
+                $package->products()->sync($this->pivot($products));
+            }
 
             if ($image !== null) {
                 $package->addMedia($image)->toMediaCollection('image');
@@ -33,7 +38,7 @@ class PackageAdminService
             activity('catalog')
                 ->performedOn($package)
                 ->causedBy($admin)
-                ->withProperties(['attributes' => [...$package->only(self::AUDITED), 'image' => $image !== null ? 'uploaded' : 'none']])
+                ->withProperties(['attributes' => [...$package->only(self::AUDITED), 'image' => $image !== null ? 'uploaded' : 'none', 'products' => $products ?? []]])
                 ->log('Package created');
 
             return $package;
@@ -42,10 +47,11 @@ class PackageAdminService
 
     /**
      * @param  array{name: string, description: string|null, price: int, bv_value: int, cost_of_goods: int, is_qualifying: bool, is_active: bool, sort_order: int}  $data
+     * @param  array<int, int>|null  $products  what's inside: product id => quantity (null = leave as is)
      */
-    public function update(Package $package, array $data, Admin $admin, ?UploadedFile $image = null, bool $removeImage = false): Package
+    public function update(Package $package, array $data, Admin $admin, ?UploadedFile $image = null, bool $removeImage = false, ?array $products = null): Package
     {
-        return DB::transaction(function () use ($package, $data, $admin, $image, $removeImage) {
+        return DB::transaction(function () use ($package, $data, $admin, $image, $removeImage, $products) {
             $package = Package::query()->lockForUpdate()->findOrFail($package->id);
             $before = $package->only(self::AUDITED);
 
@@ -68,6 +74,19 @@ class PackageAdminService
                 $new['image'] = 'removed';
             }
 
+            if ($products !== null) {
+                $inside = $package->products()->pluck('package_product.quantity', 'products.id')->map(fn ($q) => (int) $q)->all();
+                $package->products()->sync($this->pivot($products));
+                $wanted = $products;
+                ksort($inside);
+                ksort($wanted);
+
+                if ($inside !== $wanted) {
+                    $old['products'] = $inside;
+                    $new['products'] = $wanted;
+                }
+            }
+
             if ($new !== []) {
                 activity('catalog')
                     ->performedOn($package)
@@ -78,5 +97,14 @@ class PackageAdminService
 
             return $package;
         });
+    }
+
+    /**
+     * @param  array<int, int>  $products
+     * @return array<int, array{quantity: int}>
+     */
+    private function pivot(array $products): array
+    {
+        return array_map(fn (int $quantity) => ['quantity' => $quantity], $products);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\ShopCatalog;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -45,6 +46,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
             ],
             // Header bell badge (member app only; admins use the Blade panel).
+            // Header/footer data for the public shop pages only.
+            'shop' => fn () => $request->routeIs('home', 'shop.*', 'membership') ? app(ShopCatalog::class)->navigation() : null,
             'unreadNotifications' => fn () => $user instanceof User ? $user->unreadNotifications()->count() : 0,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
