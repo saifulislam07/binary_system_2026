@@ -35,8 +35,8 @@ defineOptions({
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Update password"
-            description="Ensure your account is using a long, random password to stay secure"
+            title="Update password · পাসওয়ার্ড বদলান"
+            description="Use a long, random password to stay secure · লম্বা ও এলোমেলো পাসওয়ার্ড ব্যবহার করুন"
         />
 
         <Form
@@ -54,7 +54,9 @@ defineOptions({
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="current_password">Current password</Label>
+                <Label for="current_password"
+                    >Current password · বর্তমান পাসওয়ার্ড</Label
+                >
                 <PasswordInput
                     id="current_password"
                     name="current_password"
@@ -66,7 +68,7 @@ defineOptions({
             </div>
 
             <div class="grid gap-2">
-                <Label for="password">New password</Label>
+                <Label for="password">New password · নতুন পাসওয়ার্ড</Label>
                 <PasswordInput
                     id="password"
                     name="password"
@@ -79,7 +81,9 @@ defineOptions({
             </div>
 
             <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
+                <Label for="password_confirmation"
+                    >Confirm password · আবার লিখুন</Label
+                >
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
@@ -96,7 +100,7 @@ defineOptions({
                     :disabled="processing"
                     data-test="update-password-button"
                 >
-                    Save
+                    Save · সংরক্ষণ
                 </Button>
             </div>
         </Form>

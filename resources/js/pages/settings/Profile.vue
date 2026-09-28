@@ -38,8 +38,8 @@ const user = computed(() => page.props.auth.user);
     <div class="flex flex-col space-y-6">
         <Heading
             variant="small"
-            title="Profile"
-            description="Update your name and email address"
+            title="Profile · প্রোফাইল"
+            description="Update your name and email address · নাম ও ইমেইল হালনাগাদ করুন"
         />
 
         <Form
@@ -48,7 +48,7 @@ const user = computed(() => page.props.auth.user);
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="name">Name</Label>
+                <Label for="name">Name · নাম</Label>
                 <Input
                     id="name"
                     class="mt-1 block w-full"
@@ -62,7 +62,7 @@ const user = computed(() => page.props.auth.user);
             </div>
 
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">Email address · ইমেইল</Label>
                 <Input
                     id="email"
                     type="email"
@@ -78,7 +78,7 @@ const user = computed(() => page.props.auth.user);
 
             <div class="flex items-center gap-4">
                 <Button :disabled="processing" data-test="update-profile-button"
-                    >Save</Button
+                    >Save · সংরক্ষণ</Button
                 >
             </div>
         </Form>

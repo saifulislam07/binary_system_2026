@@ -11,8 +11,8 @@ import { update } from '@/routes/password';
 
 defineOptions({
     layout: {
-        title: 'Reset password',
-        description: 'Please enter your new password below',
+        title: 'Reset password · নতুন পাসওয়ার্ড',
+        description: 'Choose a new password · নতুন পাসওয়ার্ড দিন',
     },
 });
 
@@ -26,7 +26,7 @@ const inputEmail = ref(props.email);
 </script>
 
 <template>
-    <Head title="Reset password" />
+    <Head title="Reset password · নতুন পাসওয়ার্ড" />
 
     <Form
         v-bind="update.form()"
@@ -36,7 +36,7 @@ const inputEmail = ref(props.email);
     >
         <div class="grid gap-6">
             <div class="grid gap-2">
-                <Label for="email">Email</Label>
+                <Label for="email">Email · ইমেইল</Label>
                 <Input
                     id="email"
                     type="email"
@@ -50,7 +50,7 @@ const inputEmail = ref(props.email);
             </div>
 
             <div class="grid gap-2">
-                <Label for="password">Password</Label>
+                <Label for="password">New password · নতুন পাসওয়ার্ড</Label>
                 <PasswordInput
                     id="password"
                     name="password"
@@ -64,7 +64,9 @@ const inputEmail = ref(props.email);
             </div>
 
             <div class="grid gap-2">
-                <Label for="password_confirmation"> Confirm password </Label>
+                <Label for="password_confirmation"
+                    >Confirm password · আবার লিখুন</Label
+                >
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
@@ -83,7 +85,7 @@ const inputEmail = ref(props.email);
                 data-test="reset-password-button"
             >
                 <Spinner v-if="processing" />
-                Reset password
+                Reset password · পাসওয়ার্ড বদলান
             </Button>
         </div>
     </Form>

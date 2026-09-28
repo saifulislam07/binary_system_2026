@@ -307,6 +307,24 @@ commission:run {date}`), one transaction per member, idempotent per
     - **Forms:** request helpers that convert input are named `*Data()`
       (e.g. `packageData()`), never `attributes()` — that name is
       FormRequest's validation-label hook.
+- **Public site & polish (Phase 17):**
+    - **Landing page:** `/` is `HomeController` → `Welcome.vue`. It lists the
+      active packages and carries a valid `?ref=MBR-…` through to
+      registration. Keep the earnings disclaimer: income depends on genuine
+      sales, nothing is guaranteed, and nothing is paid for recruiting alone.
+      Never add income promises.
+    - **Brand mark:** a binary tree glyph in `AppLogoIcon.vue`,
+      `public/favicon.svg` and `public/images/logo.svg` (admin logo and
+      preloader). The PNG/ICO icons were rendered from the same shape with
+      GD. Brand blue is `#2a78d6`.
+    - **Member menu:** defined once in `resources/js/lib/navigation.ts`.
+      Every member-facing label is "English · বাংলা".
+    - **Error pages:** `resources/views/errors/*` are bilingual and
+      self-contained (inline CSS, no Vite, no DB) so they render even when
+      the app can't.
+    - **Inertia errors** (`bootstrap/app.php`): a 419 goes back with a toast.
+      Outside debug mode, a failed GET reloads fully (showing the Blade error
+      page) and a failed POST goes back with a toast.
 - **Deployment & operations (Phase 15):** the README's "Production" and
   "Operations" sections are the runbook — keep them true when you change
   the schedule, queues or config.

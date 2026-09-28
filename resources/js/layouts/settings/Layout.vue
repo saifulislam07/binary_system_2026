@@ -12,15 +12,15 @@ import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Profile · প্রোফাইল',
         href: editProfile(),
     },
     {
-        title: 'Security',
+        title: 'Security · নিরাপত্তা',
         href: editSecurity(),
     },
     {
-        title: 'Appearance',
+        title: 'Appearance · থিম',
         href: editAppearance(),
     },
 ];
@@ -31,8 +31,8 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
 <template>
     <div class="px-4 py-6">
         <Heading
-            title="Settings"
-            description="Manage your profile and account settings"
+            title="Settings · সেটিংস"
+            description="Manage your profile and account settings · প্রোফাইল ও অ্যাকাউন্ট সেটিংস"
         />
 
         <div class="flex flex-col lg:flex-row lg:space-x-12">

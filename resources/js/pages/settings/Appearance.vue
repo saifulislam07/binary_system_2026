@@ -24,8 +24,8 @@ defineOptions({
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Appearance settings"
-            description="Update the appearance settings for your account"
+            title="Appearance · থিম"
+            description="Light, dark, or follow your device · লাইট, ডার্ক বা ডিভাইস অনুযায়ী"
         />
         <AppearanceTabs />
     </div>

@@ -86,11 +86,11 @@ return [
     */
 
     'logo' => '<b>Binary</b> Admin',
-    'logo_img' => 'vendor/adminlte/dist/assets/img/AdminLTELogo.png',
-    'logo_img_class' => 'brand-image opacity-75 shadow',
+    'logo_img' => 'images/logo.svg',
+    'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs opacity-75',
-    'logo_img_alt' => 'Admin Logo',
+    'logo_img_alt' => '',
 
     /*
     |--------------------------------------------------------------------------
@@ -108,8 +108,8 @@ return [
     'auth_logo' => [
         'enabled' => false,
         'img' => [
-            'path' => 'vendor/adminlte/dist/assets/img/AdminLTELogo.png',
-            'alt' => 'Auth Logo',
+            'path' => 'images/logo.svg',
+            'alt' => '',
             'class' => '',
             'width' => 50,
             'height' => 50,
@@ -144,8 +144,8 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/assets/img/AdminLTELogo.png',
-            'alt' => 'AdminLTE Preloader Image',
+            'path' => 'images/logo.svg',
+            'alt' => '',
             'effect' => 'animation__shake',
             'width' => 60,
             'height' => 60,
