@@ -300,9 +300,10 @@ commission:run {date}`), one transaction per member, idempotent per
       migrations are pending, and seeds `ReferenceDataSeeder` every time —
       so that seeder must stay idempotent and must never use factories/Faker
       (dev-only).
-    - **Workflows:** `.github/workflows/deploy.yml` deploys staging (only when
-      `vars.AUTO_DEPLOY_STAGING`) and production (manual). `deploy-smoke.yml`
-      rehearses deploy → `/up` → backup/restore → rollback on a clean runner.
+    - **No GitHub Actions:** the owner does not want jobs run on GitHub, so
+      there is no CI or deploy workflow — do not add one. Run
+      `composer ci:check` locally before committing; deploy by hand over ssh
+      (`deploy.sh` piped to `bash -s`, see README "Deploying").
     - **Health:** `SystemHealth` checks drive `/up` (via the
       `DiagnosingHealth` listener; cron/queue heartbeats count only when
       `HEALTH_REQUIRE_WORKERS`) and `/admin/health`. New scheduled work that

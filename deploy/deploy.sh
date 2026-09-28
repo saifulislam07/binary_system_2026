@@ -14,7 +14,7 @@
 #
 # Usage (on the server, as the deploy user):
 #   APP_DIR=/var/www/binary-system bash deploy.sh <branch|tag|commit>
-# or from CI:  ssh deploy@host "APP_DIR=… bash -s -- <ref>" < deploy/deploy.sh
+# or from your machine:  ssh deploy@host "APP_DIR=… bash -s -- <ref>" < deploy/deploy.sh
 #
 # Settings (environment variables):
 #   APP_DIR          install root                 (default /var/www/binary-system)

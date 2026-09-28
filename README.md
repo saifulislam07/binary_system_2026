@@ -63,9 +63,10 @@ composer test            # Pint + PHPStan (level 7) + tests
 php artisan test --group=rule-6   # only the tests for business rule #6
 ```
 
-CI (`.github/workflows/tests.yml`) runs lint, static analysis and the full
-suite with PCOV coverage against a MySQL 8.4 service on every push to `main`
-and every PR. The coverage report (`coverage.xml`) is attached to each run.
+This project deliberately runs no jobs on GitHub (no Actions CI). Run
+`composer ci:check` before every push: it runs the frontend lint and type
+checks, Pint, PHPStan and the full suite. For a coverage report, install PCOV
+or Xdebug locally and run `php artisan test --coverage`.
 
 A 1,000+ member network for performance checks:
 
@@ -178,7 +179,7 @@ next to it and switches the symlink only once everything succeeded.
    `php -r "echo 'base64:'.base64_encode(random_bytes(32)).PHP_EOL;"`.
    Then `chmod 600` the file.
 
-6. **First deploy** (as `deploy`, or via GitHub Actions below):
+6. **First deploy** (see [Deploying](#deploying)):
 
     ```bash
     APP_DIR=/var/www/binary-system bash deploy/deploy.sh main
@@ -264,20 +265,17 @@ documentation before launch. Test one real low-value payment per gateway.
 
 ### Deploying
 
-**GitHub Actions** (`.github/workflows/deploy.yml`):
+Deploys are run by hand; nothing deploys automatically. Push to GitHub
+first: the server builds from the repository, not from your working copy.
+Then, from your machine (Git Bash works on Windows):
 
-- **Staging** deploys automatically after the `tests` workflow passes on
-  `main`, once you set the repository variable `AUTO_DEPLOY_STAGING=true`.
-  Until then nothing deploys by itself.
-- **Production** deploys only by hand: Actions → _deploy_ → _Run workflow_,
-  choose `production` and a branch, tag or commit. Give the `production`
-  environment a required reviewer (Settings → Environments).
-- Each environment needs these secrets: `DEPLOY_HOST`, `DEPLOY_USER`,
-  `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan -t ed25519 <host>`)
-  and `DEPLOY_PATH`.
-- After deploying, the workflow checks `/up` on the server.
+```bash
+ssh deploy@example.com "APP_DIR=/var/www/binary-system bash -s -- main" < deploy/deploy.sh
+curl -fsS https://example.com/up && echo OK
+```
 
-**By hand:** `APP_DIR=/var/www/binary-system bash deploy/deploy.sh <ref>`.
+Replace `main` with a tag or commit to deploy something else. On the server
+itself, `APP_DIR=/var/www/binary-system bash deploy.sh <ref>` does the same.
 
 What `deploy/deploy.sh` does:
 
@@ -294,7 +292,8 @@ What `deploy/deploy.sh` does:
 If anything fails, `current` is not switched and the site keeps running the
 old release.
 
-**Rollback:** `APP_DIR=/var/www/binary-system bash deploy/rollback.sh`
+**Rollback:**
+`ssh deploy@example.com "APP_DIR=/var/www/binary-system bash -s" < deploy/rollback.sh`
 switches back to the previous release. It rolls back code only, never the
 database. If the bad release ran a migration the old code can't handle,
 [restore the pre-deploy backup](#restoring-a-backup).
