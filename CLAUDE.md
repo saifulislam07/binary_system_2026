@@ -289,6 +289,24 @@ commission:run {date}`), one transaction per member, idempotent per
     - **Money input:** parse % and taka from strings with
       `Money::bpsFromPercent()` / `Money::fromTaka()`, validate with
       `decimal:0,2` — no `(float)` anywhere in money code.
+- **Admin configuration (Phase 16):**
+    - **Services:** packages go through `PackageAdminService`, ranks and
+      bonus rules through `RankRulesService`, admin accounts and roles
+      through `AdminAccountService`. Each logs old/new values with the
+      acting admin; refusals throw `ConfigurationException`.
+    - **Packages:** never deleted, only deactivated, and the last one on sale
+      can't be deactivated.
+    - **Ranks:** thresholds must not decrease up the ladder. Rank names are
+      read-only, because the rank report matches past bonuses by
+      "Rank bonus: {name}". A bonus rule's type is fixed once created.
+    - **Lock-out guards:** admins can't deactivate or re-role themselves, and
+      after any change at least one active admin must hold `manage-admins`.
+      The `admin` role always has every permission.
+      `EnsureAdminIsActive` signs out a deactivated admin on their next
+      request.
+    - **Forms:** request helpers that convert input are named `*Data()`
+      (e.g. `packageData()`), never `attributes()` — that name is
+      FormRequest's validation-label hook.
 - **Deployment & operations (Phase 15):** the README's "Production" and
   "Operations" sections are the runbook — keep them true when you change
   the schedule, queues or config.

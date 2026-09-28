@@ -90,6 +90,9 @@ class QueryBudgetTest extends TestCase
             'admin kyc' => ['admin', fn () => route('admin.kyc.index')],
             'admin fraud flags' => ['admin', fn () => route('admin.fraud.index')],
             'admin rank report' => ['admin', fn () => route('admin.reports.ranks')],
+            'admin packages' => ['admin', fn () => route('admin.packages.index')],
+            'admin ranks & bonus rules' => ['admin', fn () => route('admin.ranks.index')],
+            'admin accounts & roles' => ['admin', fn () => route('admin.admins.index')],
         ];
     }
 

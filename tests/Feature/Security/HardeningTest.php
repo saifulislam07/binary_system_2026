@@ -32,6 +32,8 @@ class HardeningTest extends TestCase
     private const UNGATED_ADMIN_ROUTES = [
         'admin.login' => 'guest', 'admin.login.store' => 'guest',
         'admin.logout' => 'auth', 'admin.dashboard' => 'auth', 'admin.' => 'auth',
+        // Every admin manages their own password.
+        'admin.account.edit' => 'auth', 'admin.account.password' => 'auth',
     ];
 
     /**

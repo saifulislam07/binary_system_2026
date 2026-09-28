@@ -832,9 +832,14 @@ return [
         ],
         [
             'text' => 'Settings',
-            'route' => 'admin.settings.index',
             'icon' => 'bi bi-gear',
-            'can' => 'manage-settings',
+            'can' => ['manage-settings', 'manage-admins'],
+            'submenu' => [
+                ['text' => 'Business rules', 'route' => 'admin.settings.index', 'icon' => 'bi bi-sliders', 'can' => 'manage-settings'],
+                ['text' => 'Packages', 'route' => 'admin.packages.index', 'icon' => 'bi bi-box-seam', 'can' => 'manage-settings'],
+                ['text' => 'Ranks & bonuses', 'route' => 'admin.ranks.index', 'icon' => 'bi bi-trophy', 'can' => 'manage-settings'],
+                ['text' => 'Admins & roles', 'route' => 'admin.admins.index', 'icon' => 'bi bi-shield-lock', 'can' => 'manage-admins'],
+            ],
         ],
         [
             'text' => 'Announcements',
@@ -853,6 +858,11 @@ return [
             'route' => 'admin.health',
             'icon' => 'bi bi-heart-pulse',
             'can' => 'manage-settings',
+        ],
+        [
+            'text' => 'My account',
+            'route' => 'admin.account.edit',
+            'icon' => 'bi bi-person-circle',
         ],
     ],
 

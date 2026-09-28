@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Auth\LoginController;
@@ -10,12 +12,15 @@ use App\Http\Controllers\Admin\FraudFlagController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\KycController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\PendingMemberController;
+use App\Http\Controllers\Admin\RankController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TreeController;
 use App\Http\Controllers\Admin\WithdrawalController;
+use App\Http\Middleware\EnsureAdminIsActive;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,8 +37,12 @@ Route::middleware('guest:admin')->group(function () {
     Route::post('login', [LoginController::class, 'store'])->name('login.store');
 });
 
-Route::middleware('auth:admin')->group(function () {
+Route::middleware(['auth:admin', EnsureAdminIsActive::class])->group(function () {
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
+
+    // Every admin can change their own password.
+    Route::get('account', [AccountController::class, 'edit'])->name('account.edit');
+    Route::put('account/password', [AccountController::class, 'updatePassword'])->middleware('throttle:6,1')->name('account.password');
 
     Route::redirect('/', '/admin/dashboard');
     Route::get('dashboard', DashboardController::class)->name('dashboard');
@@ -105,7 +114,28 @@ Route::middleware('auth:admin')->group(function () {
         Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
         Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
         Route::get('health', HealthController::class)->name('health');
+
+        // Catalog and rank rules (rules #4 and #11).
+        Route::get('packages', [PackageController::class, 'index'])->name('packages.index');
+        Route::get('packages/create', [PackageController::class, 'create'])->name('packages.create');
+        Route::post('packages', [PackageController::class, 'store'])->name('packages.store');
+        Route::get('packages/{package}/edit', [PackageController::class, 'edit'])->name('packages.edit');
+        Route::put('packages/{package}', [PackageController::class, 'update'])->name('packages.update');
+        Route::get('ranks', [RankController::class, 'index'])->name('ranks.index');
+        Route::put('ranks', [RankController::class, 'updateRanks'])->name('ranks.update');
+        Route::post('bonus-rules', [RankController::class, 'storeBonusRule'])->name('bonus-rules.store');
+        Route::put('bonus-rules/{rule}', [RankController::class, 'updateBonusRule'])->name('bonus-rules.update');
         // Discretionary payouts are super-admin only.
         Route::post('members/{member}/performance-bonus', [BonusController::class, 'performance'])->name('members.performance-bonus');
+    });
+
+    Route::middleware('can:manage-admins')->group(function () {
+        Route::get('admins', [AdminUserController::class, 'index'])->name('admins.index');
+        Route::get('admins/create', [AdminUserController::class, 'create'])->name('admins.create');
+        Route::post('admins', [AdminUserController::class, 'store'])->name('admins.store');
+        Route::get('admins/{admin}/edit', [AdminUserController::class, 'edit'])->name('admins.edit');
+        Route::put('admins/{admin}', [AdminUserController::class, 'update'])->name('admins.update');
+        Route::post('roles', [AdminUserController::class, 'storeRole'])->name('roles.store');
+        Route::put('roles/{role}', [AdminUserController::class, 'updateRole'])->name('roles.update');
     });
 });

@@ -1,0 +1,70 @@
+@extends('adminlte::page')
+
+@php
+    $editing = $package->exists;
+    $plain = fn (?int $scaled) => $scaled === null ? '' : \App\Support\Money::toInputString($scaled);
+@endphp
+
+@section('title', $editing ? 'Edit '.$package->name : 'New package')
+
+@section('content_header')
+    <h1>{{ $editing ? 'Edit package' : 'New package' }} @if ($editing)<small class="text-body-secondary">{{ $package->name }}</small>@endif</h1>
+@stop
+
+@section('content')
+    @include('admin.partials.flash')
+
+    <form method="POST" action="{{ $editing ? route('admin.packages.update', $package) : route('admin.packages.store') }}" class="card" style="max-width: 760px"
+          @if ($editing) onsubmit="return confirm('Save this package? New prices and BV apply to future orders only. The change is logged.')" @endif>
+        @csrf
+        @if ($editing) @method('PUT') @endif
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label for="name" class="form-label">Name</label>
+                    <input id="name" name="name" maxlength="100" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $package->name) }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="sort_order" class="form-label">Display order</label>
+                    <input id="sort_order" name="sort_order" type="number" min="0" max="1000" class="form-control @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', $package->sort_order) }}" required>
+                </div>
+                <div class="col-12">
+                    <label for="description" class="form-label">Description <span class="text-body-secondary small">(shown to members)</span></label>
+                    <textarea id="description" name="description" rows="2" maxlength="1000" class="form-control @error('description') is-invalid @enderror">{{ old('description', $package->description) }}</textarea>
+                </div>
+                <div class="col-md-4">
+                    <label for="price" class="form-label">Price (৳)</label>
+                    <input id="price" name="price" type="number" step="0.01" min="0.01" class="form-control @error('price') is-invalid @enderror" value="{{ old('price', $plain($package->price)) }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="bv_value" class="form-label">Business volume (BV)</label>
+                    <input id="bv_value" name="bv_value" type="number" step="0.01" min="0" class="form-control @error('bv_value') is-invalid @enderror" value="{{ old('bv_value', $plain($package->bv_value)) }}" required>
+                    <div class="form-text">What flows up the tree and gets matched.</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="cost_of_goods" class="form-label">Cost of goods (৳)</label>
+                    <input id="cost_of_goods" name="cost_of_goods" type="number" step="0.01" min="0" class="form-control @error('cost_of_goods') is-invalid @enderror" value="{{ old('cost_of_goods', $plain($package->cost_of_goods ?? 0)) }}" required>
+                    <div class="form-text">For the profit reports.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="is_qualifying" class="form-label">Referral bonus</label>
+                    <select id="is_qualifying" name="is_qualifying" class="form-select">
+                        <option value="1" @selected((string) old('is_qualifying', (int) $package->is_qualifying) === '1')>Qualifying — the sponsor earns a referral bonus</option>
+                        <option value="0" @selected((string) old('is_qualifying', (int) $package->is_qualifying) === '0')>Not qualifying — no referral bonus</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="is_active" class="form-label">Availability</label>
+                    <select id="is_active" name="is_active" class="form-select">
+                        <option value="1" @selected((string) old('is_active', (int) $package->is_active) === '1')>On sale</option>
+                        <option value="0" @selected((string) old('is_active', (int) $package->is_active) === '0')>Inactive — hidden at sign-up and checkout</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer d-flex gap-2">
+            <button class="btn btn-primary">{{ $editing ? 'Save package' : 'Create package' }}</button>
+            <a href="{{ route('admin.packages.index') }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+@stop

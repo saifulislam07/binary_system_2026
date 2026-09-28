@@ -106,16 +106,30 @@ decisions every phase follows are recorded in [`CLAUDE.md`](CLAUDE.md).
   uses the same ×100 scale and rates are basis points (`1000` = 10%). Use
   `App\Support\Money` (`percentOf`, `fromTaka`, `bpsFromPercent`, `format`),
   never floats.
-- **Business settings** (commission rate, referral rate, caps, cap overflow,
-  carry-forward, minimum withdrawal) are edited by admins at
-  `/admin/settings` and stored in the database, not `.env`.
+- **Business configuration** lives in the database, not `.env`, and is
+  edited in the admin panel under _Settings_. Every change is audit-logged:
+    - _Business rules_ (`/admin/settings`): commission and referral rates,
+      caps, cap overflow, carry-forward, minimum withdrawal.
+    - _Packages_ (`/admin/packages`): price, BV, cost of goods, qualifying,
+      on sale. Changes apply to new orders only; packages are deactivated,
+      never deleted.
+    - _Ranks & bonuses_ (`/admin/ranks`): rank thresholds and bonuses (each
+      rank must ask at least as much as the one below; names are fixed),
+      plus leadership and sales bonus rules.
+    - _Admins & roles_ (`/admin/admins`): admin accounts, their roles, and
+      what each role may do.
 - **Members** use the `web` guard (`App\Models\User`, role `member`).
   **Admins** use the `admin` guard (`App\Models\Admin`) at `/admin/login`.
+  Every admin can change their own password under _My account_.
 - **Admin permissions** (`App\Enums\AdminPermission`): `manage-members`,
   `manage-tree`, `manage-sales`, `manage-withdrawals`, `manage-kyc`,
-  `manage-settings`, `view-reports`, `send-announcements`. The `admin` role
-  holds all of them; `support` and `finance` are seeded examples.
-  `RolesAndPermissionsSeeder` is idempotent and runs on every deploy.
+  `manage-settings`, `view-reports`, `send-announcements`, `manage-admins`.
+    - The `admin` role always holds all of them. `support` and `finance` are
+      seeded examples; edit them or add roles at `/admin/admins`.
+    - No change can lock the panel out: admins can't deactivate or re-role
+      themselves, and at least one active admin always keeps
+      `manage-admins`.
+    - `RolesAndPermissionsSeeder` is idempotent and runs on every deploy.
 
 ## Production
 

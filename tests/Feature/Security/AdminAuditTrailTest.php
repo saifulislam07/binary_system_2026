@@ -8,20 +8,24 @@ use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalMethodType;
 use App\Http\Controllers\Admin\FinancialController;
 use App\Models\Admin;
+use App\Models\BonusRule;
 use App\Models\Expense;
 use App\Models\FraudFlag;
 use App\Models\IncomeTransaction;
 use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Package;
+use App\Models\Rank;
 use App\Models\Withdrawal;
 use App\Services\WalletService;
 use App\Services\WithdrawalService;
+use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Router;
 use PHPUnit\Framework\Attributes\Group;
 use Spatie\Activitylog\Models\Activity;
+use Spatie\Permission\Models\Role;
 use Tests\Support\BuildsNetwork;
 use Tests\TestCase;
 
@@ -126,6 +130,46 @@ class AdminAuditTrailTest extends TestCase
                 'carry_forward_enabled' => '1', 'cap_overflow_behavior' => 'void', 'min_withdrawal' => '1000',
             ]],
             'admin.announcements.store' => fn () => ['POST', route('admin.announcements.store'), ['title' => 'Notice', 'body' => 'Office closed', 'audience' => 'active']],
+            'admin.packages.store' => fn () => ['POST', route('admin.packages.store'), [
+                'name' => 'Gold Pack', 'price' => '15000', 'bv_value' => '12000', 'cost_of_goods' => '4000',
+                'is_qualifying' => '1', 'is_active' => '1', 'sort_order' => '9',
+            ]],
+            'admin.packages.update' => function () {
+                $package = Package::query()->where('name', 'Basic')->firstOrFail();
+
+                return ['PUT', route('admin.packages.update', $package), [
+                    'name' => 'Basic', 'price' => '1200', 'bv_value' => '1000', 'cost_of_goods' => '300',
+                    'is_qualifying' => '1', 'is_active' => '1', 'sort_order' => (string) $package->sort_order,
+                ]];
+            },
+            'admin.ranks.update' => function () {
+                $ranks = Rank::query()->orderBy('sort_order')->get()->mapWithKeys(fn (Rank $r) => [$r->id => [
+                    'min_personal_sales' => Money::toInputString($r->min_personal_sales),
+                    'min_team_sales' => Money::toInputString($r->min_team_sales),
+                    'min_active_team' => (string) $r->min_active_team,
+                    'bonus_amount' => Money::toInputString($r->bonus_amount + 10_000),
+                ]])->all();
+
+                return ['PUT', route('admin.ranks.update'), ['ranks' => $ranks]];
+            },
+            'admin.bonus-rules.store' => fn () => ['POST', route('admin.bonus-rules.store'), [
+                'type' => BonusRule::LEADERSHIP, 'name' => 'Leadership: 200 active', 'threshold' => '200', 'amount' => '30000', 'is_active' => '1',
+            ]],
+            'admin.bonus-rules.update' => fn () => ['PUT', route('admin.bonus-rules.update', BonusRule::query()->firstOrFail()), [
+                'name' => 'Renamed rule', 'threshold' => '15', 'amount' => '2500', 'is_active' => '0',
+            ]],
+            'admin.admins.store' => fn () => ['POST', route('admin.admins.store'), [
+                'name' => 'Nasrin Finance', 'email' => 'nasrin@example.com', 'role' => 'finance',
+                'password' => 'Sup3r-secret-pass', 'password_confirmation' => 'Sup3r-secret-pass',
+            ]],
+            'admin.admins.update' => fn () => ['PUT', route('admin.admins.update', Admin::factory()->create()->assignRole('support')), [
+                'name' => 'Promoted', 'email' => 'promoted@example.com', 'role' => 'finance', 'is_active' => '1',
+            ]],
+            'admin.roles.store' => fn () => ['POST', route('admin.roles.store'), ['name' => 'accounts', 'permissions' => ['view-reports']]],
+            'admin.roles.update' => fn () => ['PUT', route('admin.roles.update', Role::findByName('support', 'admin')), ['permissions' => ['manage-members']]],
+            'admin.account.password' => fn () => ['PUT', route('admin.account.password'), [
+                'current_password' => 'password', 'password' => 'N3w-admin-pass', 'password_confirmation' => 'N3w-admin-pass',
+            ]],
         ];
     }
 

@@ -19,4 +19,5 @@ enum AdminPermission: string
     case ManageSettings = 'manage-settings';
     case ViewReports = 'view-reports';
     case SendAnnouncements = 'send-announcements';
+    case ManageAdmins = 'manage-admins';
 }
