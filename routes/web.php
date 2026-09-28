@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\KycController;
+use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentCallbackController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\WithdrawalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+// The full membership and commission rules, linked from the shop footer and registration.
+Route::get('membership', MembershipController::class)->name('membership');
 
 Route::get('sponsors/{code}', SponsorLookupController::class)
     ->middleware('throttle:30,1')

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
+import { login, membership } from '@/routes';
 import { store } from '@/routes/register';
 import { show as showSponsor } from '@/routes/sponsors';
 
@@ -249,6 +249,23 @@ if (sponsorCode.value) {
                 />
                 <InputError :message="errors.password_confirmation" />
             </div>
+
+            <p
+                class="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+                data-test="earnings-disclaimer"
+            >
+                Membership is sponsor-based: members earn commission only from
+                genuine product sales in their team. There is no guaranteed
+                income. · সদস্যপদ স্পনসর-ভিত্তিক; আয় শুধু প্রকৃত পণ্য বিক্রি
+                থেকে, কোনো নিশ্চিত আয় নেই।
+                <TextLink
+                    :href="membership()"
+                    target="_blank"
+                    class="font-medium"
+                    data-test="membership-link"
+                    >How membership &amp; earnings work · বিস্তারিত</TextLink
+                >
+            </p>
 
             <Button
                 type="submit"

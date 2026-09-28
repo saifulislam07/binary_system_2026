@@ -11,7 +11,8 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            case name === 'Welcome':
+            // Public pages bring their own header.
+            case name === 'Welcome' || name.startsWith('membership/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

@@ -10,8 +10,10 @@ use Inertia\Response;
 use Laravel\Fortify\Features;
 
 /**
- * Public shop front: the packages on sale as products, and the way in. A
- * `?ref=MBR-…` sponsor code is carried through to registration.
+ * Public shop front, product-first: the packages on sale as products and the
+ * way in. Membership and commission details live on the membership page
+ * (linked from the footer and from registration). A `?ref=MBR-…` sponsor code
+ * is carried through to registration.
  */
 class HomeController extends Controller
 {
@@ -26,8 +28,6 @@ class HomeController extends Controller
                 'name' => $package->name,
                 'description' => $package->description,
                 'price' => Money::format($package->price),
-                'bv' => Money::format($package->bv_value, symbol: false),
-                'qualifying' => $package->is_qualifying,
                 'image' => $package->imageUrl(),
             ])->values(),
             'startingPrice' => $packages->isEmpty() ? null : Money::format((int) $packages->min('price')),

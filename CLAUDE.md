@@ -322,6 +322,14 @@ commission:run {date}`), one transaction per member, idempotent per
         - **Contact:** footer contact details come from `business.contact`
           (`SUPPORT_*` env); blank ones are hidden. Never make up contact
           details, opening hours, ratings or delivery promises.
+        - **Product-first, not hidden:** the owner wants the shop front to
+          read as a normal store, so it carries no team/BV/sponsor/commission
+          talk. The full rules live on `/membership` (`MembershipController`,
+          live rates from `commission_rules`/`settings`), linked from the shop
+          footer. Registration shows the earnings disclaimer plus that link
+          above the submit button. Never remove those disclosures: nobody
+          may pay to join without seeing that membership is sponsor-based and
+          income isn't guaranteed.
         - **Earnings disclaimer:** keep it (income depends on genuine sales,
           nothing is guaranteed, nothing is paid for recruiting alone), and
           never add income promises.

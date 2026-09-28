@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Admin;
+use App\Models\CommissionRule;
 use App\Models\Member;
 use App\Models\Package;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,12 +30,31 @@ class PublicSiteTest extends TestCase
                 ->has('packages', 3)
                 ->where('packages.0.name', 'Basic')
                 ->where('packages.0.price', '৳1,000.00')
-                ->where('packages.0.bv', '1,000.00')
+                ->missing('packages.0.bv') // the shop front is product-first: no BV or commission talk
                 ->where('packages.0.image', null)
                 ->where('startingPrice', '৳1,000.00')
                 ->where('sponsorCode', null)
                 ->where('canRegister', true)
                 ->where('contact', []));
+    }
+
+    public function test_the_membership_page_discloses_the_rules_with_the_live_rates()
+    {
+        $this->get(route('membership'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('membership/Index')
+                ->where('rates.referral', '5%')
+                ->where('rates.binary', '10%')
+                ->where('rates.dailyCap', '৳5,000.00')
+                ->where('rates.weeklyCap', '৳20,000.00')
+                ->where('rates.monthlyCap', '৳50,000.00')
+                ->where('rates.minWithdrawal', '৳1,000.00')
+                ->where('ranks', ['Member', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond']));
+
+        // An admin rate change shows up at once.
+        CommissionRule::query()->where('key', CommissionRule::REFERRAL_RATE_BPS)->update(['value' => '750']);
+        $this->get(route('membership'))->assertInertia(fn (Assert $page) => $page->where('rates.referral', '7.5%'));
     }
 
     public function test_an_admin_uploaded_photo_appears_on_the_shop_card()

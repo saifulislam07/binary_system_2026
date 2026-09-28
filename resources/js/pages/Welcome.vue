@@ -17,7 +17,7 @@ import {
 import { computed } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Button } from '@/components/ui/button';
-import { dashboard, login, register } from '@/routes';
+import { dashboard, login, membership, register } from '@/routes';
 import { index as checkout } from '@/routes/checkout';
 
 type Product = {
@@ -25,8 +25,6 @@ type Product = {
     name: string;
     description: string | null;
     price: string;
-    bv: string;
-    qualifying: boolean;
     image: string | null;
 };
 
@@ -90,28 +88,28 @@ const features = [
     },
     {
         icon: Zap,
-        title: 'Instant activation · সঙ্গে সঙ্গে সক্রিয়',
-        text: 'Your member ID the moment you pay.',
+        title: 'Instant confirmation · সঙ্গে সঙ্গে নিশ্চিত',
+        text: 'Your order is confirmed the moment you pay.',
     },
     {
         icon: Languages,
         title: 'বাংলা ও English',
-        text: 'Your whole account in both languages.',
+        text: 'Shop and manage your account in either.',
     },
 ];
 
 const steps = [
     {
+        title: 'Choose a package · প্যাকেজ বাছুন',
+        text: 'Pick the product bundle that suits you.',
+    },
+    {
         title: 'Create your account · অ্যাকাউন্ট খুলুন',
-        text: 'Sign up with the member ID of the person who invited you.',
+        text: 'Sign up in two minutes with a referral ID.',
     },
     {
-        title: 'Buy a package · প্যাকেজ কিনুন',
-        text: 'Pay by bKash, Nagad or card — you are activated at once.',
-    },
-    {
-        title: 'Grow your team · দল গড়ুন',
-        text: 'Genuine sales in your left and right team earn you commission.',
+        title: 'Pay securely · নিরাপদে পেমেন্ট',
+        text: 'bKash, Nagad or card — your order is confirmed at once.',
     },
 ];
 </script>
@@ -156,7 +154,7 @@ const steps = [
                         >Shop · দোকান</a
                     >
                     <a href="#how" class="hover:text-[#2a78d6]"
-                        >How it works · কীভাবে</a
+                        >How to order · অর্ডার</a
                     >
                     <a href="#payments" class="hover:text-[#2a78d6]"
                         >Payments · পেমেন্ট</a
@@ -202,7 +200,7 @@ const steps = [
                             class="mb-5 inline-flex rounded-full bg-white/15 px-3 py-1 text-sm"
                             data-test="sponsor-invite"
                         >
-                            Invited by sponsor · স্পনসর
+                            Referred by · রেফারেল
                             <strong class="ml-1">{{ sponsorCode }}</strong>
                         </p>
                         <p
@@ -213,10 +211,10 @@ const steps = [
                         <h1
                             class="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-5xl"
                         >
-                            Shop real products. Grow with your team.
+                            Quality products at fair prices.
                         </h1>
                         <p class="mt-3 text-xl text-white/85">
-                            আসল পণ্য কিনুন, নিজের দলের সাথে এগিয়ে যান
+                            মানসম্মত পণ্য, ন্যায্য দামে
                         </p>
                         <p v-if="startingPrice" class="mt-6 text-white/85">
                             Packages from
@@ -320,7 +318,7 @@ const steps = [
                             Shop packages · প্যাকেজ কিনুন
                         </h2>
                         <p class="mt-1 text-muted-foreground">
-                            One package activates your membership.
+                            Choose a bundle and check out in minutes.
                         </p>
                     </div>
                     <p class="text-sm text-muted-foreground">
@@ -360,10 +358,6 @@ const steps = [
                                         product.name
                                     }}</span>
                                 </div>
-                                <span
-                                    class="absolute top-3 left-3 rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-medium shadow-sm"
-                                    >{{ product.bv }} BV</span
-                                >
                             </div>
                             <div class="flex flex-1 flex-col p-3 sm:p-4">
                                 <h3 class="font-semibold">
@@ -418,7 +412,7 @@ const steps = [
             >
                 <div class="mx-auto max-w-7xl px-4 py-12">
                     <h2 id="how-title" class="text-2xl font-semibold">
-                        How it works · কীভাবে কাজ করে
+                        How to order · কীভাবে অর্ডার করবেন
                     </h2>
                     <ol class="mt-8 grid gap-6 md:grid-cols-3">
                         <li
@@ -529,7 +523,7 @@ const steps = [
                         {{ page.props.name }}
                     </div>
                     <p class="mt-4 text-sm text-slate-400">
-                        Genuine products, sold member to member.
+                        Genuine products at fair prices.
                     </p>
                 </div>
 
@@ -567,8 +561,16 @@ const steps = [
                             </li>
                         </template>
                         <li>
+                            <Link
+                                :href="membership()"
+                                class="hover:text-white"
+                                data-test="membership-link"
+                                >Membership &amp; earnings · সদস্যপদ ও আয়</Link
+                            >
+                        </li>
+                        <li>
                             <a href="#how" class="hover:text-white"
-                                >How it works · কীভাবে কাজ করে</a
+                                >How to order · কীভাবে অর্ডার করবেন</a
                             >
                         </li>
                     </ul>
@@ -621,16 +623,6 @@ const steps = [
                 <div
                     class="mx-auto max-w-7xl space-y-2 px-4 py-6 text-xs text-slate-400"
                 >
-                    <p data-test="earnings-disclaimer">
-                        Earnings depend on genuine product sales by you and your
-                        team. There is no guaranteed income, and nothing is paid
-                        for recruiting alone.
-                    </p>
-                    <p>
-                        আয় নির্ভর করে আপনার ও আপনার দলের প্রকৃত পণ্য বিক্রির
-                        উপর। কোনো নিশ্চিত আয় নেই, শুধু সদস্য আনার জন্য কোনো
-                        অর্থ দেওয়া হয় না।
-                    </p>
                     <p>
                         © {{ new Date().getFullYear() }} {{ page.props.name }} ·
                         Prices in BDT · দাম টাকায়
