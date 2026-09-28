@@ -111,8 +111,9 @@ decisions every phase follows are recorded in [`CLAUDE.md`](CLAUDE.md).
     - _Business rules_ (`/admin/settings`): commission and referral rates,
       caps, cap overflow, carry-forward, minimum withdrawal.
     - _Packages_ (`/admin/packages`): price, BV, cost of goods, qualifying,
-      on sale. Changes apply to new orders only; packages are deactivated,
-      never deleted.
+      on sale, and the product photo shown in the shop on the home page.
+      Changes apply to new orders only; packages are deactivated, never
+      deleted.
     - _Ranks & bonuses_ (`/admin/ranks`): rank thresholds and bonuses (each
       rank must ask at least as much as the one below; names are fixed),
       plus leadership and sales bonus rules.
@@ -273,6 +274,7 @@ After any later edit to `shared/.env`, run `php artisan optimize` in
 | `BACKUP_VERIFY_RESTORE`                               | `true` on staging (weekly restore test)                                         |
 | `HEALTH_REQUIRE_WORKERS`                              | `true` once cron and workers run (step 11)                                      |
 | `SENTRY_LARAVEL_DSN` / `SENTRY_ENVIRONMENT`           | your Sentry project DSN / `production`                                          |
+| `SUPPORT_PHONE` / `_EMAIL` / `_ADDRESS` / `_HOURS`    | shown in the shop footer; leave blank to hide                                   |
 
 Confirm the live gateway base URLs with each provider's merchant
 documentation before launch. Test one real low-value payment per gateway.

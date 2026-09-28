@@ -37,8 +37,13 @@
                         <tr data-package="{{ $package->slug }}">
                             <td>{{ $package->sort_order }}</td>
                             <td>
+                                <div class="d-flex align-items-center gap-2">
+                                @if ($package->imageUrl())<img src="{{ $package->imageUrl() }}" alt="" width="48" height="36" class="rounded border" style="object-fit: cover">@endif
+                                <div>
                                 <div class="fw-semibold">{{ $package->name }}</div>
                                 @if ($package->description)<div class="small text-body-secondary">{{ \Illuminate\Support\Str::limit($package->description, 80) }}</div>@endif
+                                </div>
+                                </div>
                             </td>
                             <td class="text-end tabular-nums">{{ $money($package->price) }}</td>
                             <td class="text-end tabular-nums">{{ $bv($package->bv_value) }}</td>

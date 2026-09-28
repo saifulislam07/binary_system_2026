@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\ConfigurationException;
 use App\Models\Admin;
 use App\Models\Package;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -20,15 +21,19 @@ class PackageAdminService
     /**
      * @param  array{name: string, description: string|null, price: int, bv_value: int, cost_of_goods: int, is_qualifying: bool, is_active: bool, sort_order: int}  $data
      */
-    public function create(array $data, Admin $admin): Package
+    public function create(array $data, Admin $admin, ?UploadedFile $image = null): Package
     {
-        return DB::transaction(function () use ($data, $admin) {
+        return DB::transaction(function () use ($data, $admin, $image) {
             $package = Package::query()->create($data);
+
+            if ($image !== null) {
+                $package->addMedia($image)->toMediaCollection('image');
+            }
 
             activity('catalog')
                 ->performedOn($package)
                 ->causedBy($admin)
-                ->withProperties(['attributes' => $package->only(self::AUDITED)])
+                ->withProperties(['attributes' => [...$package->only(self::AUDITED), 'image' => $image !== null ? 'uploaded' : 'none']])
                 ->log('Package created');
 
             return $package;
@@ -38,9 +43,9 @@ class PackageAdminService
     /**
      * @param  array{name: string, description: string|null, price: int, bv_value: int, cost_of_goods: int, is_qualifying: bool, is_active: bool, sort_order: int}  $data
      */
-    public function update(Package $package, array $data, Admin $admin): Package
+    public function update(Package $package, array $data, Admin $admin, ?UploadedFile $image = null, bool $removeImage = false): Package
     {
-        return DB::transaction(function () use ($package, $data, $admin) {
+        return DB::transaction(function () use ($package, $data, $admin, $image, $removeImage) {
             $package = Package::query()->lockForUpdate()->findOrFail($package->id);
             $before = $package->only(self::AUDITED);
 
@@ -52,15 +57,22 @@ class PackageAdminService
             $package->fill($data)->save();
             $after = $package->only(self::AUDITED);
             $changed = array_keys(array_diff_assoc(array_map('strval', $after), array_map('strval', $before)));
+            $old = array_intersect_key($before, array_flip($changed));
+            $new = array_intersect_key($after, array_flip($changed));
 
-            if ($changed !== []) {
+            if ($image !== null) {
+                $package->addMedia($image)->toMediaCollection('image'); // single-file: replaces the old one
+                $new['image'] = 'replaced';
+            } elseif ($removeImage && $package->hasMedia('image')) {
+                $package->clearMediaCollection('image');
+                $new['image'] = 'removed';
+            }
+
+            if ($new !== []) {
                 activity('catalog')
                     ->performedOn($package)
                     ->causedBy($admin)
-                    ->withProperties([
-                        'old' => array_intersect_key($before, array_flip($changed)),
-                        'attributes' => array_intersect_key($after, array_flip($changed)),
-                    ])
+                    ->withProperties(['old' => $old, 'attributes' => $new])
                     ->log('Package updated');
             }
 

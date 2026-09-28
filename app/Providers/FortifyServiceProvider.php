@@ -77,6 +77,8 @@ class FortifyServiceProvider extends ServiceProvider
                 ]),
             // Referral links: /register?ref=MBR-100001
             'sponsorCode' => is_string($ref = $request->query('ref')) ? strtoupper($ref) : null,
+            // ?package= comes from the shop's "Buy now" buttons; only an active package is preselected.
+            'selectedPackageId' => Package::query()->where('is_active', true)->whereKey($request->integer('package'))->value('id'),
         ]));
     }
 

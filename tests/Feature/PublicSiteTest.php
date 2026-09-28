@@ -6,9 +6,12 @@ use App\Models\Admin;
 use App\Models\Member;
 use App\Models\Package;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
 class PublicSiteTest extends TestCase
@@ -27,8 +30,78 @@ class PublicSiteTest extends TestCase
                 ->where('packages.0.name', 'Basic')
                 ->where('packages.0.price', '৳1,000.00')
                 ->where('packages.0.bv', '1,000.00')
+                ->where('packages.0.image', null)
+                ->where('startingPrice', '৳1,000.00')
                 ->where('sponsorCode', null)
-                ->where('canRegister', true));
+                ->where('canRegister', true)
+                ->where('contact', []));
+    }
+
+    public function test_an_admin_uploaded_photo_appears_on_the_shop_card()
+    {
+        Storage::fake('public');
+        $admin = Admin::factory()->superAdmin()->create();
+        $premium = Package::query()->where('name', 'Premium')->firstOrFail();
+        $form = [
+            'name' => 'Premium', 'price' => '10000', 'bv_value' => '10000', 'cost_of_goods' => '4000',
+            'is_qualifying' => '1', 'is_active' => '1', 'sort_order' => (string) $premium->sort_order,
+        ];
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.packages.update', $premium), [...$form, 'image' => UploadedFile::fake()->image('premium.jpg', 1200, 900)])
+            ->assertSessionHasNoErrors();
+
+        $media = $premium->fresh()?->getFirstMedia('image');
+        $this->assertNotNull($media);
+        Storage::disk('public')->assertExists($media->getPathRelativeToRoot('card'));
+        $this->assertSame('replaced', Activity::query()->where('description', 'Package updated')->latest('id')->firstOrFail()->properties['attributes']['image']);
+
+        $this->get('/')->assertInertia(fn (Assert $page) => $page
+            ->where('packages.2.name', 'Premium')
+            ->where('packages.2.image', fn (string $url) => str_contains($url, 'premium-card')));
+
+        // Too small, or not an image: refused.
+        $this->put(route('admin.packages.update', $premium), [...$form, 'image' => UploadedFile::fake()->image('tiny.jpg', 100, 100)])
+            ->assertSessionHasErrors('image');
+        $this->put(route('admin.packages.update', $premium), [...$form, 'image' => UploadedFile::fake()->create('menu.pdf', 50, 'application/pdf')])
+            ->assertSessionHasErrors('image');
+
+        $this->put(route('admin.packages.update', $premium), [...$form, 'remove_image' => '1'])->assertSessionHasNoErrors();
+        $this->assertFalse($premium->fresh()?->hasMedia('image'));
+    }
+
+    public function test_buy_now_preselects_the_package_at_sign_up_and_checkout()
+    {
+        $premium = Package::query()->where('name', 'Premium')->firstOrFail();
+
+        $this->get(route('register', ['package' => $premium->id, 'ref' => 'MBR-100001']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('selectedPackageId', $premium->id)
+                ->where('sponsorCode', 'MBR-100001'));
+
+        $premium->update(['is_active' => false]);
+        $this->get(route('register', ['package' => $premium->id]))
+            ->assertInertia(fn (Assert $page) => $page->where('selectedPackageId', null));
+
+        $basic = Package::query()->where('name', 'Basic')->firstOrFail();
+        $standard = Package::query()->where('name', 'Standard')->firstOrFail();
+        $member = Member::factory()->create(['package_id' => $basic->id]);
+
+        $this->actingAs($member->user)
+            ->get(route('checkout.index', ['package' => $standard->id]))
+            ->assertInertia(fn (Assert $page) => $page->where('selectedPackageId', $standard->id));
+
+        $this->actingAs($member->user)
+            ->get(route('checkout.index', ['package' => 999999]))
+            ->assertInertia(fn (Assert $page) => $page->where('selectedPackageId', $basic->id));
+    }
+
+    public function test_contact_details_show_only_when_configured()
+    {
+        config(['business.contact' => ['phone' => '+8801711000000', 'email' => 'help@example.com', 'address' => '  ', 'hours' => null]]);
+
+        $this->get('/')->assertInertia(fn (Assert $page) => $page
+            ->where('contact', ['phone' => '+8801711000000', 'email' => 'help@example.com']));
     }
 
     public function test_a_referral_link_to_the_home_page_carries_the_sponsor_code()

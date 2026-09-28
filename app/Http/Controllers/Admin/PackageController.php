@@ -17,7 +17,7 @@ class PackageController extends Controller
     public function index(): View
     {
         return view('admin.packages.index', [
-            'packages' => Package::query()->withCount(['members', 'sales'])->orderBy('sort_order')->orderBy('id')->get(),
+            'packages' => Package::query()->with('media')->withCount(['members', 'sales'])->orderBy('sort_order')->orderBy('id')->get(),
         ]);
     }
 
@@ -28,7 +28,7 @@ class PackageController extends Controller
 
     public function store(SavePackageRequest $request, PackageAdminService $packages): RedirectResponse
     {
-        $package = $packages->create($request->packageData(), $this->admin($request));
+        $package = $packages->create($request->packageData(), $this->admin($request), $request->file('image'));
 
         return redirect()->route('admin.packages.index')->with('success', "Package {$package->name} created.");
     }
@@ -41,7 +41,7 @@ class PackageController extends Controller
     public function update(SavePackageRequest $request, Package $package, PackageAdminService $packages): RedirectResponse
     {
         try {
-            $packages->update($package, $request->packageData(), $this->admin($request));
+            $packages->update($package, $request->packageData(), $this->admin($request), $request->file('image'), $request->boolean('remove_image'));
         } catch (ConfigurationException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }

@@ -24,13 +24,14 @@ class CheckoutController extends Controller
 
         abort_if($member === null || $member->status === MemberStatus::Suspended, 403);
 
+        $packages = Package::query()->where('is_active', true)->orderBy('sort_order')->get();
+        // ?package= comes from the shop's "Buy now" buttons.
+        $wanted = $request->integer('package');
+
         return Inertia::render('checkout/Index', [
             'memberStatus' => $member->status->value,
-            'selectedPackageId' => $member->package_id,
-            'packages' => Package::query()
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->get()
+            'selectedPackageId' => $packages->contains('id', $wanted) ? $wanted : $member->package_id,
+            'packages' => $packages
                 ->map(fn (Package $package) => [
                     'id' => $package->id,
                     'name' => $package->name,

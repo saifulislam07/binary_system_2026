@@ -38,6 +38,14 @@ return [
     // allowed to create/drop `<database>_restore_check` — enable on staging.
     'backup_verify_restore' => (bool) env('BACKUP_VERIFY_RESTORE', false),
 
+    // Public contact details for the shop's footer. Blank ones are hidden.
+    'contact' => [
+        'phone' => env('SUPPORT_PHONE'),
+        'email' => env('SUPPORT_EMAIL'),
+        'address' => env('SUPPORT_ADDRESS'),
+        'hours' => env('SUPPORT_HOURS'),
+    ],
+
     // Extra members LoadTestNetworkSeeder adds (dev/staging performance runs only).
     'load_test_members' => (int) env('LOAD_TEST_MEMBERS', 1000),
 

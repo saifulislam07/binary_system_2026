@@ -1,85 +1,139 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
+    ArrowRight,
     BadgeCheck,
-    Network,
+    Clock,
+    Languages,
+    Mail,
+    MapPin,
+    Phone,
     ShieldCheck,
     ShoppingBag,
-    UserPlus,
-    Wallet,
+    ShoppingCart,
+    UserRound,
+    Zap,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Button } from '@/components/ui/button';
 import { dashboard, login, register } from '@/routes';
+import { index as checkout } from '@/routes/checkout';
 
-type PackageCard = {
+type Product = {
     id: number;
     name: string;
     description: string | null;
     price: string;
     bv: string;
     qualifying: boolean;
+    image: string | null;
+};
+
+type Contact = {
+    phone?: string;
+    email?: string;
+    address?: string;
+    hours?: string;
 };
 
 const props = defineProps<{
-    packages: PackageCard[];
+    packages: Product[];
+    startingPrice: string | null;
     sponsorCode: string | null;
     canRegister: boolean;
+    contact: Contact;
 }>();
 
 const page = usePage();
 const signedIn = computed(() => Boolean(page.props.auth.user));
-const joinUrl = computed(() =>
-    register.url(
-        props.sponsorCode ? { query: { ref: props.sponsorCode } } : undefined,
-    ),
-);
 
-const steps = [
+function joinUrl(packageId?: number): string {
+    const query: Record<string, string | number> = {};
+
+    if (props.sponsorCode) {
+        query.ref = props.sponsorCode;
+    }
+
+    if (packageId) {
+        query.package = packageId;
+    }
+
+    return register.url(Object.keys(query).length ? { query } : undefined);
+}
+
+/** "Buy now": members go straight to checkout, visitors sign up first. */
+function buyUrl(product: Product): string {
+    return signedIn.value
+        ? checkout.url({ query: { package: product.id } })
+        : joinUrl(product.id);
+}
+
+// Decorative tints for products without a photo yet.
+const tints = [
+    'from-sky-100 to-blue-200 text-blue-700 dark:from-sky-950 dark:to-blue-900 dark:text-blue-200',
+    'from-emerald-100 to-teal-200 text-teal-700 dark:from-emerald-950 dark:to-teal-900 dark:text-teal-200',
+    'from-amber-100 to-orange-200 text-orange-700 dark:from-amber-950 dark:to-orange-900 dark:text-orange-200',
+    'from-violet-100 to-fuchsia-200 text-fuchsia-700 dark:from-violet-950 dark:to-fuchsia-900 dark:text-fuchsia-200',
+];
+
+const features = [
     {
-        icon: UserPlus,
-        title: 'Register with a sponsor ID · স্পনসরের আইডি দিয়ে নিবন্ধন',
-        text: 'Sign up with the member ID of the person who invited you, and choose the left or right side of their team.',
+        icon: BadgeCheck,
+        title: 'Genuine products · আসল পণ্য',
+        text: 'Every package is a real product bundle.',
     },
     {
-        icon: ShoppingBag,
-        title: 'Activate with a package · প্যাকেজ কিনে সক্রিয় হোন',
-        text: 'Pay by bKash, Nagad or card. You get your own member ID and your place in the tree straight away.',
+        icon: ShieldCheck,
+        title: 'Secure checkout · নিরাপদ পেমেন্ট',
+        text: 'Payments are confirmed with the gateway.',
     },
     {
-        icon: Network,
-        title: 'Grow both sides of your team · দুই পাশে দল গড়ুন',
-        text: 'Genuine package sales in your team add business volume (BV) to your left and right legs; matched volume earns commission.',
+        icon: Zap,
+        title: 'Instant activation · সঙ্গে সঙ্গে সক্রিয়',
+        text: 'Your member ID the moment you pay.',
+    },
+    {
+        icon: Languages,
+        title: 'বাংলা ও English',
+        text: 'Your whole account in both languages.',
     },
 ];
 
-const promises = [
+const steps = [
     {
-        icon: ShieldCheck,
-        title: 'Payments confirmed with the gateway · যাচাইকৃত পেমেন্ট',
-        text: 'Every payment is verified directly with bKash, Nagad or SSLCommerz before anything is credited.',
+        title: 'Create your account · অ্যাকাউন্ট খুলুন',
+        text: 'Sign up with the member ID of the person who invited you.',
     },
     {
-        icon: Wallet,
-        title: 'Every taka on your ledger · প্রতিটি টাকার হিসাব',
-        text: 'Your wallet shows each commission, bonus and withdrawal — the balance is always the sum of its entries.',
+        title: 'Buy a package · প্যাকেজ কিনুন',
+        text: 'Pay by bKash, Nagad or card — you are activated at once.',
     },
     {
-        icon: BadgeCheck,
-        title: 'Verified withdrawals · নিরাপদ উত্তোলন',
-        text: 'Withdraw to bKash, Nagad or your bank after identity (KYC) checks, reviewed by our team.',
+        title: 'Grow your team · দল গড়ুন',
+        text: 'Genuine sales in your left and right team earn you commission.',
     },
 ];
 </script>
 
 <template>
-    <Head title="Welcome · স্বাগতম" />
+    <Head title="Shop · দোকান" />
 
     <div class="min-h-screen bg-background text-foreground">
-        <header class="border-b">
+        <!-- Announcement bar -->
+        <div class="bg-[#2a78d6] text-white">
+            <p class="mx-auto max-w-7xl px-4 py-2 text-center text-sm">
+                Secure checkout with bKash, Nagad &amp; card · বিকাশ, নগদ ও
+                কার্ডে নিরাপদ পেমেন্ট
+            </p>
+        </div>
+
+        <!-- Header -->
+        <header
+            class="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80"
+        >
             <div
-                class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4"
+                class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4"
             >
                 <Link
                     href="/"
@@ -87,204 +141,501 @@ const promises = [
                     aria-label="Home"
                 >
                     <span
-                        class="flex size-8 items-center justify-center rounded-md bg-[#2a78d6] text-white"
+                        class="flex size-9 items-center justify-center rounded-lg bg-[#2a78d6] text-white"
                     >
                         <AppLogoIcon class="size-5" />
                     </span>
-                    <span>{{ page.props.name }}</span>
+                    <span class="hidden sm:inline">{{ page.props.name }}</span>
                 </Link>
-                <nav class="flex items-center gap-2" aria-label="Account">
-                    <Button v-if="signedIn" as-child>
-                        <Link :href="dashboard()">Dashboard · ড্যাশবোর্ড</Link>
-                    </Button>
-                    <template v-else>
-                        <!-- On phones the hero's own log-in button is enough. -->
-                        <Button
-                            variant="ghost"
-                            class="hidden sm:inline-flex"
-                            as-child
-                        >
-                            <Link :href="login()">Log in · লগইন</Link>
-                        </Button>
-                        <Button v-if="canRegister" as-child>
-                            <Link :href="joinUrl">Join · যোগ দিন</Link>
-                        </Button>
-                    </template>
+
+                <nav
+                    class="hidden items-center gap-6 text-sm md:flex"
+                    aria-label="Sections"
+                >
+                    <a href="#shop" class="hover:text-[#2a78d6]"
+                        >Shop · দোকান</a
+                    >
+                    <a href="#how" class="hover:text-[#2a78d6]"
+                        >How it works · কীভাবে</a
+                    >
+                    <a href="#payments" class="hover:text-[#2a78d6]"
+                        >Payments · পেমেন্ট</a
+                    >
                 </nav>
+
+                <div class="flex items-center gap-1">
+                    <Button variant="ghost" as-child>
+                        <Link
+                            :href="signedIn ? dashboard() : login()"
+                            data-test="account-link"
+                        >
+                            <UserRound class="size-5" aria-hidden="true" />
+                            <span class="hidden sm:inline">{{
+                                signedIn
+                                    ? 'My account · আমার অ্যাকাউন্ট'
+                                    : 'Log in · লগইন'
+                            }}</span>
+                            <span class="sr-only sm:hidden">{{
+                                signedIn ? 'My account' : 'Log in'
+                            }}</span>
+                        </Link>
+                    </Button>
+                    <Button as-child>
+                        <a href="#shop">
+                            <ShoppingBag class="size-5" aria-hidden="true" />
+                            Shop now · কিনুন
+                        </a>
+                    </Button>
+                </div>
             </div>
         </header>
 
         <main>
-            <section class="mx-auto max-w-6xl px-4 py-16 sm:py-24">
-                <p
-                    v-if="sponsorCode"
-                    class="mb-4 inline-flex rounded-full border px-3 py-1 text-sm"
-                    data-test="sponsor-invite"
+            <!-- Hero banner -->
+            <section class="mx-auto max-w-7xl px-4 pt-6">
+                <div
+                    class="grid overflow-hidden rounded-2xl bg-linear-to-br from-[#2a78d6] to-[#154a8c] text-white md:grid-cols-2"
                 >
-                    Invited by sponsor · স্পনসর
-                    <strong class="ml-1">{{ sponsorCode }}</strong>
-                </p>
-                <h1
-                    class="max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl"
-                >
-                    Build a business on real products, together with your team
-                </h1>
-                <p class="mt-3 text-xl text-muted-foreground sm:text-2xl">
-                    আসল পণ্যে, নিজের দলের সাথে গড়ে তুলুন আপনার ব্যবসা
-                </p>
-                <p class="mt-6 max-w-2xl text-lg text-muted-foreground">
-                    Buy a package, share your sponsor ID, and earn from the
-                    genuine sales your team makes — paid into your wallet and
-                    withdrawn to bKash, Nagad or your bank.
-                </p>
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <Button v-if="signedIn" size="lg" as-child>
-                        <Link :href="dashboard()"
-                            >Go to your dashboard · ড্যাশবোর্ডে যান</Link
+                    <div class="p-8 sm:p-12">
+                        <p
+                            v-if="sponsorCode"
+                            class="mb-5 inline-flex rounded-full bg-white/15 px-3 py-1 text-sm"
+                            data-test="sponsor-invite"
                         >
-                    </Button>
-                    <template v-else>
-                        <Button v-if="canRegister" size="lg" as-child>
-                            <Link :href="joinUrl">Join now · এখনই যোগ দিন</Link>
-                        </Button>
-                        <Button size="lg" variant="outline" as-child>
-                            <Link :href="login()"
-                                >I'm already a member · লগইন</Link
+                            Invited by sponsor · স্পনসর
+                            <strong class="ml-1">{{ sponsorCode }}</strong>
+                        </p>
+                        <p
+                            class="text-sm font-medium tracking-wide text-white/80 uppercase"
+                        >
+                            Genuine products · আসল পণ্য
+                        </p>
+                        <h1
+                            class="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-5xl"
+                        >
+                            Shop real products. Grow with your team.
+                        </h1>
+                        <p class="mt-3 text-xl text-white/85">
+                            আসল পণ্য কিনুন, নিজের দলের সাথে এগিয়ে যান
+                        </p>
+                        <p v-if="startingPrice" class="mt-6 text-white/85">
+                            Packages from
+                            <strong class="text-2xl text-white">{{
+                                startingPrice
+                            }}</strong>
+                        </p>
+                        <div class="mt-8 flex flex-wrap gap-3">
+                            <a
+                                href="#shop"
+                                class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-white px-6 py-2 text-center font-semibold text-[#154a8c] shadow-sm hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a78d6] focus-visible:outline-none sm:w-auto"
                             >
-                        </Button>
-                    </template>
+                                Shop packages · প্যাকেজ দেখুন
+                                <ArrowRight class="size-4" aria-hidden="true" />
+                            </a>
+                            <Link
+                                v-if="!signedIn && canRegister"
+                                :href="joinUrl()"
+                                class="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/60 px-6 py-2 text-center font-medium hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:w-auto"
+                            >
+                                Create account · অ্যাকাউন্ট খুলুন
+                            </Link>
+                        </div>
+                    </div>
+
+                    <!-- Product collage -->
+                    <div
+                        class="relative hidden items-center justify-center p-10 md:flex"
+                        aria-hidden="true"
+                    >
+                        <div class="grid w-full max-w-sm grid-cols-2 gap-4">
+                            <div
+                                v-for="(product, i) in packages.slice(0, 4)"
+                                :key="product.id"
+                                class="overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5"
+                                :class="i % 2 === 1 ? 'translate-y-6' : ''"
+                            >
+                                <img
+                                    v-if="product.image"
+                                    :src="product.image"
+                                    alt=""
+                                    class="aspect-4/3 w-full object-cover"
+                                />
+                                <div
+                                    v-else
+                                    class="flex aspect-4/3 items-center justify-center bg-linear-to-br"
+                                    :class="tints[i % tints.length]"
+                                >
+                                    <AppLogoIcon class="size-10" />
+                                </div>
+                                <div class="px-3 py-2 text-sm text-slate-900">
+                                    <p class="truncate font-medium">
+                                        {{ product.name }}
+                                    </p>
+                                    <p class="font-semibold tabular-nums">
+                                        {{ product.price }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <section class="border-t bg-muted/30" aria-labelledby="how">
-                <div class="mx-auto max-w-6xl px-4 py-16">
-                    <h2 id="how" class="text-2xl font-semibold">
+            <!-- Feature strip -->
+            <section class="mx-auto max-w-7xl px-4 py-8">
+                <ul
+                    class="grid grid-cols-1 divide-y rounded-xl border sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0"
+                >
+                    <li
+                        v-for="feature in features"
+                        :key="feature.title"
+                        class="flex items-start gap-3 p-4 sm:p-5"
+                    >
+                        <component
+                            :is="feature.icon"
+                            class="mt-0.5 size-6 shrink-0 text-[#2a78d6]"
+                            aria-hidden="true"
+                        />
+                        <div>
+                            <p class="text-sm font-semibold">
+                                {{ feature.title }}
+                            </p>
+                            <p class="text-xs text-muted-foreground">
+                                {{ feature.text }}
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Shop -->
+            <section
+                id="shop"
+                class="mx-auto max-w-7xl scroll-mt-20 px-4 py-8"
+                aria-labelledby="shop-title"
+            >
+                <div class="flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                        <h2 id="shop-title" class="text-2xl font-semibold">
+                            Shop packages · প্যাকেজ কিনুন
+                        </h2>
+                        <p class="mt-1 text-muted-foreground">
+                            One package activates your membership.
+                        </p>
+                    </div>
+                    <p class="text-sm text-muted-foreground">
+                        {{ packages.length }} products · টি পণ্য
+                    </p>
+                </div>
+
+                <ul
+                    v-if="packages.length > 0"
+                    class="mt-6 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4"
+                >
+                    <li
+                        v-for="(product, i) in packages"
+                        :key="product.id"
+                        data-test="package-card"
+                    >
+                        <article
+                            class="group flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-lg"
+                        >
+                            <div
+                                class="relative aspect-4/3 overflow-hidden bg-muted"
+                            >
+                                <img
+                                    v-if="product.image"
+                                    :src="product.image"
+                                    :alt="product.name"
+                                    loading="lazy"
+                                    class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                                <div
+                                    v-else
+                                    class="flex size-full flex-col items-center justify-center gap-2 bg-linear-to-br"
+                                    :class="tints[i % tints.length]"
+                                >
+                                    <AppLogoIcon class="size-8 sm:size-12" />
+                                    <span class="text-sm font-semibold">{{
+                                        product.name
+                                    }}</span>
+                                </div>
+                                <span
+                                    class="absolute top-3 left-3 rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-medium shadow-sm"
+                                    >{{ product.bv }} BV</span
+                                >
+                            </div>
+                            <div class="flex flex-1 flex-col p-3 sm:p-4">
+                                <h3 class="font-semibold">
+                                    {{ product.name }}
+                                </h3>
+                                <p
+                                    v-if="product.description"
+                                    class="mt-1 line-clamp-2 text-xs text-muted-foreground sm:text-sm"
+                                >
+                                    {{ product.description }}
+                                </p>
+                                <p
+                                    class="mt-auto pt-3 text-lg font-bold tracking-tight tabular-nums sm:pt-4 sm:text-2xl"
+                                >
+                                    {{ product.price }}
+                                </p>
+                                <Button
+                                    v-if="signedIn || canRegister"
+                                    class="mt-3 w-full"
+                                    as-child
+                                >
+                                    <Link :href="buyUrl(product)">
+                                        <ShoppingCart
+                                            class="size-4"
+                                            aria-hidden="true"
+                                        />
+                                        <span class="sm:hidden"
+                                            >Buy · কিনুন</span
+                                        >
+                                        <span class="hidden sm:inline"
+                                            >Buy now · এখনই কিনুন</span
+                                        >
+                                    </Link>
+                                </Button>
+                            </div>
+                        </article>
+                    </li>
+                </ul>
+                <p
+                    v-else
+                    class="mt-6 rounded-xl border p-8 text-center text-muted-foreground"
+                >
+                    New packages are coming soon · শীঘ্রই নতুন প্যাকেজ আসছে
+                </p>
+            </section>
+
+            <!-- How it works -->
+            <section
+                id="how"
+                class="scroll-mt-20 border-y bg-muted/40"
+                aria-labelledby="how-title"
+            >
+                <div class="mx-auto max-w-7xl px-4 py-12">
+                    <h2 id="how-title" class="text-2xl font-semibold">
                         How it works · কীভাবে কাজ করে
                     </h2>
                     <ol class="mt-8 grid gap-6 md:grid-cols-3">
                         <li
                             v-for="(step, i) in steps"
                             :key="step.title"
-                            class="rounded-xl border bg-card p-6"
+                            class="flex gap-4"
                         >
-                            <div class="flex items-center gap-3">
-                                <span
-                                    class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#2a78d6]/10 text-[#2a78d6]"
-                                >
-                                    <component
-                                        :is="step.icon"
-                                        class="size-5"
-                                        aria-hidden="true"
-                                    />
-                                </span>
-                                <span class="text-sm text-muted-foreground"
-                                    >Step {{ i + 1 }} · ধাপ {{ i + 1 }}</span
-                                >
+                            <span
+                                class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#2a78d6] font-semibold text-white"
+                                >{{ i + 1 }}</span
+                            >
+                            <div>
+                                <h3 class="font-semibold">{{ step.title }}</h3>
+                                <p class="mt-1 text-sm text-muted-foreground">
+                                    {{ step.text }}
+                                </p>
                             </div>
-                            <h3 class="mt-4 font-semibold">{{ step.title }}</h3>
-                            <p class="mt-2 text-sm text-muted-foreground">
-                                {{ step.text }}
-                            </p>
                         </li>
                     </ol>
                 </div>
             </section>
 
+            <!-- Payments -->
             <section
-                v-if="packages.length > 0"
-                class="border-t"
-                aria-labelledby="packages"
+                id="payments"
+                class="mx-auto max-w-7xl scroll-mt-20 px-4 py-12"
+                aria-labelledby="payments-title"
             >
-                <div class="mx-auto max-w-6xl px-4 py-16">
-                    <h2 id="packages" class="text-2xl font-semibold">
-                        Packages · প্যাকেজ
-                    </h2>
-                    <p class="mt-2 text-muted-foreground">
-                        One package activates your membership. BV is the
-                        business volume it adds to your upline's team.
-                    </p>
-                    <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div
+                    class="flex flex-col items-start justify-between gap-6 rounded-2xl border p-6 sm:p-8 md:flex-row md:items-center"
+                >
+                    <div>
+                        <h2 id="payments-title" class="text-xl font-semibold">
+                            Pay your way · আপনার সুবিধামতো পেমেন্ট
+                        </h2>
+                        <p class="mt-1 max-w-xl text-sm text-muted-foreground">
+                            Every payment is confirmed directly with the gateway
+                            before your order completes, and every taka lands on
+                            your wallet ledger.
+                        </p>
+                    </div>
+                    <ul
+                        class="flex flex-wrap gap-2"
+                        aria-label="Accepted payment methods"
+                    >
                         <li
-                            v-for="pkg in packages"
-                            :key="pkg.id"
-                            class="flex flex-col rounded-xl border bg-card p-6"
-                            data-test="package-card"
+                            class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium"
                         >
-                            <h3 class="font-semibold">{{ pkg.name }}</h3>
-                            <p
-                                class="mt-3 text-3xl font-semibold tracking-tight tabular-nums"
-                            >
-                                {{ pkg.price }}
-                            </p>
-                            <p class="mt-1 text-sm text-muted-foreground">
-                                {{ pkg.bv }} BV
-                            </p>
-                            <p
-                                v-if="pkg.description"
-                                class="mt-4 text-sm text-muted-foreground"
-                            >
-                                {{ pkg.description }}
-                            </p>
-                            <div class="mt-auto pt-6">
-                                <Button
-                                    v-if="!signedIn && canRegister"
-                                    variant="outline"
-                                    class="w-full"
-                                    as-child
-                                >
-                                    <Link :href="joinUrl"
-                                        >Join with {{ pkg.name }}</Link
-                                    >
-                                </Button>
-                            </div>
+                            <span class="size-2.5 rounded-full bg-[#e2136e]" />
+                            bKash · বিকাশ
+                        </li>
+                        <li
+                            class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium"
+                        >
+                            <span class="size-2.5 rounded-full bg-[#f6921e]" />
+                            Nagad · নগদ
+                        </li>
+                        <li
+                            class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium"
+                        >
+                            <span class="size-2.5 rounded-full bg-[#2a78d6]" />
+                            Visa · Mastercard · Amex
                         </li>
                     </ul>
                 </div>
             </section>
 
-            <section class="border-t bg-muted/30" aria-labelledby="trust">
-                <div class="mx-auto max-w-6xl px-4 py-16">
-                    <h2 id="trust" class="sr-only">Our promises</h2>
-                    <ul class="grid gap-6 md:grid-cols-3">
-                        <li
-                            v-for="promise in promises"
-                            :key="promise.title"
-                            class="flex gap-4"
-                        >
-                            <component
-                                :is="promise.icon"
-                                class="mt-0.5 size-6 shrink-0 text-[#2a78d6]"
-                                aria-hidden="true"
-                            />
-                            <div>
-                                <h3 class="font-semibold">
-                                    {{ promise.title }}
-                                </h3>
-                                <p class="mt-1 text-sm text-muted-foreground">
-                                    {{ promise.text }}
-                                </p>
-                            </div>
-                        </li>
-                    </ul>
+            <!-- Call to action -->
+            <section
+                v-if="!signedIn && canRegister"
+                class="mx-auto max-w-7xl px-4 pb-12"
+            >
+                <div
+                    class="flex flex-col items-start justify-between gap-4 rounded-2xl bg-slate-900 p-8 text-white sm:flex-row sm:items-center dark:bg-slate-800"
+                >
+                    <div>
+                        <p class="text-xl font-semibold">
+                            Ready to start? · শুরু করতে প্রস্তুত?
+                        </p>
+                        <p class="mt-1 text-white/75">
+                            Create your account in two minutes.
+                        </p>
+                    </div>
+                    <Link
+                        :href="joinUrl()"
+                        class="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 font-semibold text-slate-900 hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                    >
+                        Create account · অ্যাকাউন্ট খুলুন
+                        <ArrowRight class="size-4" aria-hidden="true" />
+                    </Link>
                 </div>
             </section>
         </main>
 
-        <footer class="border-t">
+        <footer class="bg-slate-950 text-slate-300">
             <div
-                class="mx-auto max-w-6xl space-y-2 px-4 py-8 text-sm text-muted-foreground"
+                class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4"
             >
-                <p data-test="earnings-disclaimer">
-                    Earnings depend on genuine product sales by you and your
-                    team. There is no guaranteed income, and nothing is paid for
-                    recruiting alone.
-                </p>
-                <p>
-                    আয় নির্ভর করে আপনার ও আপনার দলের প্রকৃত পণ্য বিক্রির উপর।
-                    কোনো নিশ্চিত আয় নেই, শুধু সদস্য আনার জন্য কোনো অর্থ দেওয়া
-                    হয় না।
-                </p>
-                <p>© {{ new Date().getFullYear() }} {{ page.props.name }}</p>
+                <div class="lg:col-span-1">
+                    <div
+                        class="flex items-center gap-2 font-semibold text-white"
+                    >
+                        <span
+                            class="flex size-8 items-center justify-center rounded-md bg-[#2a78d6]"
+                        >
+                            <AppLogoIcon class="size-5" />
+                        </span>
+                        {{ page.props.name }}
+                    </div>
+                    <p class="mt-4 text-sm text-slate-400">
+                        Genuine products, sold member to member.
+                    </p>
+                </div>
+
+                <nav aria-label="Shop">
+                    <p class="font-semibold text-white">Shop · দোকান</p>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li v-for="product in packages" :key="product.id">
+                            <Link
+                                :href="buyUrl(product)"
+                                class="hover:text-white"
+                                >{{ product.name }} — {{ product.price }}</Link
+                            >
+                        </li>
+                    </ul>
+                </nav>
+
+                <nav aria-label="Account">
+                    <p class="font-semibold text-white">Account · অ্যাকাউন্ট</p>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li v-if="signedIn">
+                            <Link :href="dashboard()" class="hover:text-white"
+                                >My dashboard · ড্যাশবোর্ড</Link
+                            >
+                        </li>
+                        <template v-else>
+                            <li>
+                                <Link :href="login()" class="hover:text-white"
+                                    >Log in · লগইন</Link
+                                >
+                            </li>
+                            <li v-if="canRegister">
+                                <Link :href="joinUrl()" class="hover:text-white"
+                                    >Create account · অ্যাকাউন্ট খুলুন</Link
+                                >
+                            </li>
+                        </template>
+                        <li>
+                            <a href="#how" class="hover:text-white"
+                                >How it works · কীভাবে কাজ করে</a
+                            >
+                        </li>
+                    </ul>
+                </nav>
+
+                <div v-if="Object.keys(contact).length" data-test="contact">
+                    <p class="font-semibold text-white">Contact · যোগাযোগ</p>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li v-if="contact.phone" class="flex gap-2">
+                            <Phone
+                                class="mt-0.5 size-4 shrink-0"
+                                aria-hidden="true"
+                            />
+                            <a
+                                :href="`tel:${contact.phone}`"
+                                class="hover:text-white"
+                                >{{ contact.phone }}</a
+                            >
+                        </li>
+                        <li v-if="contact.email" class="flex gap-2">
+                            <Mail
+                                class="mt-0.5 size-4 shrink-0"
+                                aria-hidden="true"
+                            />
+                            <a
+                                :href="`mailto:${contact.email}`"
+                                class="hover:text-white"
+                                >{{ contact.email }}</a
+                            >
+                        </li>
+                        <li v-if="contact.address" class="flex gap-2">
+                            <MapPin
+                                class="mt-0.5 size-4 shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span>{{ contact.address }}</span>
+                        </li>
+                        <li v-if="contact.hours" class="flex gap-2">
+                            <Clock
+                                class="mt-0.5 size-4 shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span>{{ contact.hours }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800">
+                <div
+                    class="mx-auto max-w-7xl space-y-2 px-4 py-6 text-xs text-slate-400"
+                >
+                    <p data-test="earnings-disclaimer">
+                        Earnings depend on genuine product sales by you and your
+                        team. There is no guaranteed income, and nothing is paid
+                        for recruiting alone.
+                    </p>
+                    <p>
+                        আয় নির্ভর করে আপনার ও আপনার দলের প্রকৃত পণ্য বিক্রির
+                        উপর। কোনো নিশ্চিত আয় নেই, শুধু সদস্য আনার জন্য কোনো
+                        অর্থ দেওয়া হয় না।
+                    </p>
+                    <p>
+                        © {{ new Date().getFullYear() }} {{ page.props.name }} ·
+                        Prices in BDT · দাম টাকায়
+                    </p>
+                </div>
             </div>
         </footer>
     </div>

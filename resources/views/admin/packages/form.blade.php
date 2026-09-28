@@ -14,7 +14,7 @@
 @section('content')
     @include('admin.partials.flash')
 
-    <form method="POST" action="{{ $editing ? route('admin.packages.update', $package) : route('admin.packages.store') }}" class="card" style="max-width: 760px"
+    <form method="POST" action="{{ $editing ? route('admin.packages.update', $package) : route('admin.packages.store') }}" class="card" style="max-width: 760px" enctype="multipart/form-data"
           @if ($editing) onsubmit="return confirm('Save this package? New prices and BV apply to future orders only. The change is logged.')" @endif>
         @csrf
         @if ($editing) @method('PUT') @endif
@@ -45,6 +45,20 @@
                     <label for="cost_of_goods" class="form-label">Cost of goods (৳)</label>
                     <input id="cost_of_goods" name="cost_of_goods" type="number" step="0.01" min="0" class="form-control @error('cost_of_goods') is-invalid @enderror" value="{{ old('cost_of_goods', $plain($package->cost_of_goods ?? 0)) }}" required>
                     <div class="form-text">For the profit reports.</div>
+                </div>
+                <div class="col-12">
+                    <label for="image" class="form-label">Product photo <span class="text-body-secondary small">(shop card, cropped to 4:3)</span></label>
+                    @if ($editing && $package->imageUrl())
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <img src="{{ $package->imageUrl() }}" alt="" width="160" height="120" class="rounded border" style="object-fit: cover">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remove_image" value="1" id="remove_image">
+                                <label class="form-check-label" for="remove_image">Remove photo</label>
+                            </div>
+                        </div>
+                    @endif
+                    <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" class="form-control @error('image') is-invalid @enderror">
+                    <div class="form-text">JPG, PNG or WebP, at least 400×300 px, up to 2 MB. Leave empty to keep the current photo.</div>
                 </div>
                 <div class="col-md-6">
                     <label for="is_qualifying" class="form-label">Referral bonus</label>

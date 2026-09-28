@@ -33,6 +33,9 @@ class SavePackageRequest extends FormRequest
             'is_qualifying' => ['required', 'boolean'],
             'is_active' => ['required', 'boolean'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:1000'],
+            // Product photo for the shop; cropped to a 4:3 card.
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:min_width=400,min_height=300'],
+            'remove_image' => ['nullable', 'boolean'],
         ];
     }
 

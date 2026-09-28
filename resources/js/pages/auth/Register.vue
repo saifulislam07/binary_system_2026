@@ -18,6 +18,7 @@ const props = defineProps<{
     passwordRules: string;
     packages: PackageOption[];
     sponsorCode: string | null;
+    selectedPackageId?: number | null;
 }>();
 
 defineOptions({
@@ -135,11 +136,14 @@ if (sponsorCode.value) {
                     :tabindex="3"
                     :class="fieldClass"
                 >
-                    <option value="" disabled selected>Choose a package</option>
+                    <option value="" disabled :selected="!selectedPackageId">
+                        Choose a package
+                    </option>
                     <option
                         v-for="pkg in packages"
                         :key="pkg.id"
                         :value="pkg.id"
+                        :selected="pkg.id === selectedPackageId"
                     >
                         {{ pkg.name }} — {{ pkg.price }}
                     </option>

@@ -308,11 +308,23 @@ commission:run {date}`), one transaction per member, idempotent per
       (e.g. `packageData()`), never `attributes()` — that name is
       FormRequest's validation-label hook.
 - **Public site & polish (Phase 17):**
-    - **Landing page:** `/` is `HomeController` → `Welcome.vue`. It lists the
-      active packages and carries a valid `?ref=MBR-…` through to
-      registration. Keep the earnings disclaimer: income depends on genuine
-      sales, nothing is guaranteed, and nothing is paid for recruiting alone.
-      Never add income promises.
+    - **Landing page:** `/` is `HomeController` → `Welcome.vue`, laid out as
+      a shop: the active packages are product cards.
+        - **Photos:** each package's photo is media collection `image` on the
+          public disk, with a 4:3 `card` conversion made at upload
+          (`Package::imageUrl()`). Admins upload or remove it on the package
+          form. Packages without a photo show a tinted placeholder.
+        - **Buy now:** it links to `register?package=` (visitors, plus
+          `ref`) or `checkout?package=` (members). Both pages preselect that
+          package if it is active.
+        - **Referral links:** a valid `?ref=MBR-…` is carried through to
+          registration.
+        - **Contact:** footer contact details come from `business.contact`
+          (`SUPPORT_*` env); blank ones are hidden. Never make up contact
+          details, opening hours, ratings or delivery promises.
+        - **Earnings disclaimer:** keep it (income depends on genuine sales,
+          nothing is guaranteed, nothing is paid for recruiting alone), and
+          never add income promises.
     - **Brand mark:** a binary tree glyph in `AppLogoIcon.vue`,
       `public/favicon.svg` and `public/images/logo.svg` (admin logo and
       preloader). The PNG/ICO icons were rendered from the same shape with
