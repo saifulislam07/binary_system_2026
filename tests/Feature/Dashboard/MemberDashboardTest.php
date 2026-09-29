@@ -134,6 +134,8 @@ class MemberDashboardTest extends TestCase
                 ->where('tree.leftBv', 138_000)
                 ->where('tree.rightBv', 66_000)
                 ->where('tree.teamBv', 204_000)
+                ->has('tree.rank')
+                ->where('tree.joined', fn (?string $date) => $date !== null && strlen($date) === 10)
                 ->where('tree.children.left.code', 'MBR-100002')
                 ->where('tree.children.right.code', 'MBR-100003')
                 ->where('tree.children.left.children.left.code', 'MBR-100004')

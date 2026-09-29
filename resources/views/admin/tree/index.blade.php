@@ -31,22 +31,37 @@
             @endif
         </div>
     @else
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
+        <div class="card" id="tree-frame">
+            <div class="card-header tree-toolbar">
+                <h3 class="card-title mb-0">
                     Subtree of <a href="{{ route('admin.members.show', $root) }}">{{ $root->member_code }}</a>
+                    <span class="text-body-secondary fw-normal small">· {{ $root->user?->name }}</span>
                 </h3>
-            </div>
-            <div class="card-body">
-                <p class="small text-body-secondary">Click a member to expand or collapse; deeper levels load as you go.</p>
-                <div class="overflow-auto pb-2">
-                    <div id="tree" class="d-flex justify-content-center" style="min-width: max-content"
-                         data-url-template="{{ route('admin.tree.node', ['member' => '__CODE__']) }}"
-                         data-member-url-template="{{ route('admin.members.show', ['member' => '__ID__']) }}"
-                         data-root="{{ $root->member_code }}">
-                        <span class="text-body-secondary">Loading…</span>
-                    </div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Zoom">
+                    <button type="button" class="btn btn-outline-secondary" data-zoom="out" aria-label="Zoom out"><i class="bi bi-dash-lg"></i></button>
+                    <button type="button" class="btn btn-outline-secondary tabular-nums" data-zoom="reset" aria-label="Reset zoom" style="min-width: 4rem">100%</button>
+                    <button type="button" class="btn btn-outline-secondary" data-zoom="in" aria-label="Zoom in"><i class="bi bi-plus-lg"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" data-zoom="fit" title="Fit to screen" aria-label="Fit to screen"><i class="bi bi-arrows-angle-contract"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" data-zoom="full" title="Full screen" aria-label="Full screen"><i class="bi bi-fullscreen"></i></button>
                 </div>
+            </div>
+            <div class="tree-viewport" id="tree-viewport" tabindex="0" aria-label="Tree canvas. Drag or use the arrow keys to move, plus and minus to zoom.">
+                <div class="tree-canvas" id="tree"
+                     data-url-template="{{ route('admin.tree.node', ['member' => '__CODE__']) }}"
+                     data-focus-url-template="{{ route('admin.tree.index', ['member' => '__CODE__']) }}"
+                     data-profile-url-template="{{ route('admin.members.index', ['q' => '__CODE__']) }}"
+                     data-root="{{ $root->member_code }}">
+                    <span class="text-body-secondary">Loading…</span>
+                </div>
+            </div>
+            <div class="card-footer tree-toolbar small">
+                <div class="tree-legend">
+                    <span><i style="background: var(--at-green)"></i> Active</span>
+                    <span><i style="background: var(--at-amber)"></i> Pending</span>
+                    <span><i style="background: var(--at-red)"></i> Suspended</span>
+                    <span><i style="border: 2px dashed var(--at-muted)"></i> Vacant slot</span>
+                </div>
+                <span class="text-body-secondary">Drag to move · Ctrl + scroll to zoom · <i class="bi bi-plus-circle"></i> opens a member's team</span>
             </div>
         </div>
 
@@ -140,10 +155,13 @@
 <script>
 (() => {
     const host = document.getElementById('tree');
-    if (!host) return;
+    const viewport = document.getElementById('tree-viewport');
+    const frame = document.getElementById('tree-frame');
+    if (!host || !viewport) return;
 
-    const urlFor = (code) => host.dataset.urlTemplate.replace('__CODE__', encodeURIComponent(code));
+    const fill = (template, code) => template.replace('__CODE__', encodeURIComponent(code));
     const bv = new Intl.NumberFormat('en-BD');
+    const palettes = [['#2a78d6', '#6ea8f0'], ['#0f9d7a', '#4fd1a5'], ['#7c4dff', '#b39bff'], ['#e0672b', '#f7a26b'], ['#c2377b', '#ef7fb4'], ['#0e7490', '#4cc3dc']];
 
     const el = (tag, className, text) => {
         const node = document.createElement(tag);
@@ -152,84 +170,230 @@
         return node;
     };
 
+    const icon = (name) => {
+        const i = el('i', 'bi bi-' + name);
+        i.setAttribute('aria-hidden', 'true');
+        return i;
+    };
+
     async function fetchNode(code) {
-        const response = await fetch(urlFor(code), { headers: { Accept: 'application/json' } });
+        const response = await fetch(fill(host.dataset.urlTemplate, code), { headers: { Accept: 'application/json' } });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
     }
 
-    function emptySlot() {
-        return el('div', 'border border-dashed rounded p-2 text-center small text-body-secondary', 'Empty slot');
+    // Initials and a stable avatar color per member.
+    const initials = (name) => name.replace(/^(mr|mrs|ms|miss|dr|prof)\.?\s+/i, '').split(/\s+/).filter(Boolean)
+        .slice(0, 2).map((part) => part[0].toUpperCase()).join('');
+
+    const avatarColors = (code) => {
+        let hash = 0;
+        for (const char of code) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+        return palettes[hash % palettes.length];
+    };
+
+    function card(data, isRoot) {
+        const box = el('div', 'bt-card' + (isRoot ? ' is-root' : '') + (data.active ? '' : ' is-inactive'));
+        box.dataset.status = data.status;
+
+        const head = el('div', 'bt-head');
+        const avatar = el('span', 'bt-avatar', initials(data.name));
+        const [a1, a2] = avatarColors(data.code ?? data.name);
+        avatar.style.setProperty('--bt-a1', a1);
+        avatar.style.setProperty('--bt-a2', a2);
+        avatar.setAttribute('aria-hidden', 'true');
+        const who = el('div');
+        who.style.minWidth = '0';
+        who.append(el('div', 'bt-name', data.name), el('div', 'bt-code', data.code ?? '—'));
+        head.append(avatar, who);
+        box.append(head);
+
+        const tags = el('div', 'bt-tags');
+        if (data.package) tags.append(el('span', 'bt-tag is-package', data.package));
+        if (data.rank && data.rank !== 'Member') tags.append(el('span', 'bt-tag is-rank', data.rank));
+        if (!data.active) tags.append(el('span', 'bt-tag', data.status));
+        if (data.joined) tags.append(el('span', 'bt-tag', 'Joined ' + data.joined));
+        box.append(tags);
+
+        const total = data.leftBv + data.rightBv;
+        const share = total === 0 ? 50 : Math.round(data.leftBv / total * 100);
+        const legs = el('div', 'bt-legs');
+        const row = el('div', 'bt-legs-row');
+        row.append(el('span', '', 'L ' + bv.format(data.leftBv) + ' BV'), el('span', '', 'R ' + bv.format(data.rightBv) + ' BV'));
+        const bar = el('div', 'bt-bar');
+        const l = el('span', 'l');
+        const r = el('span', 'r');
+        l.style.width = share + '%';
+        r.style.width = (100 - share) + '%';
+        bar.append(l, r);
+        legs.append(row, bar);
+        box.append(legs);
+
+        const actions = el('div', 'bt-actions');
+        const profile = el('a');
+        profile.href = fill(host.dataset.profileUrlTemplate, data.code);
+        profile.append(icon('person'), document.createTextNode(' Profile'));
+        actions.append(profile);
+        if (!isRoot) {
+            const focus = el('a');
+            focus.href = fill(host.dataset.focusUrlTemplate, data.code);
+            focus.append(icon('bullseye'), document.createTextNode(' Focus'));
+            actions.append(focus);
+        }
+        box.append(actions);
+
+        return box;
     }
 
-    function render(data) {
-        const wrap = el('div', 'd-flex flex-column align-items-center');
-        const card = el('button', 'btn btn-light border text-start p-2 small');
-        card.type = 'button';
-        card.style.width = '12rem';
-        if (!data.active) card.style.opacity = '0.65';
+    function emptySlot() {
+        const box = el('div', 'bt-empty');
+        box.append(icon('person-plus'), document.createTextNode('Vacant slot'));
+        return box;
+    }
 
-        const head = el('div', 'd-flex justify-content-between align-items-center gap-2');
-        head.append(el('strong', '', data.code ?? '—'));
-        head.append(el('span', 'badge ' + (data.active ? 'text-bg-success' : 'text-bg-secondary'), data.status));
-        card.append(head);
-        card.append(el('div', 'text-truncate', data.name));
-        card.append(el('div', 'text-body-secondary', (data.package ?? '—') + ' · team ' + bv.format(data.teamBv) + ' BV'));
-        card.append(el('div', 'text-body-secondary', 'L ' + bv.format(data.leftBv) + ' · R ' + bv.format(data.rightBv)));
+    function render(data, isRoot) {
+        const wrap = el('div', 'bt-node');
+        wrap.append(card(data, isRoot));
 
-        const expandable = data.hasLeft || data.hasRight;
-        const hint = el('div', 'text-center text-body-secondary', '');
-        if (expandable) card.append(hint);
-        wrap.append(card);
+        if (!data.hasLeft && !data.hasRight) return wrap;
 
-        const kids = el('div', 'd-flex gap-3 mt-2 pt-2 border-top');
-        let open = false;
+        const toggle = el('button', 'bt-toggle');
+        toggle.type = 'button';
+        const error = el('div', 'bt-error');
+        error.setAttribute('role', 'alert');
+        const kids = el('div', 'bt-children');
+        wrap.append(toggle, error, kids);
+
         let loaded = data.children;
 
         const draw = () => {
             kids.replaceChildren();
             for (const side of ['left', 'right']) {
-                const column = el('div', 'd-flex flex-column align-items-center');
-                column.append(el('div', 'small text-body-secondary mb-1', side === 'left' ? 'Left' : 'Right'));
-                column.append(loaded[side] ? render(loaded[side]) : emptySlot());
-                kids.append(column);
+                const branch = el('div', 'bt-branch ' + (side === 'left' ? 'is-left' : 'is-right'));
+                branch.append(el('span', 'bt-side', side === 'left' ? 'Left' : 'Right'));
+                branch.append(loaded[side] ? render(loaded[side], false) : emptySlot());
+                kids.append(branch);
             }
         };
 
-        const setOpen = (value) => {
-            open = value;
+        const setOpen = (open) => {
             kids.hidden = !open;
-            card.setAttribute('aria-expanded', String(open));
-            hint.textContent = open ? '▲ collapse' : '▼ expand';
+            toggle.setAttribute('aria-expanded', String(open));
+            toggle.setAttribute('aria-label', open ? 'Collapse team' : 'Expand team');
+            toggle.replaceChildren(icon(open ? 'dash' : 'plus'));
         };
 
-        if (expandable) {
-            card.addEventListener('click', async () => {
-                if (open) return setOpen(false);
-                if (!loaded) {
-                    hint.textContent = 'Loading…';
-                    try {
-                        loaded = (await fetchNode(data.code)).children;
-                    } catch {
-                        hint.textContent = 'Could not load';
-                        return;
-                    }
+        toggle.addEventListener('click', async () => {
+            if (!kids.hidden && loaded) return setOpen(false);
+            if (!loaded) {
+                toggle.disabled = true;
+                toggle.replaceChildren(icon('hourglass-split'));
+                try {
+                    loaded = (await fetchNode(data.code)).children;
+                    error.textContent = '';
+                } catch {
+                    error.textContent = 'Could not load this branch.';
+                    toggle.disabled = false;
+                    return setOpen(false);
                 }
-                draw();
-                setOpen(true);
-            });
-            wrap.append(kids);
-            if (loaded) { draw(); setOpen(true); } else { setOpen(false); }
-        } else {
-            card.disabled = true;
-        }
+                toggle.disabled = false;
+            }
+            draw();
+            setOpen(true);
+        });
+
+        if (loaded) { draw(); setOpen(true); } else { setOpen(false); }
 
         return wrap;
     }
 
+    /* Pan & zoom */
+    let scale = 1, x = 0, y = 0, drag = null;
+    const resetButton = document.querySelector('[data-zoom="reset"]');
+    const apply = () => {
+        host.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        if (resetButton) resetButton.textContent = Math.round(scale * 100) + '%';
+    };
+    const clamp = (value) => Math.min(1.6, Math.max(0.3, value));
+    const zoomTo = (next, ox = viewport.clientWidth / 2, oy = viewport.clientHeight / 2) => {
+        const target = clamp(next);
+        x = ox - (ox - x) * (target / scale);
+        y = oy - (oy - y) * (target / scale);
+        scale = target;
+        apply();
+    };
+    const center = () => {
+        x = (viewport.clientWidth - host.offsetWidth * scale) / 2;
+        y = 8;
+        apply();
+    };
+    const fit = () => {
+        scale = clamp(Math.min(1, (viewport.clientWidth - 32) / host.offsetWidth, (viewport.clientHeight - 32) / host.offsetHeight));
+        x = (viewport.clientWidth - host.offsetWidth * scale) / 2;
+        y = Math.max(8, (viewport.clientHeight - host.offsetHeight * scale) / 2);
+        apply();
+    };
+
+    viewport.addEventListener('pointerdown', (event) => {
+        if (event.target.closest('button, a')) return;
+        drag = { id: event.pointerId, sx: event.clientX, sy: event.clientY, x, y };
+        viewport.classList.add('is-panning');
+        viewport.setPointerCapture(event.pointerId);
+    });
+    viewport.addEventListener('pointermove', (event) => {
+        if (!drag || drag.id !== event.pointerId) return;
+        x = drag.x + event.clientX - drag.sx;
+        y = drag.y + event.clientY - drag.sy;
+        apply();
+    });
+    const endDrag = () => { drag = null; viewport.classList.remove('is-panning'); };
+    viewport.addEventListener('pointerup', endDrag);
+    viewport.addEventListener('pointercancel', endDrag);
+
+    // Ctrl/⌘ + wheel zooms at the cursor; a plain wheel still scrolls the page.
+    viewport.addEventListener('wheel', (event) => {
+        if (!(event.ctrlKey || event.metaKey)) return;
+        event.preventDefault();
+        const box = viewport.getBoundingClientRect();
+        zoomTo(scale * (event.deltaY < 0 ? 1.1 : 0.9), event.clientX - box.left, event.clientY - box.top);
+    }, { passive: false });
+
+    viewport.addEventListener('keydown', (event) => {
+        if (event.target !== viewport) return;
+        const moves = { ArrowLeft: [60, 0], ArrowRight: [-60, 0], ArrowUp: [0, 60], ArrowDown: [0, -60] };
+        if (moves[event.key]) {
+            event.preventDefault();
+            x += moves[event.key][0];
+            y += moves[event.key][1];
+            apply();
+        } else if (event.key === '+' || event.key === '=') {
+            zoomTo(scale * 1.15);
+        } else if (event.key === '-') {
+            zoomTo(scale / 1.15);
+        }
+    });
+
+    document.querySelectorAll('[data-zoom]').forEach((button) => button.addEventListener('click', () => {
+        const action = button.dataset.zoom;
+        if (action === 'in') zoomTo(scale * 1.2);
+        if (action === 'out') zoomTo(scale / 1.2);
+        if (action === 'reset') { scale = 1; center(); }
+        if (action === 'fit') fit();
+        if (action === 'full') {
+            if (document.fullscreenElement) document.exitFullscreen();
+            else frame?.requestFullscreen?.();
+        }
+    }));
+
+    document.addEventListener('fullscreenchange', () => {
+        viewport.style.height = document.fullscreenElement ? 'calc(100vh - 130px)' : '';
+        fit();
+    });
+
     fetchNode(host.dataset.root)
-        .then((data) => host.replaceChildren(render(data)))
+        .then((data) => { host.replaceChildren(render(data, true)); center(); })
         .catch(() => { host.textContent = 'Could not load the tree.'; });
 })();
 </script>
 @endpush
+

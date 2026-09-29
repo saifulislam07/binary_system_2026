@@ -8,7 +8,10 @@
 
 @section('content_header')
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <h1 class="m-0">Dashboard</h1>
+        <div>
+            <h1>Dashboard</h1>
+            <p class="page-lead">Welcome, {{ auth('admin')->user()->name }}. Period figures: <strong>{{ $periods[$period] }}</strong>; member totals and open withdrawals are always current.</p>
+        </div>
         <div class="btn-group btn-group-sm" role="group" aria-label="Period">
             @foreach ($periods as $key => $label)
                 <a href="{{ route('admin.dashboard', ['period' => $key]) }}"
@@ -20,12 +23,7 @@
 @stop
 
 @section('content')
-    <p class="text-body-secondary small mb-3">
-        Welcome, {{ auth('admin')->user()->name }}. Period figures: <strong>{{ $periods[$period] }}</strong>.
-        Member totals and open withdrawals are always current.
-    </p>
-
-    <h2 class="h6 text-uppercase text-body-secondary">Members</h2>
+    <h2 class="section-label mt-0">Members</h2>
     <div class="row">
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="info-box" data-metric="members_total">
@@ -65,7 +63,7 @@
         </div>
     </div>
 
-    <h2 class="h6 text-uppercase text-body-secondary mt-2">Sales &amp; payouts</h2>
+    <h2 class="section-label">Sales &amp; payouts</h2>
     <div class="row">
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="info-box" data-metric="sales_amount">
@@ -155,5 +153,53 @@
                 </div>
             </div>
         </div>
+
+        @canany(['manage-withdrawals', 'manage-members', 'manage-kyc', 'manage-tree', 'manage-catalog', 'view-reports'])
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Shortcuts</h3></div>
+                <div class="list-group list-group-flush rounded-bottom">
+                    @can('manage-withdrawals')
+                        <a href="{{ route('admin.withdrawals.index') }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                            <i class="bi bi-box-arrow-up-right text-warning fs-5"></i>
+                            <span class="flex-grow-1">Review withdrawals</span>
+                            @if ($m['withdrawals_open_count'] > 0)<span class="badge text-bg-warning">{{ number_format($m['withdrawals_open_count']) }} open</span>@endif
+                        </a>
+                    @endcan
+                    @can('manage-members')
+                        <a href="{{ route('admin.members.pending') }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                            <i class="bi bi-person-plus text-info fs-5"></i>
+                            <span class="flex-grow-1">Members awaiting payment</span>
+                            @if ($m['members_pending'] > 0)<span class="badge text-bg-info">{{ number_format($m['members_pending']) }}</span>@endif
+                        </a>
+                    @endcan
+                    @can('manage-kyc')
+                        <a href="{{ route('admin.kyc.index') }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                            <i class="bi bi-person-vcard text-primary fs-5"></i>
+                            <span class="flex-grow-1">KYC documents</span>
+                        </a>
+                    @endcan
+                    @can('manage-tree')
+                        <a href="{{ route('admin.tree.index') }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                            <i class="bi bi-diagram-3 text-success fs-5"></i>
+                            <span class="flex-grow-1">Browse the binary tree</span>
+                        </a>
+                    @endcan
+                    @can('manage-catalog')
+                        <a href="{{ route('admin.products.create') }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                            <i class="bi bi-plus-square text-primary fs-5"></i>
+                            <span class="flex-grow-1">Add a product</span>
+                        </a>
+                    @endcan
+                    @can('view-reports')
+                        <a href="{{ route('admin.reports.index') }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                            <i class="bi bi-graph-up text-secondary fs-5"></i>
+                            <span class="flex-grow-1">Reports</span>
+                        </a>
+                    @endcan
+                </div>
+            </div>
+        </div>
+        @endcanany
     </div>
 @stop

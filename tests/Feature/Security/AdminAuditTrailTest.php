@@ -9,6 +9,7 @@ use App\Enums\WithdrawalMethodType;
 use App\Http\Controllers\Admin\FinancialController;
 use App\Models\Admin;
 use App\Models\BonusRule;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\FraudFlag;
@@ -172,6 +173,10 @@ class AdminAuditTrailTest extends TestCase
             'admin.categories.store' => fn () => ['POST', route('admin.categories.store'), ['name' => 'Audio', 'sort_order' => '1', 'is_active' => '1']],
             'admin.categories.update' => fn () => ['PUT', route('admin.categories.update', Category::query()->create(['name' => 'Gadgets'])), [
                 'name' => 'Gadgets & more', 'sort_order' => '2', 'is_active' => '1',
+            ]],
+            'admin.brands.store' => fn () => ['POST', route('admin.brands.store'), ['name' => 'Sonic', 'sort_order' => '1', 'is_active' => '1']],
+            'admin.brands.update' => fn () => ['PUT', route('admin.brands.update', Brand::factory()->create()), [
+                'name' => 'Renamed brand', 'sort_order' => '2', 'is_active' => '1',
             ]],
             'admin.products.store' => fn () => ['POST', route('admin.products.store'), [
                 'name' => 'Earbuds', 'sku' => 'EB-1', 'price' => '2450', 'is_active' => '1', 'is_featured' => '0', 'sort_order' => '1',

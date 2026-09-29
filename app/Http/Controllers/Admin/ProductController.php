@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveProductRequest;
 use App\Models\Admin;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\CatalogAdminService;
@@ -19,17 +20,19 @@ class ProductController extends Controller
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'category' => ['nullable', 'integer'],
+            'brand' => ['nullable', 'integer'],
             'status' => ['nullable', 'in:active,inactive,featured'],
         ]);
 
         $products = Product::query()
-            ->with(['media', 'category:id,name'])
+            ->with(['media', 'category:id,name', 'brand:id,name'])
             ->withCount('packages')
             ->when($filters['q'] ?? null, fn ($q, string $term) => $q->where(fn ($w) => $w
                 ->where('name', 'like', "%{$term}%")
                 ->orWhere('sku', 'like', "%{$term}%")
-                ->orWhere('brand', 'like', "%{$term}%")))
+                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$term}%"))))
             ->when($filters['category'] ?? null, fn ($q, int $id) => $q->where('category_id', $id))
+            ->when($filters['brand'] ?? null, fn ($q, int $id) => $q->where('brand_id', $id))
             ->when(($filters['status'] ?? null) === 'active', fn ($q) => $q->where('is_active', true))
             ->when(($filters['status'] ?? null) === 'inactive', fn ($q) => $q->where('is_active', false))
             ->when(($filters['status'] ?? null) === 'featured', fn ($q) => $q->where('is_featured', true))
@@ -41,6 +44,7 @@ class ProductController extends Controller
         return view('admin.catalog.products.index', [
             'products' => $products,
             'categories' => Category::query()->orderBy('sort_order')->pluck('name', 'id'),
+            'brands' => Brand::query()->orderBy('name')->pluck('name', 'id'),
             'filters' => $filters,
         ]);
     }
@@ -49,13 +53,14 @@ class ProductController extends Controller
     {
         return view('admin.catalog.products.form', [
             'product' => new Product(['is_active' => true, 'is_featured' => false, 'sort_order' => 0]),
-            'categories' => Category::query()->orderBy('sort_order')->pluck('name', 'id'),
+            ...$this->choices(),
         ]);
     }
 
     public function store(SaveProductRequest $request, CatalogAdminService $catalog): RedirectResponse
     {
-        $product = $catalog->saveProduct(null, $request->productData(), $this->admin($request), $request->newImages());
+        $admin = $this->admin($request);
+        $product = $catalog->saveProduct(null, $this->withBrand($request, $catalog, $admin), $admin, $request->newImages(), [], $request->imageOrder());
 
         return redirect()->route('admin.products.index')->with('success', "Product {$product->name} created.");
     }
@@ -64,15 +69,44 @@ class ProductController extends Controller
     {
         return view('admin.catalog.products.form', [
             'product' => $product->load('media', 'packages:id,name'),
-            'categories' => Category::query()->orderBy('sort_order')->pluck('name', 'id'),
+            ...$this->choices(),
         ]);
     }
 
     public function update(SaveProductRequest $request, Product $product, CatalogAdminService $catalog): RedirectResponse
     {
-        $catalog->saveProduct($product, $request->productData(), $this->admin($request), $request->newImages(), $request->removeImageIds());
+        $admin = $this->admin($request);
+        $catalog->saveProduct($product, $this->withBrand($request, $catalog, $admin), $admin, $request->newImages(), $request->removeImageIds(), $request->imageOrder());
 
         return redirect()->route('admin.products.index')->with('success', "Product {$product->name} saved.");
+    }
+
+    /**
+     * @return array{categories: mixed, brands: mixed}
+     */
+    private function choices(): array
+    {
+        return [
+            'categories' => Category::query()->orderBy('sort_order')->pluck('name', 'id'),
+            'brands' => Brand::query()->orderBy('name')->get(['id', 'name', 'is_active']),
+        ];
+    }
+
+    /**
+     * The product fields, with a brand typed on the form created first.
+     *
+     * @return array{category_id: int|null, brand_id: int|null, name: string, sku: string, description: string|null, highlights: string|null, price: int, compare_at_price: int|null, is_active: bool, is_featured: bool, sort_order: int}
+     */
+    private function withBrand(SaveProductRequest $request, CatalogAdminService $catalog, Admin $admin): array
+    {
+        $data = $request->productData();
+        $newBrand = $request->newBrandName();
+
+        if ($newBrand !== null) {
+            $data['brand_id'] = $catalog->brandNamed($newBrand, $admin)->id;
+        }
+
+        return $data;
     }
 
     private function admin(Request $request): Admin

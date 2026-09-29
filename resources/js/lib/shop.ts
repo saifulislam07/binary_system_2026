@@ -6,6 +6,7 @@ export type ProductCardData = {
     slug: string;
     name: string;
     brand: string | null;
+    brandSlug: string | null;
     category: string | null;
     price: string;
     compareAt: string | null;

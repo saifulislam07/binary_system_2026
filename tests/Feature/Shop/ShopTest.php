@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Shop;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Member;
 use App\Models\Package;
@@ -56,7 +57,8 @@ class ShopTest extends TestCase
     {
         $wearables = Category::query()->create(['name' => 'Wearables', 'sort_order' => 3]);
         $this->product(['name' => 'Bluetooth Speaker', 'price' => 185_000]);
-        $this->product(['name' => 'Wireless Earbuds', 'price' => 245_000, 'brand' => 'Sonic']);
+        $sonic = Brand::factory()->create(['name' => 'Sonic']);
+        $this->product(['name' => 'Wireless Earbuds', 'price' => 245_000, 'brand_id' => $sonic->id]);
         Product::factory()->create(['name' => 'Fitness Band', 'price' => 165_000, 'category_id' => $wearables->id]);
 
         $this->get(route('shop.index', ['category' => 'audio', 'sort' => 'price_desc']))
@@ -76,6 +78,56 @@ class ShopTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->where('unknownCategory', true)->where('current', null)->has('products.data', 3));
 
         $this->get(route('shop.index', ['sort' => 'cheapest']))->assertSessionHasErrors('sort');
+    }
+
+    public function test_filter_by_brand_and_by_deals()
+    {
+        $sonic = Brand::factory()->create(['name' => 'Sonic']);
+        $retired = Brand::factory()->create(['name' => 'Retired Brand', 'is_active' => false]);
+        $this->product(['name' => 'Wireless Earbuds', 'brand_id' => $sonic->id, 'price' => 245_000, 'compare_at_price' => 299_000]);
+        $this->product(['name' => 'Studio Headphones', 'brand_id' => $sonic->id]);
+        $this->product(['name' => 'Old Radio', 'brand_id' => $retired->id]);
+        $this->product(['name' => 'Plain Cable']);
+
+        $this->get(route('shop.index', ['brand' => 'sonic']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('products.data', 2)
+                ->where('products.data.0.brand', 'Sonic')
+                ->where('products.data.0.brandSlug', 'sonic')
+                ->where('currentBrand.name', 'Sonic')
+                ->has('brands', 1) // only active brands with something on sale
+                ->where('brands.0.slug', 'sonic')
+                ->where('brands.0.count', 2));
+
+        $this->get(route('shop.index', ['deals' => 1]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Wireless Earbuds')
+                ->where('filters.deals', true));
+
+        $this->get('/')
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('deals', 1)
+                ->where('deals.0.name', 'Wireless Earbuds')
+                ->has('brands', 1));
+    }
+
+    public function test_the_product_description_is_sanitized_html()
+    {
+        $legacy = $this->product(['description' => "First line.\n\nSecond <b para."]);
+        $rich = $this->product(['description' => '<h2>Sound</h2><p onclick="steal()">Deep <strong>bass</strong><script>alert(1)</script></p><a href="javascript:alert(1)">x</a>']);
+
+        $this->get(route('shop.show', $legacy))
+            ->assertInertia(fn (Assert $page) => $page->where('product.description', '<p>First line.</p><p>Second &lt;b para.</p>'));
+
+        $this->get(route('shop.show', $rich))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('product.description', fn (string $html) => str_contains($html, '<h2>Sound</h2>')
+                    && str_contains($html, '<strong>bass</strong>')
+                    && ! str_contains($html, 'onclick')
+                    && ! str_contains($html, 'script')
+                    && ! str_contains($html, 'javascript:'))
+                ->where('product.summary', 'Sound Deep bass x'));
     }
 
     public function test_the_product_page_shows_the_packages_that_sell_it()

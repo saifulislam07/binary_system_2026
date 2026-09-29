@@ -198,6 +198,19 @@ commission:run {date}`), one transaction per member, idempotent per
   are defined once in `AdminDashboardService` — reuse it for reports.
   Seeded limited roles: `support` (members, KYC), `finance` (sales,
   withdrawals, reports).
+- **Admin look:** `public/css/admin-theme.css` (plugin `AdminTheme` in
+  `config/adminlte.php`, always active) restyles AdminLTE: brand colors,
+  sidebar, cards, soft badges, tables and the tree browser (`bt-*`
+  classes). Its tokens sit on `:root` and are redefined for
+  `[data-bs-theme=dark]`. Style new admin pages with Bootstrap classes plus
+  these tokens rather than inline colors. The sidebar is grouped under
+  headers (Network, Money, Shop, System), each gated with `can`.
+- **Tree views:** the member tree (`TreeNode.vue` + `team/Index.vue`) and
+  the admin tree (plain JS in `admin/tree/index.blade.php`) share one
+  design: org-chart cards with CSS connectors, pan (drag or arrow keys),
+  zoom (buttons or Ctrl + wheel), fit and full screen. Members can re-root
+  on any downline node ("Show tree from here"), which uses `team.tree`, so
+  the downline check still applies.
 - **Admin management (Phase 10):** member changes go through
   `MemberAdminService` (reason required for status/package changes; logs
   old/new values). Tree moves go through `PlacementAdjustmentService`:
@@ -365,7 +378,27 @@ commission:run {date}`), one transaction per member, idempotent per
       `lib/shop.ts` for the sign-up links.
     - **Demo data:** `CatalogSeeder` (non-production) uses the CC0 photos in
       `database/seeders/catalog-images` (sources in `CREDITS.md`). Tests that
-      need it fake the `public` disk (`CatalogSeederTest`).
+      need it fake the `public` disk (`CatalogSeederTest`). Its brand names
+      are invented; don't swap in real trademarks.
+    - **Brands:** a `brands` table (`products.brand_id`, optional `logo`
+      media), managed under Shop catalog → Brands via
+      `CatalogAdminService::saveBrand()`. The product form can also take a
+      typed `new_brand`, resolved by `brandNamed()` (reuses a
+      case-insensitive match). The shop filters by `?brand=slug` and
+      `?deals=1`.
+    - **Rich text:** product `description` is HTML from the Quill editor,
+      sanitized by `App\Support\RichText::clean()` on save and again on
+      output (`Product::descriptionHtml()`). It's the only thing rendered
+      with `v-html`. Legacy plain text becomes paragraphs.
+    - **Key features:** these arrive as `highlights[]` and are stored one per
+      line.
+    - **Photos:** `image_order[]` tokens (`m:{media id}` for saved photos,
+      `n:{index}` for this save's uploads) set the media order. The first
+      photo is the cover.
+    - **Admin product form script:** `resources/js/admin/product-form.ts` is
+      a Vite entry loaded with `@vite` from the Blade form. It's plain
+      TypeScript, not Vue. It enhances plain fields, so the form still
+      works without it.
 - **Deployment & operations (Phase 15):** the README's "Production" and
   "Operations" sections are the runbook — keep them true when you change
   the schedule, queues or config.

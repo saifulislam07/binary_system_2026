@@ -26,8 +26,8 @@ class TreeController extends Controller
         $code = strtoupper(trim((string) $request->query('member', '')));
 
         $root = $code !== ''
-            ? Member::query()->where('member_code', $code)->whereHas('binaryNode')->first()
-            : Member::query()->whereNull('placement_parent_id')->whereHas('binaryNode')->first();
+            ? Member::query()->with('user:id,name')->where('member_code', $code)->whereHas('binaryNode')->first()
+            : Member::query()->with('user:id,name')->whereNull('placement_parent_id')->whereHas('binaryNode')->first();
 
         return view('admin.tree.index', [
             'root' => $root,

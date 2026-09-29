@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Package;
 use App\Models\Product;
@@ -9,10 +10,11 @@ use Illuminate\Database\Seeder;
 use RuntimeException;
 
 /**
- * Demo shop catalog: electronics in six categories with real photos
- * (CC0 images in database/seeders/catalog-images, see CREDITS.md), and the
- * four packages filled with some of them. Demo data only — never run in
- * production; real products are entered by admins. Idempotent by SKU.
+ * Demo shop catalog: electronics in six categories from six (invented)
+ * brands, with real photos (CC0 images in database/seeders/catalog-images,
+ * see CREDITS.md), and the four packages filled with some of them. Demo
+ * data only — never run in production; real products are entered by
+ * admins. Idempotent by SKU.
  */
 class CatalogSeeder extends Seeder
 {
@@ -91,6 +93,16 @@ class CatalogSeeder extends Seeder
             ['24–105 mm range', 'Image stabilisation', 'Weather sealed']],
     ];
 
+    /** SKU prefix => demo brand (invented names) */
+    private const BRANDS = [
+        'AUD' => 'Aurevo',
+        'WR' => 'Tempo Wear',
+        'MB' => 'Novaline',
+        'PC' => 'Deskly',
+        'SH' => 'Homelume',
+        'CM' => 'Skyvue',
+    ];
+
     /** package name => [sku => quantity] */
     private const PACKAGE_CONTENTS = [
         'Basic' => ['AUD-EP-001' => 1, 'MB-CB-001' => 1],
@@ -114,6 +126,12 @@ class CatalogSeeder extends Seeder
             );
         }
 
+        $brands = [];
+
+        foreach (array_values(self::BRANDS) as $i => $name) {
+            $brands[$name] = Brand::query()->firstOrCreate(['name' => $name], ['sort_order' => $i + 1, 'is_active' => true]);
+        }
+
         foreach (self::PRODUCTS as $i => [$category, $sku, $name, $price, $was, $featured, $images, $description, $highlights]) {
             $product = Product::query()->firstOrCreate(['sku' => $sku], [
                 'category_id' => ($categories[$category] ?? throw new RuntimeException("Unknown category {$category}."))->id,
@@ -126,6 +144,12 @@ class CatalogSeeder extends Seeder
                 'description' => $description,
                 'highlights' => implode("\n", $highlights),
             ]);
+
+            $brand = $brands[self::BRANDS[strtok($sku, '-')] ?? ''] ?? null;
+
+            if ($product->brand_id === null && $brand !== null) {
+                $product->update(['brand_id' => $brand->id]);
+            }
 
             if (! $product->hasMedia('images')) {
                 foreach ($images as $image) {

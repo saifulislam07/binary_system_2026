@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\RichText;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,9 +19,11 @@ use Spatie\Sluggable\SlugOptions;
 /**
  * A shop product (price and compare_at_price in poysha). Products are sold
  * inside packages (package_product); the shop shows which packages carry
- * each one. Photos: media collection `images`, first one is the cover.
+ * each one. Photos: media collection `images` in the admin's order (media
+ * order_column); the first one is the cover. `description` is sanitized
+ * HTML, `highlights` one key feature per line.
  */
-#[Fillable(['category_id', 'name', 'sku', 'brand', 'description', 'highlights', 'price', 'compare_at_price', 'is_active', 'is_featured', 'sort_order'])]
+#[Fillable(['category_id', 'brand_id', 'name', 'sku', 'description', 'highlights', 'price', 'compare_at_price', 'is_active', 'is_featured', 'sort_order'])]
 class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */
@@ -72,6 +75,12 @@ class Product extends Model implements HasMedia
         return $this->belongsTo(Category::class);
     }
 
+    /** @return BelongsTo<Brand, $this> */
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
     /** @return BelongsToMany<Package, $this> */
     public function packages(): BelongsToMany
     {
@@ -95,6 +104,14 @@ class Product extends Model implements HasMedia
         }
 
         return intdiv(($this->compare_at_price - $this->price) * 100, $this->compare_at_price);
+    }
+
+    /**
+     * The description as safe HTML (admins write it in a rich-text editor).
+     */
+    public function descriptionHtml(): ?string
+    {
+        return RichText::clean($this->description);
     }
 
     /**

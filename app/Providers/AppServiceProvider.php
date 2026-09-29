@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Announcement;
 use App\Models\Bonus;
 use App\Models\BonusRule;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Commission;
 use App\Models\CommissionCycle;
@@ -62,6 +63,7 @@ class AppServiceProvider extends ServiceProvider
             'bonus_rule' => BonusRule::class,
             'category' => Category::class,
             'product' => Product::class,
+            'brand' => Brand::class,
         ]);
     }
 

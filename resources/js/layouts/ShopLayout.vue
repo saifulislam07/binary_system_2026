@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import {
+    BadgeCheck,
+    ArrowRight,
     Clock,
+    Languages,
+    LayoutGrid,
     Mail,
     MapPin,
+    Menu,
     Phone,
     Search,
+    ShieldCheck,
     ShoppingBag,
+    Tag,
     UserRound,
+    X,
 } from '@lucide/vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { Button } from '@/components/ui/button';
 import { joinUrl, rememberReferral } from '@/lib/shop';
 import type { ShopNavigation } from '@/lib/shop';
 import { dashboard, home, login, membership } from '@/routes';
@@ -19,6 +26,9 @@ import { index as shopIndex } from '@/routes/shop';
 
 const page = usePage();
 const signedIn = computed(() => Boolean(page.props.auth.user));
+const userName = computed(
+    () => (page.props.auth.user as { name?: string } | null)?.name ?? '',
+);
 const nav = computed<ShopNavigation>(
     () =>
         (page.props.shop as ShopNavigation | null) ?? {
@@ -28,18 +38,22 @@ const nav = computed<ShopNavigation>(
         },
 );
 
-const search = ref(
-    new URLSearchParams(page.url.split('?')[1] ?? '').get('q') ?? '',
+const query = computed(() => new URLSearchParams(page.url.split('?')[1] ?? ''));
+const search = ref(query.value.get('q') ?? '');
+const currentCategory = computed(() => query.value.get('category'));
+const onDeals = computed(() => query.value.get('deals') === '1');
+const onShop = computed(() => page.url.startsWith('/shop'));
+const menuOpen = ref(false);
+
+watch(
+    () => page.url,
+    () => (menuOpen.value = false),
 );
 
 function submitSearch() {
     const q = search.value.trim();
     router.get(shopIndex.url(q ? { query: { q } } : undefined));
 }
-
-const currentCategory = computed(() =>
-    new URLSearchParams(page.url.split('?')[1] ?? '').get('category'),
-);
 
 onMounted(() => {
     // A referral link to any shop page remembers the sponsor for sign-up.
@@ -48,106 +62,169 @@ onMounted(() => {
             null,
     );
 });
+
+const promises = [
+    { icon: ShieldCheck, text: 'Secure payment · নিরাপদ পেমেন্ট' },
+    { icon: BadgeCheck, text: 'Genuine products · আসল পণ্য' },
+    { icon: Languages, text: 'বাংলা ও English' },
+];
 </script>
 
 <template>
     <div class="flex min-h-screen flex-col bg-background text-foreground">
-        <div class="bg-[#2a78d6] text-white">
-            <p class="mx-auto max-w-7xl px-4 py-2 text-center text-sm">
-                Secure checkout with bKash, Nagad &amp; card · বিকাশ, নগদ ও
-                কার্ডে নিরাপদ পেমেন্ট
-            </p>
+        <!-- Utility bar -->
+        <div class="bg-slate-950 text-slate-300">
+            <div
+                class="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 text-xs"
+            >
+                <p class="truncate">
+                    <span class="font-medium text-white"
+                        >bKash · Nagad · Card</span
+                    >
+                    — secure checkout · বিকাশ, নগদ ও কার্ডে নিরাপদ পেমেন্ট
+                </p>
+                <div class="hidden shrink-0 items-center gap-4 sm:flex">
+                    <a
+                        v-if="nav.contact.phone"
+                        :href="`tel:${nav.contact.phone}`"
+                        class="inline-flex items-center gap-1.5 hover:text-white"
+                    >
+                        <Phone class="size-3.5" aria-hidden="true" />
+                        {{ nav.contact.phone }}
+                    </a>
+                    <Link :href="membership()" class="hover:text-white"
+                        >Membership · সদস্যপদ</Link
+                    >
+                </div>
+            </div>
         </div>
 
         <header
-            class="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80"
+            class="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/75"
         >
             <div
-                class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-6"
+                class="mx-auto flex h-18 max-w-7xl items-center gap-3 px-4 sm:gap-6"
             >
+                <button
+                    type="button"
+                    class="-ml-2 inline-flex size-10 items-center justify-center rounded-lg hover:bg-muted lg:hidden"
+                    :aria-expanded="menuOpen"
+                    aria-controls="shop-menu"
+                    @click="menuOpen = !menuOpen"
+                >
+                    <component
+                        :is="menuOpen ? X : Menu"
+                        class="size-5"
+                        aria-hidden="true"
+                    />
+                    <span class="sr-only">Categories menu</span>
+                </button>
+
                 <Link
                     :href="home()"
-                    class="flex shrink-0 items-center gap-2 font-semibold"
+                    class="flex shrink-0 items-center gap-2.5"
                     aria-label="Home"
                 >
                     <span
-                        class="flex size-9 items-center justify-center rounded-lg bg-[#2a78d6] text-white"
+                        class="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-brand to-[#1b56a0] text-white shadow-md shadow-brand/25"
                     >
                         <AppLogoIcon class="size-5" />
                     </span>
-                    <span class="hidden lg:inline">{{ page.props.name }}</span>
+                    <span class="hidden leading-tight lg:block">
+                        <span
+                            class="block text-[15px] font-semibold tracking-tight"
+                            >{{ page.props.name }}</span
+                        >
+                        <span class="block text-xs text-muted-foreground"
+                            >Genuine electronics</span
+                        >
+                    </span>
                 </Link>
 
                 <form
                     role="search"
-                    class="relative min-w-0 flex-1"
+                    class="flex min-w-0 flex-1 items-center rounded-full border border-input bg-muted/50 p-1 transition focus-within:border-brand focus-within:bg-background focus-within:ring-4 focus-within:ring-brand/15"
                     @submit.prevent="submitSearch"
                 >
                     <label for="shop-search" class="sr-only"
                         >Search products</label
                     >
                     <Search
-                        class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                        class="ml-3 size-4 shrink-0 text-muted-foreground"
                         aria-hidden="true"
                     />
                     <input
                         id="shop-search"
                         v-model="search"
                         type="search"
-                        placeholder="Search products · পণ্য খুঁজুন"
-                        class="h-10 w-full rounded-full border border-input bg-muted/40 pr-4 pl-9 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        placeholder="Search products, brands · পণ্য খুঁজুন"
+                        class="h-9 min-w-0 flex-1 bg-transparent px-2.5 text-sm outline-none placeholder:text-muted-foreground"
                     />
+                    <button
+                        type="submit"
+                        class="hidden h-9 shrink-0 rounded-full bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-strong sm:block"
+                    >
+                        Search
+                    </button>
                 </form>
 
-                <div class="flex shrink-0 items-center gap-1">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        class="sm:w-auto sm:px-3"
-                        as-child
+                <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+                    <Link
+                        :href="signedIn ? dashboard() : login()"
+                        class="flex items-center gap-2.5 rounded-xl px-2 py-1.5 hover:bg-muted"
+                        data-test="account-link"
                     >
-                        <Link
-                            :href="signedIn ? dashboard() : login()"
-                            data-test="account-link"
+                        <span
+                            class="flex size-9 items-center justify-center rounded-full bg-brand-soft text-brand"
                         >
-                            <UserRound class="size-5" aria-hidden="true" />
-                            <span class="hidden sm:inline">{{
+                            <UserRound class="size-[18px]" aria-hidden="true" />
+                        </span>
+                        <span class="hidden leading-tight sm:block">
+                            <span class="block text-xs text-muted-foreground">{{
+                                signedIn
+                                    ? `Hello, ${userName.split(' ')[0]}`
+                                    : 'Hello, sign in'
+                            }}</span>
+                            <span class="block text-sm font-semibold">{{
                                 signedIn ? 'My account' : 'Log in · লগইন'
                             }}</span>
-                            <span class="sr-only sm:hidden">{{
-                                signedIn ? 'My account' : 'Log in'
-                            }}</span>
-                        </Link>
-                    </Button>
-                    <Button class="hidden sm:inline-flex" as-child>
-                        <Link :href="shopIndex()">
-                            <ShoppingBag class="size-5" aria-hidden="true" />
-                            Shop · দোকান
-                        </Link>
-                    </Button>
+                        </span>
+                        <span class="sr-only sm:hidden">{{
+                            signedIn ? 'My account' : 'Log in'
+                        }}</span>
+                    </Link>
+                    <Link
+                        :href="shopIndex()"
+                        class="hidden items-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition hover:opacity-90 md:inline-flex"
+                    >
+                        <ShoppingBag class="size-4" aria-hidden="true" />
+                        Shop · দোকান
+                    </Link>
                 </div>
             </div>
 
             <!-- Category bar -->
             <nav
                 v-if="nav.categories.length"
-                class="border-t"
+                class="hidden border-t lg:block"
                 aria-label="Categories"
             >
                 <ul
-                    class="mx-auto flex max-w-7xl [scrollbar-width:none] gap-1 overflow-x-auto px-4 py-2 text-sm whitespace-nowrap [&::-webkit-scrollbar]:hidden"
+                    class="mx-auto flex h-12 max-w-7xl items-center gap-1 px-4 text-sm"
                 >
                     <li>
                         <Link
                             :href="shopIndex()"
-                            class="inline-block rounded-full px-3 py-1 hover:bg-muted"
+                            class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium hover:bg-muted"
                             :class="
-                                page.url.startsWith('/shop') && !currentCategory
-                                    ? 'bg-muted font-medium'
+                                onShop && !currentCategory && !onDeals
+                                    ? 'bg-brand-soft text-brand'
                                     : ''
                             "
-                            >All products · সব পণ্য</Link
                         >
+                            <LayoutGrid class="size-4" aria-hidden="true" />
+                            All products · সব পণ্য
+                        </Link>
                     </li>
                     <li v-for="category in nav.categories" :key="category.slug">
                         <Link
@@ -156,14 +233,75 @@ onMounted(() => {
                                     query: { category: category.slug },
                                 })
                             "
-                            class="inline-block rounded-full px-3 py-1 hover:bg-muted"
+                            class="inline-block rounded-lg px-3 py-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                             :class="
                                 currentCategory === category.slug
-                                    ? 'bg-muted font-medium'
+                                    ? 'bg-brand-soft font-medium text-brand!'
                                     : ''
                             "
                             >{{ category.name }}</Link
                         >
+                    </li>
+                    <li class="ml-auto">
+                        <Link
+                            :href="shopIndex({ query: { deals: 1 } })"
+                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold text-deal hover:bg-deal/10"
+                            :class="onDeals ? 'bg-deal/10' : ''"
+                        >
+                            <Tag class="size-4" aria-hidden="true" />
+                            Deals · অফার
+                        </Link>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Mobile category menu -->
+            <nav
+                v-if="menuOpen"
+                id="shop-menu"
+                class="border-t lg:hidden"
+                aria-label="Categories"
+            >
+                <ul class="mx-auto grid max-w-7xl gap-1 px-4 py-3 text-sm">
+                    <li>
+                        <Link
+                            :href="shopIndex()"
+                            class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-medium hover:bg-muted"
+                        >
+                            <LayoutGrid class="size-4" aria-hidden="true" />
+                            All products · সব পণ্য
+                        </Link>
+                    </li>
+                    <li v-for="category in nav.categories" :key="category.slug">
+                        <Link
+                            :href="
+                                shopIndex({
+                                    query: { category: category.slug },
+                                })
+                            "
+                            class="flex justify-between rounded-lg px-3 py-2.5 hover:bg-muted"
+                            :class="
+                                currentCategory === category.slug
+                                    ? 'bg-brand-soft text-brand'
+                                    : ''
+                            "
+                        >
+                            <span>{{ category.name }}</span>
+                            <span
+                                v-if="category.nameBn"
+                                class="text-muted-foreground"
+                                >{{ category.nameBn }}</span
+                            >
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            :href="shopIndex({ query: { deals: 1 } })"
+                            class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-semibold text-deal hover:bg-deal/10"
+                        >
+                            <Tag class="size-4" aria-hidden="true" />
+                            Deals · অফার
+                        </Link>
                     </li>
                 </ul>
             </nav>
@@ -173,29 +311,81 @@ onMounted(() => {
             <slot />
         </main>
 
-        <footer class="bg-slate-950 text-slate-300">
+        <!-- Service promises -->
+        <section class="border-t bg-surface" aria-label="Why shop with us">
+            <ul class="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-3">
+                <li
+                    v-for="promise in promises"
+                    :key="promise.text"
+                    class="flex items-center justify-center gap-3 text-sm font-medium sm:justify-start"
+                >
+                    <span
+                        class="flex size-10 shrink-0 items-center justify-center rounded-full bg-background text-brand shadow-sm ring-1 ring-border"
+                    >
+                        <component
+                            :is="promise.icon"
+                            class="size-5"
+                            aria-hidden="true"
+                        />
+                    </span>
+                    {{ promise.text }}
+                </li>
+            </ul>
+        </section>
+
+        <footer class="bg-slate-950 text-slate-400">
             <div
-                class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4"
+                class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]"
             >
                 <div>
                     <div
-                        class="flex items-center gap-2 font-semibold text-white"
+                        class="flex items-center gap-2.5 font-semibold text-white"
                     >
                         <span
-                            class="flex size-8 items-center justify-center rounded-md bg-[#2a78d6]"
+                            class="flex size-9 items-center justify-center rounded-xl bg-brand"
                         >
                             <AppLogoIcon class="size-5" />
                         </span>
                         {{ page.props.name }}
                     </div>
-                    <p class="mt-4 text-sm text-slate-400">
-                        Genuine electronics at fair prices.
+                    <p class="mt-4 max-w-xs text-sm leading-relaxed">
+                        Genuine electronics at fair prices, sold in clear
+                        bundles. মানসম্মত গ্যাজেট, ন্যায্য দামে।
                     </p>
+                    <ul
+                        class="mt-6 flex flex-wrap gap-2"
+                        aria-label="Accepted payment methods"
+                    >
+                        <li
+                            class="rounded-md bg-white px-2.5 py-1 text-xs font-bold text-[#e2136e]"
+                        >
+                            bKash
+                        </li>
+                        <li
+                            class="rounded-md bg-white px-2.5 py-1 text-xs font-bold text-[#ec1c24]"
+                        >
+                            Nagad
+                        </li>
+                        <li
+                            class="rounded-md bg-white px-2.5 py-1 text-xs font-bold text-[#1a1f71]"
+                        >
+                            VISA
+                        </li>
+                        <li
+                            class="rounded-md bg-white px-2.5 py-1 text-xs font-bold text-slate-800"
+                        >
+                            Mastercard
+                        </li>
+                    </ul>
                 </div>
 
                 <nav aria-label="Shop categories">
-                    <p class="font-semibold text-white">Shop · দোকান</p>
-                    <ul class="mt-4 space-y-2 text-sm">
+                    <p
+                        class="text-xs font-semibold tracking-wider text-white uppercase"
+                    >
+                        Shop · দোকান
+                    </p>
+                    <ul class="mt-4 space-y-2.5 text-sm">
                         <li
                             v-for="category in nav.categories"
                             :key="category.slug"
@@ -206,15 +396,14 @@ onMounted(() => {
                                         query: { category: category.slug },
                                     })
                                 "
-                                class="hover:text-white"
-                                >{{ category.name
-                                }}<template v-if="category.nameBn">
-                                    · {{ category.nameBn }}</template
-                                ></Link
+                                class="transition hover:text-white"
+                                >{{ category.name }}</Link
                             >
                         </li>
                         <li>
-                            <Link :href="shopIndex()" class="hover:text-white"
+                            <Link
+                                :href="shopIndex()"
+                                class="transition hover:text-white"
                                 >All products · সব পণ্য</Link
                             >
                         </li>
@@ -222,21 +411,31 @@ onMounted(() => {
                 </nav>
 
                 <nav aria-label="Account">
-                    <p class="font-semibold text-white">Account · অ্যাকাউন্ট</p>
-                    <ul class="mt-4 space-y-2 text-sm">
+                    <p
+                        class="text-xs font-semibold tracking-wider text-white uppercase"
+                    >
+                        Account · অ্যাকাউন্ট
+                    </p>
+                    <ul class="mt-4 space-y-2.5 text-sm">
                         <li v-if="signedIn">
-                            <Link :href="dashboard()" class="hover:text-white"
+                            <Link
+                                :href="dashboard()"
+                                class="transition hover:text-white"
                                 >My dashboard · ড্যাশবোর্ড</Link
                             >
                         </li>
                         <template v-else>
                             <li>
-                                <Link :href="login()" class="hover:text-white"
+                                <Link
+                                    :href="login()"
+                                    class="transition hover:text-white"
                                     >Log in · লগইন</Link
                                 >
                             </li>
                             <li v-if="nav.canRegister">
-                                <Link :href="joinUrl()" class="hover:text-white"
+                                <Link
+                                    :href="joinUrl()"
+                                    class="transition hover:text-white"
                                     >Create account · অ্যাকাউন্ট খুলুন</Link
                                 >
                             </li>
@@ -244,7 +443,7 @@ onMounted(() => {
                         <li>
                             <Link
                                 :href="membership()"
-                                class="hover:text-white"
+                                class="transition hover:text-white"
                                 data-test="membership-link"
                                 >Membership &amp; earnings · সদস্যপদ ও আয়</Link
                             >
@@ -252,41 +451,45 @@ onMounted(() => {
                     </ul>
                 </nav>
 
-                <div v-if="Object.keys(nav.contact).length" data-test="contact">
-                    <p class="font-semibold text-white">Contact · যোগাযোগ</p>
-                    <ul class="mt-4 space-y-2 text-sm">
-                        <li v-if="nav.contact.phone" class="flex gap-2">
+                <div v-if="Object.keys(nav.contact).length">
+                    <p
+                        class="text-xs font-semibold tracking-wider text-white uppercase"
+                    >
+                        Contact · যোগাযোগ
+                    </p>
+                    <ul class="mt-4 space-y-3 text-sm" data-test="contact">
+                        <li v-if="nav.contact.phone" class="flex gap-2.5">
                             <Phone
-                                class="mt-0.5 size-4 shrink-0"
+                                class="mt-0.5 size-4 shrink-0 text-slate-500"
                                 aria-hidden="true"
                             />
                             <a
                                 :href="`tel:${nav.contact.phone}`"
-                                class="hover:text-white"
+                                class="transition hover:text-white"
                                 >{{ nav.contact.phone }}</a
                             >
                         </li>
-                        <li v-if="nav.contact.email" class="flex gap-2">
+                        <li v-if="nav.contact.email" class="flex gap-2.5">
                             <Mail
-                                class="mt-0.5 size-4 shrink-0"
+                                class="mt-0.5 size-4 shrink-0 text-slate-500"
                                 aria-hidden="true"
                             />
                             <a
                                 :href="`mailto:${nav.contact.email}`"
-                                class="hover:text-white"
+                                class="transition hover:text-white"
                                 >{{ nav.contact.email }}</a
                             >
                         </li>
-                        <li v-if="nav.contact.address" class="flex gap-2">
+                        <li v-if="nav.contact.address" class="flex gap-2.5">
                             <MapPin
-                                class="mt-0.5 size-4 shrink-0"
+                                class="mt-0.5 size-4 shrink-0 text-slate-500"
                                 aria-hidden="true"
                             />
                             <span>{{ nav.contact.address }}</span>
                         </li>
-                        <li v-if="nav.contact.hours" class="flex gap-2">
+                        <li v-if="nav.contact.hours" class="flex gap-2.5">
                             <Clock
-                                class="mt-0.5 size-4 shrink-0"
+                                class="mt-0.5 size-4 shrink-0 text-slate-500"
                                 aria-hidden="true"
                             />
                             <span>{{ nav.contact.hours }}</span>
@@ -295,11 +498,21 @@ onMounted(() => {
                 </div>
             </div>
 
-            <div class="border-t border-slate-800">
-                <p class="mx-auto max-w-7xl px-4 py-6 text-xs text-slate-400">
-                    © {{ new Date().getFullYear() }} {{ page.props.name }} ·
-                    Prices in BDT · দাম টাকায়
-                </p>
+            <div class="border-t border-white/10">
+                <div
+                    class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-xs"
+                >
+                    <p>
+                        © {{ new Date().getFullYear() }} {{ page.props.name }}
+                        · Prices in BDT · দাম টাকায়
+                    </p>
+                    <Link
+                        :href="membership()"
+                        class="inline-flex items-center gap-1 transition hover:text-white"
+                        >How membership works
+                        <ArrowRight class="size-3.5" aria-hidden="true"
+                    /></Link>
+                </div>
             </div>
         </footer>
     </div>

@@ -85,7 +85,7 @@ return [
     |
     */
 
-    'logo' => '<b>Binary</b> Admin',
+    'logo' => '<span class="brand-name">'.htmlspecialchars((string) env('APP_NAME', 'Binary Business')).'</span><span class="brand-tag">Admin</span>',
     'logo_img' => 'images/logo.svg',
     'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
@@ -529,7 +529,7 @@ return [
 
     'classes_body' => 'bg-body-tertiary',
     'classes_brand' => '',
-    'classes_brand_text' => 'fw-light',
+    'classes_brand_text' => '',
     'classes_wrapper' => '',
     'classes_content_wrapper' => '',
     'classes_footer' => '',
@@ -785,6 +785,10 @@ return [
             'icon' => 'bi bi-speedometer2',
         ],
         [
+            'header' => 'NETWORK',
+            'can' => ['manage-members', 'manage-tree', 'manage-kyc'],
+        ],
+        [
             'text' => 'Members',
             'icon' => 'bi bi-people',
             'can' => 'manage-members',
@@ -799,6 +803,16 @@ return [
             'route' => 'admin.tree.index',
             'icon' => 'bi bi-diagram-3',
             'can' => 'manage-tree',
+        ],
+        [
+            'text' => 'KYC',
+            'route' => 'admin.kyc.index',
+            'icon' => 'bi bi-person-vcard',
+            'can' => 'manage-kyc',
+        ],
+        [
+            'header' => 'MONEY',
+            'can' => ['manage-sales', 'manage-withdrawals', 'view-reports'],
         ],
         [
             'text' => 'Sales',
@@ -819,16 +833,14 @@ return [
             'can' => 'manage-withdrawals',
         ],
         [
-            'text' => 'KYC',
-            'route' => 'admin.kyc.index',
-            'icon' => 'bi bi-person-vcard',
-            'can' => 'manage-kyc',
-        ],
-        [
             'text' => 'Reports',
             'route' => 'admin.reports.index',
             'icon' => 'bi bi-graph-up',
             'can' => 'view-reports',
+        ],
+        [
+            'header' => 'SHOP',
+            'can' => ['manage-catalog'],
         ],
         [
             'text' => 'Shop catalog',
@@ -837,7 +849,12 @@ return [
             'submenu' => [
                 ['text' => 'Products', 'route' => 'admin.products.index', 'icon' => 'bi bi-phone', 'can' => 'manage-catalog'],
                 ['text' => 'Categories', 'route' => 'admin.categories.index', 'icon' => 'bi bi-tags', 'can' => 'manage-catalog'],
+                ['text' => 'Brands', 'route' => 'admin.brands.index', 'icon' => 'bi bi-award', 'can' => 'manage-catalog'],
             ],
+        ],
+        [
+            'header' => 'SYSTEM',
+            'can' => ['manage-settings', 'manage-admins', 'send-announcements'],
         ],
         [
             'text' => 'Settings',
@@ -910,6 +927,20 @@ return [
     */
 
     'plugins' => [
+        // The panel's own look (brand colors, sidebar, cards, tables, the
+        // tree browser). Loaded on every page, after AdminLTE. The query
+        // string busts browser caches when the file changes (config:cache
+        // runs on every deploy).
+        'AdminTheme' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/admin-theme.css?v='.(@filemtime(dirname(__DIR__).'/public/css/admin-theme.css') ?: '1'),
+                ],
+            ],
+        ],
         'Datatables' => [
             'active' => false,
             'files' => [

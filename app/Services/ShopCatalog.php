@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\Money;
@@ -14,6 +15,9 @@ use Laravel\Fortify\Features;
  */
 class ShopCatalog
 {
+    /** Relations card() reads — eager load them on every product list. */
+    public const CARD_RELATIONS = ['media', 'category:id,name', 'brand:id,name,slug'];
+
     /**
      * @return Builder<Product>
      */
@@ -26,7 +30,7 @@ class ShopCatalog
     }
 
     /**
-     * @return array{id: int, slug: string, name: string, brand: string|null, category: string|null, price: string, compareAt: string|null, discount: int|null, image: string|null}
+     * @return array{id: int, slug: string, name: string, brand: string|null, brandSlug: string|null, category: string|null, price: string, compareAt: string|null, discount: int|null, image: string|null}
      */
     public function card(Product $product): array
     {
@@ -34,7 +38,8 @@ class ShopCatalog
             'id' => $product->id,
             'slug' => $product->slug,
             'name' => $product->name,
-            'brand' => $product->brand,
+            'brand' => $product->brand?->name,
+            'brandSlug' => $product->brand?->slug,
             'category' => $product->category?->name,
             'price' => Money::format($product->price),
             'compareAt' => $product->discountPercent() === null ? null : Money::format((int) $product->compare_at_price),
@@ -76,6 +81,35 @@ class ShopCatalog
             'count' => (int) $c->products_count,
             'image' => $c->imageUrl() ?? $covers->get($c->id)?->imageUrl(),
         ])->all());
+    }
+
+    /**
+     * Active brands with at least one visible product, optionally only
+     * those in one category.
+     *
+     * @return list<array{slug: string, name: string, count: int, logo: string|null}>
+     */
+    public function brands(?Category $category = null): array
+    {
+        $visible = fn ($q) => $q->whereIn('products.id', $this->visibleProducts()
+            ->when($category, fn ($p) => $p->where('category_id', $category->id))
+            ->select('products.id'));
+
+        return array_values(Brand::query()
+            ->with('media')
+            ->where('is_active', true)
+            ->whereHas('products', $visible)
+            ->withCount(['products' => $visible])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Brand $b) => [
+                'slug' => $b->slug,
+                'name' => $b->name,
+                'count' => (int) $b->products_count,
+                'logo' => $b->logoUrl(),
+            ])
+            ->all());
     }
 
     /**

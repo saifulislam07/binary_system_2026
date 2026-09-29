@@ -16,7 +16,7 @@
 
     <form method="GET" class="card mb-3">
         <div class="card-body row g-2 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="q" class="form-label small">Search</label>
                 <input id="q" name="q" class="form-control form-control-sm" value="{{ $filters['q'] ?? '' }}" placeholder="Name, SKU or brand">
             </div>
@@ -29,7 +29,16 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label for="brand" class="form-label small">Brand</label>
+                <select id="brand" name="brand" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    @foreach ($brands as $id => $name)
+                        <option value="{{ $id }}" @selected((string) ($filters['brand'] ?? '') === (string) $id)>{{ $name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label for="status" class="form-label small">Status</label>
                 <select id="status" name="status" class="form-select form-select-sm">
                     <option value="">All</option>
@@ -52,13 +61,13 @@
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     @if ($product->imageUrl())
-                                        <img src="{{ $product->imageUrl() }}" alt="" width="56" height="42" class="rounded border" style="object-fit: cover">
+                                        <img src="{{ $product->imageUrl() }}" alt="" width="56" height="42" class="thumb">
                                     @else
-                                        <span class="d-inline-flex align-items-center justify-content-center rounded border bg-body-tertiary" style="width: 56px; height: 42px"><i class="bi bi-image text-body-secondary"></i></span>
+                                        <span class="thumb-placeholder" style="width: 56px; height: 42px"><i class="bi bi-image text-body-secondary"></i></span>
                                     @endif
                                     <div>
                                         <div class="fw-semibold">{{ $product->name }}</div>
-                                        <div class="small text-body-secondary">{{ $product->sku }}@if ($product->brand) · {{ $product->brand }}@endif</div>
+                                        <div class="small text-body-secondary">{{ $product->sku }}@if ($product->brand) · {{ $product->brand->name }}@endif</div>
                                     </div>
                                 </div>
                             </td>
@@ -75,7 +84,7 @@
                             <td class="text-end"><a href="{{ route('admin.products.edit', $product) }}" class="btn btn-sm btn-outline-primary">Edit</a></td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center text-body-secondary py-4">No products match.</td></tr>
+                        <tr><td colspan="6"><div class="empty-state"><i class="bi bi-search"></i>No products match.</div></td></tr>
                     @endforelse
                 </tbody>
             </table>

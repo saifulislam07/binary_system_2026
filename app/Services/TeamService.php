@@ -122,7 +122,7 @@ class TeamService
     private function loadLevel(array $memberIds): Collection
     {
         return Member::query()
-            ->with(['user:id,name', 'package:id,name', 'binaryNode'])
+            ->with(['user:id,name', 'package:id,name', 'currentRank:id,name', 'binaryNode'])
             ->whereKey($memberIds)
             ->get()
             ->keyBy('id');
@@ -144,6 +144,8 @@ class TeamService
             'status' => $member->status->value,
             'active' => $member->status === MemberStatus::Active,
             'package' => $member->package?->name,
+            'rank' => $member->currentRank?->name,
+            'joined' => $member->activated_at?->toDateString(),
             'side' => $member->placement_side?->value,
             'leftBv' => intdiv($left, 100),
             'rightBv' => intdiv($right, 100),

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\BonusController;
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FinancialController;
@@ -131,13 +132,18 @@ Route::middleware(['auth:admin', EnsureAdminIsActive::class])->group(function ()
         Route::post('members/{member}/performance-bonus', [BonusController::class, 'performance'])->name('members.performance-bonus');
     });
 
-    // Shop catalog: categories and products shown on the public shop.
+    // Shop catalog: categories, brands and products shown on the public shop.
     Route::middleware('can:manage-catalog')->group(function () {
         Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
         Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
         Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::get('brands', [BrandController::class, 'index'])->name('brands.index');
+        Route::get('brands/create', [BrandController::class, 'create'])->name('brands.create');
+        Route::post('brands', [BrandController::class, 'store'])->name('brands.store');
+        Route::get('brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
+        Route::put('brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('products', [ProductController::class, 'store'])->name('products.store');
