@@ -1,3 +1,4 @@
+import { currentLocale } from '@/lib/i18n';
 import { register } from '@/routes';
 import { index as checkout } from '@/routes/checkout';
 
@@ -84,3 +85,11 @@ export const tints = [
     'from-amber-100 to-orange-200 text-orange-700 dark:from-amber-950 dark:to-orange-900 dark:text-orange-200',
     'from-violet-100 to-fuchsia-200 text-fuchsia-700 dark:from-violet-950 dark:to-fuchsia-900 dark:text-fuchsia-200',
 ];
+
+/** A name admins enter in both languages (categories), in the visitor's language. */
+export function localName(item: {
+    name: string;
+    nameBn?: string | null;
+}): string {
+    return currentLocale() === 'bn' && item.nameBn ? item.nameBn : item.name;
+}

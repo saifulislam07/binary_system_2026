@@ -14,8 +14,8 @@ import { request } from '@/routes/password';
 
 defineOptions({
     layout: {
-        title: 'Log in · লগইন',
-        description: 'Enter your email and password · ইমেইল ও পাসওয়ার্ড দিন',
+        title: 'Welcome back',
+        description: 'Log in with your email and password.',
     },
 });
 
@@ -26,11 +26,11 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Log in · লগইন" />
+    <Head :title="$t('Log in')" />
 
     <div
         v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
+        class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-200"
     >
         {{ status }}
     </div>
@@ -41,9 +41,9 @@ defineProps<{
         v-slot="{ errors, processing }"
         class="flex flex-col gap-6"
     >
-        <div class="grid gap-6">
+        <div class="grid gap-5">
             <div class="grid gap-2">
-                <Label for="email">Email address · ইমেইল</Label>
+                <Label for="email">{{ $t('Email address') }}</Label>
                 <Input
                     id="email"
                     type="email"
@@ -53,20 +53,21 @@ defineProps<{
                     :tabindex="1"
                     autocomplete="email"
                     placeholder="email@example.com"
+                    class="h-11"
                 />
                 <InputError :message="errors.email" />
             </div>
 
             <div class="grid gap-2">
                 <div class="flex items-center justify-between">
-                    <Label for="password">Password · পাসওয়ার্ড</Label>
+                    <Label for="password">{{ $t('Password') }}</Label>
                     <TextLink
                         v-if="canResetPassword"
                         :href="request()"
                         class="text-sm"
                         :tabindex="5"
                     >
-                        Forgot password? · ভুলে গেছেন?
+                        {{ $t('Forgot password?') }}
                     </TextLink>
                 </div>
                 <PasswordInput
@@ -75,38 +76,40 @@ defineProps<{
                     required
                     :tabindex="2"
                     autocomplete="current-password"
-                    placeholder="Password"
+                    :placeholder="$t('Password')"
+                    class="h-11"
                 />
                 <InputError :message="errors.password" />
             </div>
 
-            <div class="flex items-center justify-between">
-                <Label for="remember" class="flex items-center space-x-3">
-                    <Checkbox id="remember" name="remember" :tabindex="3" />
-                    <span>Remember me · মনে রাখুন</span>
-                </Label>
-            </div>
+            <Label for="remember" class="flex items-center gap-3 font-normal">
+                <Checkbox id="remember" name="remember" :tabindex="3" />
+                <span>{{ $t('Remember me') }}</span>
+            </Label>
 
             <Button
                 type="submit"
-                class="mt-4 w-full"
+                class="mt-2 h-11 w-full text-base"
                 :tabindex="4"
                 :disabled="processing"
                 data-test="login-button"
             >
                 <Spinner v-if="processing" />
-                Log in · লগইন
+                {{ $t('Log in') }}
             </Button>
         </div>
 
-        <div class="text-center text-sm text-muted-foreground">
-            New here? · নতুন সদস্য?
+        <div
+            class="rounded-xl border bg-muted/40 px-4 py-3 text-center text-sm text-muted-foreground"
+        >
+            {{ $t('New here?') }}
             <TextLink
                 :href="register()"
                 :tabindex="5"
+                class="font-semibold"
                 data-test="register-link"
             >
-                Join · যোগ দিন
+                {{ $t('Create an account') }}
             </TextLink>
         </div>
     </Form>

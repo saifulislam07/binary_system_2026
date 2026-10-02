@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CommissionType;
 use App\Enums\TransactionDirection;
 use App\Enums\WalletTransactionType;
 use App\Http\Requests\WalletHistoryRequest;
@@ -35,7 +36,7 @@ class WalletController extends Controller
             'summary' => self::formatSummary($summary->for($member)),
             'transactions' => $history->through(fn (WalletTransaction $t) => [
                 'id' => $t->id,
-                'date' => $t->created_at?->format('d M Y, h:i A'),
+                'date' => $t->created_at?->translatedFormat('d M Y, h:i A'),
                 'type' => $t->type->value,
                 'typeLabel' => $t->type->label(),
                 'credit' => $t->direction === TransactionDirection::Credit,
@@ -65,7 +66,7 @@ class WalletController extends Controller
     {
         return [
             'available' => Money::format($summary['available']),
-            'period' => $summary['period'],
+            'period' => __($summary['period']),
             'referral' => Money::format($summary['referral']),
             'binary' => Money::format($summary['binary']),
             'binaryCycle' => $summary['binary_cycle'],
@@ -77,13 +78,28 @@ class WalletController extends Controller
     {
         $reference = $transaction->reference;
 
+        if ($reference === null) {
+            return null;
+        }
+
         return match (true) {
-            $reference instanceof Commission => ucfirst($reference->type->value).' commission #'.$reference->id,
-            $reference instanceof Withdrawal => 'Withdrawal #'.$reference->id,
-            $reference instanceof Order => 'Order '.$reference->order_number,
-            $reference instanceof Sale => 'Sale #'.$reference->id,
-            $reference === null => null,
+            $reference instanceof Commission => __(':type commission #:id', ['type' => self::commissionType($reference->type), 'id' => $reference->id]),
+            $reference instanceof Withdrawal => __('Withdrawal #:id', ['id' => $reference->id]),
+            $reference instanceof Order => __('Order :number', ['number' => $reference->order_number]),
+            $reference instanceof Sale => __('Sale #:id', ['id' => $reference->id]),
             default => class_basename($reference).' #'.$reference->getKey(),
+        };
+    }
+
+    private static function commissionType(CommissionType $type): string
+    {
+        return match ($type) {
+            CommissionType::Referral => __('Referral'),
+            CommissionType::Binary => __('Binary'),
+            CommissionType::Rank => __('Rank'),
+            CommissionType::Leadership => __('Leadership'),
+            CommissionType::Sales => __('Sales'),
+            CommissionType::Performance => __('Performance'),
         };
     }
 }

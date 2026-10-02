@@ -18,17 +18,18 @@ class MemberActivated extends MemberNotification
 
     public function title(): string
     {
-        return 'Your account is active · আপনার অ্যাকাউন্ট সক্রিয়';
+        return __('Your account is active');
     }
 
     public function message(object $notifiable): string
     {
         $parent = $this->member->placementParent()->value('member_code');
         $placement = $parent !== null && $this->member->placement_side !== null
-            ? " You are placed on the {$this->member->placement_side->value} of {$parent}."
+            ? ' '.__('You are placed on the :side of :parent.', ['side' => __($this->member->placement_side->value), 'parent' => $parent])
             : '';
 
-        return "Your member ID is {$this->member->member_code}.{$placement} Share your referral link to build your team.";
+        return __('Your member ID is :code.', ['code' => $this->member->member_code])
+            .$placement.' '.__('Share your referral link to build your team.');
     }
 
     public function path(): string

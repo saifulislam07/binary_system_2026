@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { CircleCheck } from '@lucide/vue';
 import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
+import SponsorPicker from '@/components/SponsorPicker.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { t } from '@/lib/i18n';
 import { login, membership } from '@/routes';
 import { store } from '@/routes/register';
 import { show as showSponsor } from '@/routes/sponsors';
@@ -24,8 +27,8 @@ const props = defineProps<{
 defineOptions({
     layout: {
         title: 'Create an account',
-        description:
-            'Join with your sponsor’s ID · স্পনসরের আইডি দিয়ে যোগ দিন',
+        description: 'Join with your sponsor’s ID.',
+        wide: true,
     },
 });
 
@@ -54,44 +57,66 @@ async function lookupSponsor() {
     if (response.ok) {
         sponsorName.value = body.name;
     } else {
-        sponsorError.value = body.message ?? 'Sponsor not found.';
+        sponsorError.value = body.message ?? t('Sponsor not found.');
     }
 }
 
 if (sponsorCode.value) {
     void lookupSponsor();
 }
+
+const sides = [
+    { value: 'left', label: 'Left' },
+    { value: 'right', label: 'Right' },
+] as const;
 </script>
 
 <template>
-    <Head title="Register" />
+    <Head :title="$t('Create an account')" />
 
     <Form
         v-bind="store.form()"
         :reset-on-success="['password', 'password_confirmation']"
         v-slot="{ errors, processing }"
-        class="flex flex-col gap-6"
+        class="flex flex-col gap-8"
     >
-        <div class="grid gap-6">
+        <!-- Sponsor & package -->
+        <section class="grid gap-5">
+            <h2
+                class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+            >
+                {{ $t('Sponsor & package') }}
+            </h2>
+
             <div class="grid gap-2">
-                <Label for="sponsor_code">Sponsor ID · স্পনসর আইডি</Label>
-                <Input
+                <Label for="sponsor_code">{{ $t('Sponsor ID') }}</Label>
+                <SponsorPicker
                     id="sponsor_code"
-                    name="sponsor_code"
                     v-model="sponsorCode"
-                    required
-                    v-focus="!sponsorCode"
+                    name="sponsor_code"
                     :tabindex="1"
-                    placeholder="MBR-100001"
-                    autocomplete="off"
+                    :autofocus="!sponsorCode"
+                    :placeholder="$t('Sponsor ID or name, e.g. MBR-100001')"
+                    @select="lookupSponsor"
                     @blur="lookupSponsor"
                 />
                 <p
+                    v-if="!sponsorName && !sponsorError"
+                    class="text-xs text-muted-foreground"
+                >
+                    {{
+                        $t(
+                            'Type the ID digits or at least 3 letters of the name, then pick your sponsor from the list.',
+                        )
+                    }}
+                </p>
+                <p
                     v-if="sponsorName"
-                    class="text-sm text-green-600"
+                    class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 dark:text-green-400"
                     data-test="sponsor-name"
                 >
-                    Sponsor: {{ sponsorName }}
+                    <CircleCheck class="size-4" aria-hidden="true" />
+                    {{ $t('Sponsor: :name', { name: sponsorName }) }}
                 </p>
                 <InputError
                     :message="errors.sponsor_code ?? sponsorError ?? undefined"
@@ -100,116 +125,138 @@ if (sponsorCode.value) {
 
             <fieldset class="grid gap-2">
                 <legend class="mb-2 text-sm font-medium">
-                    Position under sponsor · অবস্থান
+                    {{ $t('Position under sponsor') }}
                 </legend>
-                <div class="flex gap-6">
-                    <label class="flex items-center gap-2 text-sm">
+                <div class="grid grid-cols-2 gap-3">
+                    <label
+                        v-for="(side, i) in sides"
+                        :key="side.value"
+                        class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition has-checked:border-brand has-checked:bg-brand-soft has-checked:text-brand has-focus-visible:ring-2 has-focus-visible:ring-brand"
+                    >
                         <input
                             type="radio"
                             name="preferred_side"
-                            value="left"
+                            :value="side.value"
                             required
                             :tabindex="2"
-                            checked
+                            :checked="i === 0"
+                            class="accent-brand"
                         />
-                        Left · বাম
-                    </label>
-                    <label class="flex items-center gap-2 text-sm">
-                        <input
-                            type="radio"
-                            name="preferred_side"
-                            value="right"
-                            :tabindex="2"
-                        />
-                        Right · ডান
+                        {{ $t(side.label) }}
                     </label>
                 </div>
                 <InputError :message="errors.preferred_side" />
             </fieldset>
 
-            <div class="grid gap-2">
-                <Label for="package_id">Package · প্যাকেজ</Label>
-                <select
-                    id="package_id"
-                    name="package_id"
-                    required
-                    :tabindex="3"
-                    :class="fieldClass"
-                >
-                    <option value="" disabled :selected="!selectedPackageId">
-                        Choose a package
-                    </option>
-                    <option
+            <fieldset class="grid gap-2">
+                <legend class="mb-2 text-sm font-medium">
+                    {{ $t('Package') }}
+                </legend>
+                <div class="grid grid-cols-2 gap-3">
+                    <label
                         v-for="pkg in packages"
                         :key="pkg.id"
-                        :value="pkg.id"
-                        :selected="pkg.id === selectedPackageId"
+                        class="relative flex cursor-pointer flex-col rounded-xl border px-4 py-3 transition has-checked:border-brand has-checked:bg-brand-soft has-checked:ring-1 has-checked:ring-brand has-focus-visible:ring-2 has-focus-visible:ring-brand"
                     >
-                        {{ pkg.name }} — {{ pkg.price }}
-                    </option>
-                </select>
+                        <input
+                            type="radio"
+                            name="package_id"
+                            :value="pkg.id"
+                            required
+                            :tabindex="3"
+                            :checked="pkg.id === selectedPackageId"
+                            class="peer sr-only"
+                        />
+                        <span class="text-sm font-semibold">{{
+                            pkg.name
+                        }}</span>
+                        <span
+                            class="text-lg font-bold tracking-tight tabular-nums"
+                            >{{ pkg.price }}</span
+                        >
+                        <CircleCheck
+                            class="absolute top-3 right-3 hidden size-4 text-brand peer-checked:block"
+                            aria-hidden="true"
+                        />
+                    </label>
+                </div>
                 <InputError :message="errors.package_id" />
+            </fieldset>
+        </section>
+
+        <!-- Your details -->
+        <section class="grid gap-5 border-t pt-8">
+            <h2
+                class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+            >
+                {{ $t('Your details') }}
+            </h2>
+
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <Label for="name">{{ $t('Full name') }}</Label>
+                    <Input
+                        id="name"
+                        type="text"
+                        required
+                        v-focus="!!sponsorCode"
+                        :tabindex="4"
+                        autocomplete="name"
+                        name="name"
+                        :placeholder="$t('Full name')"
+                        class="h-11"
+                    />
+                    <InputError :message="errors.name" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="phone">{{ $t('Mobile number') }}</Label>
+                    <Input
+                        id="phone"
+                        type="tel"
+                        required
+                        :tabindex="5"
+                        autocomplete="tel"
+                        name="phone"
+                        placeholder="01712345678"
+                        class="h-11"
+                    />
+                    <InputError :message="errors.phone" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="email">{{ $t('Email address') }}</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        required
+                        :tabindex="6"
+                        autocomplete="email"
+                        name="email"
+                        placeholder="email@example.com"
+                        class="h-11"
+                    />
+                    <InputError :message="errors.email" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="nid">{{ $t('NID number') }}</Label>
+                    <Input
+                        id="nid"
+                        type="text"
+                        inputmode="numeric"
+                        required
+                        :tabindex="7"
+                        name="nid"
+                        :placeholder="$t('10, 13 or 17 digits')"
+                        class="h-11"
+                    />
+                    <InputError :message="errors.nid" />
+                </div>
             </div>
 
             <div class="grid gap-2">
-                <Label for="name">Full name · পূর্ণ নাম</Label>
-                <Input
-                    id="name"
-                    type="text"
-                    required
-                    v-focus="!!sponsorCode"
-                    :tabindex="4"
-                    autocomplete="name"
-                    name="name"
-                    placeholder="Full name"
-                />
-                <InputError :message="errors.name" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="phone">Mobile number · মোবাইল নম্বর</Label>
-                <Input
-                    id="phone"
-                    type="tel"
-                    required
-                    :tabindex="5"
-                    autocomplete="tel"
-                    name="phone"
-                    placeholder="01712345678"
-                />
-                <InputError :message="errors.phone" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="email">Email address · ইমেইল</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    required
-                    :tabindex="6"
-                    autocomplete="email"
-                    name="email"
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="nid">NID number · জাতীয় পরিচয়পত্র নম্বর</Label>
-                <Input
-                    id="nid"
-                    type="text"
-                    inputmode="numeric"
-                    required
-                    :tabindex="7"
-                    name="nid"
-                    placeholder="10, 13 or 17 digits"
-                />
-                <InputError :message="errors.nid" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="address">Address · ঠিকানা</Label>
+                <Label for="address">{{ $t('Address') }}</Label>
                 <textarea
                     id="address"
                     name="address"
@@ -221,74 +268,91 @@ if (sponsorCode.value) {
                 />
                 <InputError :message="errors.address" />
             </div>
+        </section>
 
-            <div class="grid gap-2">
-                <Label for="password">Password · পাসওয়ার্ড</Label>
-                <PasswordInput
-                    id="password"
-                    required
-                    :tabindex="9"
-                    autocomplete="new-password"
-                    name="password"
-                    placeholder="Password"
-                    :passwordrules="passwordRules"
-                />
-                <InputError :message="errors.password" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
-                <PasswordInput
-                    id="password_confirmation"
-                    required
-                    :tabindex="10"
-                    autocomplete="new-password"
-                    name="password_confirmation"
-                    placeholder="Confirm password"
-                    :passwordrules="passwordRules"
-                />
-                <InputError :message="errors.password_confirmation" />
-            </div>
-
-            <p
-                class="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
-                data-test="earnings-disclaimer"
+        <!-- Password -->
+        <section class="grid gap-5 border-t pt-8">
+            <h2
+                class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
             >
-                Membership is sponsor-based: members earn commission only from
-                genuine product sales in their team. There is no guaranteed
-                income. · সদস্যপদ স্পনসর-ভিত্তিক; আয় শুধু প্রকৃত পণ্য বিক্রি
-                থেকে, কোনো নিশ্চিত আয় নেই।
-                <TextLink
-                    :href="membership()"
-                    target="_blank"
-                    class="font-medium"
-                    data-test="membership-link"
-                    >How membership &amp; earnings work · বিস্তারিত</TextLink
-                >
-            </p>
+                {{ $t('Password') }}
+            </h2>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <Label for="password">{{ $t('Password') }}</Label>
+                    <PasswordInput
+                        id="password"
+                        required
+                        :tabindex="9"
+                        autocomplete="new-password"
+                        name="password"
+                        :placeholder="$t('Password')"
+                        :passwordrules="passwordRules"
+                        class="h-11"
+                    />
+                    <InputError :message="errors.password" />
+                </div>
 
+                <div class="grid gap-2">
+                    <Label for="password_confirmation">{{
+                        $t('Confirm password')
+                    }}</Label>
+                    <PasswordInput
+                        id="password_confirmation"
+                        required
+                        :tabindex="10"
+                        autocomplete="new-password"
+                        name="password_confirmation"
+                        :placeholder="$t('Confirm password')"
+                        :passwordrules="passwordRules"
+                        class="h-11"
+                    />
+                    <InputError :message="errors.password_confirmation" />
+                </div>
+            </div>
+        </section>
+
+        <p
+            class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+            data-test="earnings-disclaimer"
+        >
+            {{
+                $t(
+                    'Membership is sponsor-based: members earn commission only from genuine product sales in their team. There is no guaranteed income.',
+                )
+            }}
+            <TextLink
+                :href="membership()"
+                target="_blank"
+                class="font-semibold"
+                data-test="membership-link"
+                >{{ $t('How membership & earnings work') }}</TextLink
+            >
+        </p>
+
+        <div class="grid gap-4">
             <Button
                 type="submit"
-                class="mt-2 w-full"
+                class="h-11 w-full text-base"
                 tabindex="11"
                 :disabled="processing"
                 data-test="register-user-button"
             >
                 <Spinner v-if="processing" />
-                Create account · নিবন্ধন করুন
+                {{ $t('Create account') }}
             </Button>
-        </div>
 
-        <div class="text-center text-sm text-muted-foreground">
-            Already have an account?
-            <TextLink
-                :href="login()"
-                class="underline underline-offset-4"
-                :tabindex="12"
-                data-test="login-link"
-            >
-                Log in
-            </TextLink>
+            <p class="text-center text-sm text-muted-foreground">
+                {{ $t('Already have an account?') }}
+                <TextLink
+                    :href="login()"
+                    class="font-semibold"
+                    :tabindex="12"
+                    data-test="login-link"
+                >
+                    {{ $t('Log in') }}
+                </TextLink>
+            </p>
         </div>
     </Form>
 </template>

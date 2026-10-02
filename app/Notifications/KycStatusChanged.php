@@ -24,18 +24,18 @@ class KycStatusChanged extends MemberNotification
     public function title(): string
     {
         return match ($this->status) {
-            KycStatus::Approved => 'KYC approved · কেওয়াইসি অনুমোদিত',
-            KycStatus::Rejected => 'KYC rejected · কেওয়াইসি বাতিল',
-            KycStatus::Pending => 'KYC submitted · কেওয়াইসি জমা হয়েছে',
+            KycStatus::Approved => __('KYC approved'),
+            KycStatus::Rejected => __('KYC rejected'),
+            KycStatus::Pending => __('KYC submitted'),
         };
     }
 
     public function message(object $notifiable): string
     {
         return match ($this->status) {
-            KycStatus::Approved => 'Your identity documents were verified.',
-            KycStatus::Rejected => "Your identity documents were not accepted: {$this->document->rejection_reason}. Please submit them again.",
-            KycStatus::Pending => 'Your identity documents are waiting for review.',
+            KycStatus::Approved => __('Your identity documents were verified.'),
+            KycStatus::Rejected => __('Your identity documents were not accepted: :reason. Please submit them again.', ['reason' => $this->document->rejection_reason]),
+            KycStatus::Pending => __('Your identity documents are waiting for review.'),
         };
     }
 

@@ -35,19 +35,22 @@ const gateway = ref<string | null>(props.gateways[0]?.value ?? null);
 </script>
 
 <template>
-    <Head title="Packages" />
+    <Head :title="$t('Packages')" />
 
     <div class="flex flex-col gap-6 p-4">
         <div>
             <h1 class="text-xl font-semibold">
-                Choose a package · প্যাকেজ নির্বাচন
+                {{ $t('Choose a package') }}
             </h1>
             <p
                 v-if="memberStatus === 'pending'"
                 class="text-sm text-muted-foreground"
             >
-                Your account activates as soon as this payment succeeds. পেমেন্ট
-                সফল হলেই আপনার অ্যাকাউন্ট সক্রিয় হবে।
+                {{
+                    $t(
+                        'Your account activates as soon as this payment succeeds.',
+                    )
+                }}
             </p>
         </div>
 
@@ -57,7 +60,7 @@ const gateway = ref<string | null>(props.gateways[0]?.value ?? null);
             class="flex flex-col gap-6"
         >
             <fieldset class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <legend class="sr-only">Package</legend>
+                <legend class="sr-only">{{ $t('Package') }}</legend>
                 <label
                     v-for="pkg in packages"
                     :key="pkg.id"
@@ -91,7 +94,7 @@ const gateway = ref<string | null>(props.gateways[0]?.value ?? null);
 
             <fieldset class="grid gap-2">
                 <legend class="mb-2 text-sm font-medium">
-                    Pay with · পেমেন্ট পদ্ধতি
+                    {{ $t('Pay with') }}
                 </legend>
                 <label
                     v-for="option in gateways"
@@ -116,7 +119,7 @@ const gateway = ref<string | null>(props.gateways[0]?.value ?? null);
                 data-test="pay-button"
             >
                 <Spinner v-if="processing" />
-                Continue to payment · পেমেন্ট করুন
+                {{ $t('Continue to payment') }}
             </Button>
         </Form>
     </div>

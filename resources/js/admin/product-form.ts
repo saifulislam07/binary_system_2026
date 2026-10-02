@@ -4,8 +4,8 @@
  * plain form fields, so the form still submits without this script. DOM is
  * built with textContent only.
  */
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
+// The description editor: rich-text.ts enhances [data-rich-text] on import.
+import './rich-text';
 
 const form = document.getElementById('product-form') as HTMLFormElement | null;
 
@@ -32,45 +32,6 @@ function icon(name: string): HTMLElement {
     i.setAttribute('aria-hidden', 'true');
 
     return i;
-}
-
-/* ---------- Rich-text description ---------- */
-
-function richText(textarea: HTMLTextAreaElement): void {
-    const wrap = el('div', 'rte');
-    const host = el('div');
-    wrap.append(host);
-    textarea.after(wrap);
-    textarea.hidden = true;
-
-    const quill = new Quill(host, {
-        theme: 'snow',
-        placeholder: textarea.placeholder,
-        modules: {
-            toolbar: [
-                [{ header: [2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['blockquote', 'link'],
-                ['clean'],
-            ],
-        },
-    });
-
-    if (textarea.value.trim() !== '') {
-        // Server-sanitized HTML (see App\Support\RichText).
-        quill.clipboard.dangerouslyPasteHTML(textarea.value, 'silent');
-    }
-
-    const sync = () => {
-        textarea.value =
-            quill.getText().trim() === ''
-                ? ''
-                : quill.getSemanticHTML().replace(/&nbsp;/g, ' ');
-    };
-
-    quill.on('text-change', sync);
-    sync();
 }
 
 /* ---------- Key features ---------- */
@@ -547,15 +508,9 @@ function discountHint(): void {
     update();
 }
 
-const description =
-    document.querySelector<HTMLTextAreaElement>('[data-rich-text]');
 const featureList = document.querySelector<HTMLElement>('[data-feature-list]');
 const photoManager = document.querySelector<HTMLElement>('[data-uploader]');
 const brand = document.querySelector<HTMLElement>('[data-brand-picker]');
-
-if (description) {
-    richText(description);
-}
 
 if (featureList) {
     features(featureList);

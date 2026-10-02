@@ -44,11 +44,11 @@ class WithdrawalService
     public function request(Member $member, int $amount, WithdrawalMethodType $method, array $accountDetails): Withdrawal
     {
         if ($member->status !== MemberStatus::Active) {
-            throw new WithdrawalException('Only active members can withdraw.');
+            throw new WithdrawalException(__('Only active members can withdraw.'));
         }
 
         if ($amount < $this->minimumAmount()) {
-            throw new WithdrawalException('The minimum withdrawal is '.Money::format($this->minimumAmount()).'.');
+            throw new WithdrawalException(__('The minimum withdrawal is :min.', ['min' => Money::format($this->minimumAmount())]));
         }
 
         return DB::transaction(function () use ($member, $amount, $method, $accountDetails) {
@@ -70,7 +70,7 @@ class WithdrawalService
                     WalletTransactionStatus::Pending,
                 );
             } catch (InsufficientFundsException) {
-                throw new WithdrawalException('Insufficient balance for this withdrawal.');
+                throw new WithdrawalException(__('Insufficient balance for this withdrawal.'));
             }
 
             $withdrawal->forceFill(['wallet_transaction_id' => $hold->id])->save();

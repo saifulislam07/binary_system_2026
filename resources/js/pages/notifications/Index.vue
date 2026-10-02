@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
+import { currentLocale, pickLanguage } from '@/lib/i18n';
 import { notificationIcon, timeAgo } from '@/lib/notifications';
 import type { AppNotification } from '@/lib/notifications';
 import { index, read, readAll } from '@/routes/notifications';
@@ -34,16 +35,16 @@ function markAllRead() {
 }
 
 function fullDate(iso: string | null): string {
-    return iso ? new Date(iso).toLocaleString() : '';
+    return iso ? new Date(iso).toLocaleString(currentLocale()) : '';
 }
 </script>
 
 <template>
-    <Head title="Notifications" />
+    <Head :title="$t('Notifications')" />
 
     <div class="flex flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
-            <h1 class="text-xl font-semibold">Notifications · নোটিফিকেশন</h1>
+            <h1 class="text-xl font-semibold">{{ $t('Notifications') }}</h1>
             <Button
                 v-if="unread > 0"
                 variant="outline"
@@ -51,7 +52,7 @@ function fullDate(iso: string | null): string {
                 data-test="mark-all-read"
                 @click="markAllRead"
             >
-                Mark all read ({{ unread }})
+                {{ $t('Mark all read') }} ({{ unread }})
             </Button>
         </div>
 
@@ -73,7 +74,7 @@ function fullDate(iso: string | null): string {
                             class="block"
                             :class="item.read ? '' : 'font-semibold'"
                         >
-                            {{ item.title }}
+                            {{ pickLanguage(item.title) }}
                         </span>
                         <span class="block text-sm text-muted-foreground">
                             {{ item.message }}
@@ -89,7 +90,7 @@ function fullDate(iso: string | null): string {
                     <span
                         v-if="!item.read"
                         class="mt-2 size-2 shrink-0 rounded-full bg-primary"
-                        aria-label="Unread"
+                        :aria-label="$t('Unread')"
                     />
                 </button>
             </li>
@@ -97,14 +98,14 @@ function fullDate(iso: string | null): string {
                 v-if="notifications.data.length === 0"
                 class="px-4 py-8 text-center text-muted-foreground"
             >
-                No notifications yet · এখনো কোনো নোটিফিকেশন নেই
+                {{ $t('No notifications yet') }}
             </li>
         </ul>
 
         <nav
             v-if="notifications.last_page > 1"
             class="flex items-center justify-between text-sm"
-            aria-label="Pagination"
+            :aria-label="$t('Pagination')"
         >
             <Button
                 variant="outline"
@@ -112,13 +113,20 @@ function fullDate(iso: string | null): string {
                 :disabled="!notifications.prev_page_url"
                 as-child
             >
-                <Link :href="notifications.prev_page_url ?? '#'" preserve-scroll
-                    >Previous</Link
+                <Link
+                    :href="notifications.prev_page_url ?? '#'"
+                    preserve-scroll
+                    >{{ $t('Previous') }}</Link
                 >
             </Button>
             <span class="text-muted-foreground"
-                >Page {{ notifications.current_page }} of
-                {{ notifications.last_page }} ({{ notifications.total }})</span
+                >{{
+                    $t('Page :page of :last', {
+                        page: notifications.current_page,
+                        last: notifications.last_page,
+                    })
+                }}
+                ({{ notifications.total }})</span
             >
             <Button
                 variant="outline"
@@ -126,8 +134,10 @@ function fullDate(iso: string | null): string {
                 :disabled="!notifications.next_page_url"
                 as-child
             >
-                <Link :href="notifications.next_page_url ?? '#'" preserve-scroll
-                    >Next</Link
+                <Link
+                    :href="notifications.next_page_url ?? '#'"
+                    preserve-scroll
+                    >{{ $t('Next') }}</Link
                 >
             </Button>
         </nav>

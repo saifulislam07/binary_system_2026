@@ -11,9 +11,8 @@ import { email } from '@/routes/password';
 
 defineOptions({
     layout: {
-        title: 'Forgot password · পাসওয়ার্ড ভুলে গেছেন',
-        description:
-            'We’ll email you a reset link · রিসেট লিংক ইমেইলে পাঠানো হবে',
+        title: 'Forgot password',
+        description: 'We’ll email you a link to choose a new password.',
     },
 });
 
@@ -23,11 +22,11 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Forgot password · পাসওয়ার্ড ভুলে গেছেন" />
+    <Head :title="$t('Forgot password')" />
 
     <div
         v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
+        class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-200"
     >
         {{ status }}
     </div>
@@ -35,7 +34,7 @@ defineProps<{
     <div class="space-y-6">
         <Form v-bind="email.form()" v-slot="{ errors, processing }">
             <div class="grid gap-2">
-                <Label for="email">Email address · ইমেইল</Label>
+                <Label for="email">{{ $t('Email address') }}</Label>
                 <Input
                     id="email"
                     type="email"
@@ -43,25 +42,28 @@ defineProps<{
                     autocomplete="off"
                     v-focus
                     placeholder="email@example.com"
+                    class="h-11"
                 />
                 <InputError :message="errors.email" />
             </div>
 
             <div class="my-6 flex items-center justify-start">
                 <Button
-                    class="w-full"
+                    class="h-11 w-full text-base"
                     :disabled="processing"
                     data-test="email-password-reset-link-button"
                 >
                     <Spinner v-if="processing" />
-                    Send reset link · লিংক পাঠান
+                    {{ $t('Send reset link') }}
                 </Button>
             </div>
         </Form>
 
         <div class="space-x-1 text-center text-sm text-muted-foreground">
-            <span>Or, return to</span>
-            <TextLink :href="login()">log in · লগইন</TextLink>
+            <span>{{ $t('Remembered it?') }}</span>
+            <TextLink :href="login()" class="font-semibold">{{
+                $t('Log in')
+            }}</TextLink>
         </div>
     </div>
 </template>

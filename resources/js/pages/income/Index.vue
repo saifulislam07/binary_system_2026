@@ -70,12 +70,12 @@ const statusClass: Record<string, string> = {
 </script>
 
 <template>
-    <Head title="Income" />
+    <Head :title="$t('Income')" />
 
     <div class="flex flex-col gap-6 p-4">
-        <h1 class="text-xl font-semibold">Income · আয়</h1>
+        <h1 class="text-xl font-semibold">{{ $t('Income') }}</h1>
 
-        <nav class="flex flex-wrap gap-2" aria-label="Income type">
+        <nav class="flex flex-wrap gap-2" :aria-label="$t('Income type')">
             <Link
                 v-for="(label, key) in tabs"
                 :key="key"
@@ -98,7 +98,7 @@ const statusClass: Record<string, string> = {
             @submit.prevent="applyFilters"
         >
             <div class="grid gap-2">
-                <Label for="from">From · থেকে</Label>
+                <Label for="from">{{ $t('From') }}</Label>
                 <input
                     id="from"
                     v-model="form.from"
@@ -107,7 +107,7 @@ const statusClass: Record<string, string> = {
                 />
             </div>
             <div class="grid gap-2">
-                <Label for="to">To · পর্যন্ত</Label>
+                <Label for="to">{{ $t('To') }}</Label>
                 <input
                     id="to"
                     v-model="form.to"
@@ -115,9 +115,9 @@ const statusClass: Record<string, string> = {
                     :class="fieldClass"
                 />
             </div>
-            <Button type="submit">Filter</Button>
+            <Button type="submit">{{ $t('Filter') }}</Button>
             <p class="ml-auto text-sm" data-test="net">
-                Net total: <strong>{{ net }}</strong>
+                {{ $t('Net total') }}: <strong>{{ net }}</strong>
             </p>
         </form>
 
@@ -125,11 +125,19 @@ const statusClass: Record<string, string> = {
             <table class="w-full min-w-[640px] text-sm">
                 <thead class="bg-muted/50 text-left text-muted-foreground">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Date</th>
-                        <th class="px-4 py-2 text-right font-medium">Amount</th>
-                        <th class="px-4 py-2 font-medium">Source</th>
-                        <th class="px-4 py-2 font-medium">Description</th>
-                        <th class="px-4 py-2 font-medium">Status</th>
+                        <th class="px-4 py-2 font-medium">{{ $t('Date') }}</th>
+                        <th class="px-4 py-2 text-right font-medium">
+                            {{ $t('Amount') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Source') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Description') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Status') }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -162,7 +170,7 @@ const statusClass: Record<string, string> = {
                                     'rounded-full px-2 py-0.5 text-xs',
                                     statusClass[r.status] ?? '',
                                 ]"
-                                >{{ r.status }}</span
+                                >{{ $t(r.status) }}</span
                             >
                         </td>
                     </tr>
@@ -171,7 +179,7 @@ const statusClass: Record<string, string> = {
                             colspan="5"
                             class="px-4 py-8 text-center text-muted-foreground"
                         >
-                            Nothing here yet · এখনো কিছু নেই
+                            {{ $t('Nothing here yet') }}
                         </td>
                     </tr>
                 </tbody>
@@ -181,7 +189,7 @@ const statusClass: Record<string, string> = {
         <nav
             v-if="rows.last_page > 1"
             class="flex items-center justify-between text-sm"
-            aria-label="Pagination"
+            :aria-label="$t('Pagination')"
         >
             <Button
                 variant="outline"
@@ -189,22 +197,25 @@ const statusClass: Record<string, string> = {
                 :disabled="!rows.prev_page_url"
                 as-child
             >
-                <Link :href="rows.prev_page_url ?? '#'" preserve-scroll
-                    >Previous</Link
-                >
+                <Link :href="rows.prev_page_url ?? '#'" preserve-scroll>{{
+                    $t('Previous')
+                }}</Link>
             </Button>
-            <span class="text-muted-foreground"
-                >Page {{ rows.current_page }} of {{ rows.last_page }}</span
-            >
+            <span class="text-muted-foreground">{{
+                $t('Page :page of :last', {
+                    page: rows.current_page,
+                    last: rows.last_page,
+                })
+            }}</span>
             <Button
                 variant="outline"
                 size="sm"
                 :disabled="!rows.next_page_url"
                 as-child
             >
-                <Link :href="rows.next_page_url ?? '#'" preserve-scroll
-                    >Next</Link
-                >
+                <Link :href="rows.next_page_url ?? '#'" preserve-scroll>{{
+                    $t('Next')
+                }}</Link>
             </Button>
         </nav>
     </div>

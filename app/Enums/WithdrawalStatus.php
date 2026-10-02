@@ -44,14 +44,17 @@ enum WithdrawalStatus: string
         return ! in_array($this, [self::Paid, self::Rejected], true);
     }
 
+    /**
+     * Label in the current language (member pages translate it to Bangla).
+     */
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Pending · অপেক্ষমাণ',
-            self::Approved => 'Approved · অনুমোদিত',
-            self::Processing => 'Processing · প্রক্রিয়াধীন',
-            self::Paid => 'Paid · পরিশোধিত',
-            self::Rejected => 'Rejected · বাতিল',
+            self::Pending => __('Pending'),
+            self::Approved => __('Approved'),
+            self::Processing => __('Processing'),
+            self::Paid => __('Paid'),
+            self::Rejected => __('Rejected'),
         };
     }
 }

@@ -19,7 +19,8 @@ import {
 } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { joinUrl, rememberReferral } from '@/lib/shop';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { joinUrl, localName, rememberReferral } from '@/lib/shop';
 import type { ShopNavigation } from '@/lib/shop';
 import { dashboard, home, login, membership } from '@/routes';
 import { index as shopIndex } from '@/routes/shop';
@@ -64,9 +65,9 @@ onMounted(() => {
 });
 
 const promises = [
-    { icon: ShieldCheck, text: 'Secure payment · নিরাপদ পেমেন্ট' },
-    { icon: BadgeCheck, text: 'Genuine products · আসল পণ্য' },
-    { icon: Languages, text: 'বাংলা ও English' },
+    { icon: ShieldCheck, text: 'Secure payment' },
+    { icon: BadgeCheck, text: 'Genuine products' },
+    { icon: Languages, text: 'Bangla & English' },
 ];
 </script>
 
@@ -77,24 +78,27 @@ const promises = [
             <div
                 class="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 text-xs"
             >
-                <p class="truncate">
-                    <span class="font-medium text-white"
-                        >bKash · Nagad · Card</span
-                    >
-                    — secure checkout · বিকাশ, নগদ ও কার্ডে নিরাপদ পেমেন্ট
+                <p class="min-w-0 truncate">
+                    <span class="font-medium text-white">{{
+                        $t('bKash · Nagad · Card')
+                    }}</span>
+                    — {{ $t('secure checkout') }}
                 </p>
-                <div class="hidden shrink-0 items-center gap-4 sm:flex">
+                <div class="flex shrink-0 items-center gap-4">
                     <a
                         v-if="nav.contact.phone"
                         :href="`tel:${nav.contact.phone}`"
-                        class="inline-flex items-center gap-1.5 hover:text-white"
+                        class="hidden items-center gap-1.5 hover:text-white md:inline-flex"
                     >
                         <Phone class="size-3.5" aria-hidden="true" />
                         {{ nav.contact.phone }}
                     </a>
-                    <Link :href="membership()" class="hover:text-white"
-                        >Membership · সদস্যপদ</Link
+                    <Link
+                        :href="membership()"
+                        class="hidden hover:text-white sm:inline"
+                        >{{ $t('Membership') }}</Link
                     >
+                    <LanguageSwitcher tone="dark" />
                 </div>
             </div>
         </div>
@@ -117,13 +121,13 @@ const promises = [
                         class="size-5"
                         aria-hidden="true"
                     />
-                    <span class="sr-only">Categories menu</span>
+                    <span class="sr-only">{{ $t('Categories menu') }}</span>
                 </button>
 
                 <Link
                     :href="home()"
                     class="flex shrink-0 items-center gap-2.5"
-                    aria-label="Home"
+                    :aria-label="$t('Home')"
                 >
                     <span
                         class="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-brand to-[#1b56a0] text-white shadow-md shadow-brand/25"
@@ -135,9 +139,9 @@ const promises = [
                             class="block text-[15px] font-semibold tracking-tight"
                             >{{ page.props.name }}</span
                         >
-                        <span class="block text-xs text-muted-foreground"
-                            >Genuine electronics</span
-                        >
+                        <span class="block text-xs text-muted-foreground">{{
+                            $t('Genuine electronics')
+                        }}</span>
                     </span>
                 </Link>
 
@@ -146,9 +150,9 @@ const promises = [
                     class="flex min-w-0 flex-1 items-center rounded-full border border-input bg-muted/50 p-1 transition focus-within:border-brand focus-within:bg-background focus-within:ring-4 focus-within:ring-brand/15"
                     @submit.prevent="submitSearch"
                 >
-                    <label for="shop-search" class="sr-only"
-                        >Search products</label
-                    >
+                    <label for="shop-search" class="sr-only">{{
+                        $t('Search products')
+                    }}</label>
                     <Search
                         class="ml-3 size-4 shrink-0 text-muted-foreground"
                         aria-hidden="true"
@@ -157,14 +161,14 @@ const promises = [
                         id="shop-search"
                         v-model="search"
                         type="search"
-                        placeholder="Search products, brands · পণ্য খুঁজুন"
+                        :placeholder="$t('Search products, brands')"
                         class="h-9 min-w-0 flex-1 bg-transparent px-2.5 text-sm outline-none placeholder:text-muted-foreground"
                     />
                     <button
                         type="submit"
                         class="hidden h-9 shrink-0 rounded-full bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-strong sm:block"
                     >
-                        Search
+                        {{ $t('Search') }}
                     </button>
                 </form>
 
@@ -182,15 +186,17 @@ const promises = [
                         <span class="hidden leading-tight sm:block">
                             <span class="block text-xs text-muted-foreground">{{
                                 signedIn
-                                    ? `Hello, ${userName.split(' ')[0]}`
-                                    : 'Hello, sign in'
+                                    ? $t('Hello, :name', {
+                                          name: userName.split(' ')[0],
+                                      })
+                                    : $t('Hello, sign in')
                             }}</span>
                             <span class="block text-sm font-semibold">{{
-                                signedIn ? 'My account' : 'Log in · লগইন'
+                                signedIn ? $t('My account') : $t('Log in')
                             }}</span>
                         </span>
                         <span class="sr-only sm:hidden">{{
-                            signedIn ? 'My account' : 'Log in'
+                            signedIn ? $t('My account') : $t('Log in')
                         }}</span>
                     </Link>
                     <Link
@@ -198,7 +204,7 @@ const promises = [
                         class="hidden items-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition hover:opacity-90 md:inline-flex"
                     >
                         <ShoppingBag class="size-4" aria-hidden="true" />
-                        Shop · দোকান
+                        {{ $t('Shop') }}
                     </Link>
                 </div>
             </div>
@@ -207,7 +213,7 @@ const promises = [
             <nav
                 v-if="nav.categories.length"
                 class="hidden border-t lg:block"
-                aria-label="Categories"
+                :aria-label="$t('Categories')"
             >
                 <ul
                     class="mx-auto flex h-12 max-w-7xl items-center gap-1 px-4 text-sm"
@@ -223,7 +229,7 @@ const promises = [
                             "
                         >
                             <LayoutGrid class="size-4" aria-hidden="true" />
-                            All products · সব পণ্য
+                            {{ $t('All products') }}
                         </Link>
                     </li>
                     <li v-for="category in nav.categories" :key="category.slug">
@@ -239,7 +245,7 @@ const promises = [
                                     ? 'bg-brand-soft font-medium text-brand!'
                                     : ''
                             "
-                            >{{ category.name }}</Link
+                            >{{ localName(category) }}</Link
                         >
                     </li>
                     <li class="ml-auto">
@@ -249,7 +255,7 @@ const promises = [
                             :class="onDeals ? 'bg-deal/10' : ''"
                         >
                             <Tag class="size-4" aria-hidden="true" />
-                            Deals · অফার
+                            {{ $t('Deals') }}
                         </Link>
                     </li>
                 </ul>
@@ -260,7 +266,7 @@ const promises = [
                 v-if="menuOpen"
                 id="shop-menu"
                 class="border-t lg:hidden"
-                aria-label="Categories"
+                :aria-label="$t('Categories')"
             >
                 <ul class="mx-auto grid max-w-7xl gap-1 px-4 py-3 text-sm">
                     <li>
@@ -269,7 +275,7 @@ const promises = [
                             class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-medium hover:bg-muted"
                         >
                             <LayoutGrid class="size-4" aria-hidden="true" />
-                            All products · সব পণ্য
+                            {{ $t('All products') }}
                         </Link>
                     </li>
                     <li v-for="category in nav.categories" :key="category.slug">
@@ -286,12 +292,7 @@ const promises = [
                                     : ''
                             "
                         >
-                            <span>{{ category.name }}</span>
-                            <span
-                                v-if="category.nameBn"
-                                class="text-muted-foreground"
-                                >{{ category.nameBn }}</span
-                            >
+                            <span>{{ localName(category) }}</span>
                         </Link>
                     </li>
                     <li>
@@ -300,7 +301,7 @@ const promises = [
                             class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-semibold text-deal hover:bg-deal/10"
                         >
                             <Tag class="size-4" aria-hidden="true" />
-                            Deals · অফার
+                            {{ $t('Deals') }}
                         </Link>
                     </li>
                 </ul>
@@ -312,7 +313,10 @@ const promises = [
         </main>
 
         <!-- Service promises -->
-        <section class="border-t bg-surface" aria-label="Why shop with us">
+        <section
+            class="border-t bg-surface"
+            :aria-label="$t('Why shop with us')"
+        >
             <ul class="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-3">
                 <li
                     v-for="promise in promises"
@@ -328,7 +332,7 @@ const promises = [
                             aria-hidden="true"
                         />
                     </span>
-                    {{ promise.text }}
+                    {{ $t(promise.text) }}
                 </li>
             </ul>
         </section>
@@ -349,12 +353,15 @@ const promises = [
                         {{ page.props.name }}
                     </div>
                     <p class="mt-4 max-w-xs text-sm leading-relaxed">
-                        Genuine electronics at fair prices, sold in clear
-                        bundles. মানসম্মত গ্যাজেট, ন্যায্য দামে।
+                        {{
+                            $t(
+                                'Genuine electronics at fair prices, sold in clear bundles.',
+                            )
+                        }}
                     </p>
                     <ul
                         class="mt-6 flex flex-wrap gap-2"
-                        aria-label="Accepted payment methods"
+                        :aria-label="$t('Accepted payment methods')"
                     >
                         <li
                             class="rounded-md bg-white px-2.5 py-1 text-xs font-bold text-[#e2136e]"
@@ -379,11 +386,11 @@ const promises = [
                     </ul>
                 </div>
 
-                <nav aria-label="Shop categories">
+                <nav :aria-label="$t('Shop categories')">
                     <p
                         class="text-xs font-semibold tracking-wider text-white uppercase"
                     >
-                        Shop · দোকান
+                        {{ $t('Shop') }}
                     </p>
                     <ul class="mt-4 space-y-2.5 text-sm">
                         <li
@@ -397,31 +404,31 @@ const promises = [
                                     })
                                 "
                                 class="transition hover:text-white"
-                                >{{ category.name }}</Link
+                                >{{ localName(category) }}</Link
                             >
                         </li>
                         <li>
                             <Link
                                 :href="shopIndex()"
                                 class="transition hover:text-white"
-                                >All products · সব পণ্য</Link
+                                >{{ $t('All products') }}</Link
                             >
                         </li>
                     </ul>
                 </nav>
 
-                <nav aria-label="Account">
+                <nav :aria-label="$t('Account')">
                     <p
                         class="text-xs font-semibold tracking-wider text-white uppercase"
                     >
-                        Account · অ্যাকাউন্ট
+                        {{ $t('Account') }}
                     </p>
                     <ul class="mt-4 space-y-2.5 text-sm">
                         <li v-if="signedIn">
                             <Link
                                 :href="dashboard()"
                                 class="transition hover:text-white"
-                                >My dashboard · ড্যাশবোর্ড</Link
+                                >{{ $t('My dashboard') }}</Link
                             >
                         </li>
                         <template v-else>
@@ -429,14 +436,14 @@ const promises = [
                                 <Link
                                     :href="login()"
                                     class="transition hover:text-white"
-                                    >Log in · লগইন</Link
+                                    >{{ $t('Log in') }}</Link
                                 >
                             </li>
                             <li v-if="nav.canRegister">
                                 <Link
                                     :href="joinUrl()"
                                     class="transition hover:text-white"
-                                    >Create account · অ্যাকাউন্ট খুলুন</Link
+                                    >{{ $t('Create account') }}</Link
                                 >
                             </li>
                         </template>
@@ -445,7 +452,7 @@ const promises = [
                                 :href="membership()"
                                 class="transition hover:text-white"
                                 data-test="membership-link"
-                                >Membership &amp; earnings · সদস্যপদ ও আয়</Link
+                                >{{ $t('Membership & earnings') }}</Link
                             >
                         </li>
                     </ul>
@@ -455,7 +462,7 @@ const promises = [
                     <p
                         class="text-xs font-semibold tracking-wider text-white uppercase"
                     >
-                        Contact · যোগাযোগ
+                        {{ $t('Contact') }}
                     </p>
                     <ul class="mt-4 space-y-3 text-sm" data-test="contact">
                         <li v-if="nav.contact.phone" class="flex gap-2.5">
@@ -503,13 +510,13 @@ const promises = [
                     class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-xs"
                 >
                     <p>
-                        © {{ new Date().getFullYear() }} {{ page.props.name }}
-                        · Prices in BDT · দাম টাকায়
+                        © {{ new Date().getFullYear() }} {{ page.props.name }} ·
+                        {{ $t('Prices in BDT') }}
                     </p>
                     <Link
                         :href="membership()"
                         class="inline-flex items-center gap-1 transition hover:text-white"
-                        >How membership works
+                        >{{ $t('How membership works') }}
                         <ArrowRight class="size-3.5" aria-hidden="true"
                     /></Link>
                 </div>

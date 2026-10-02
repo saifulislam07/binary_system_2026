@@ -10,6 +10,8 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import ProductCard from '@/components/shop/ProductCard.vue';
+import { t } from '@/lib/i18n';
+import { localName } from '@/lib/shop';
 import type { ProductCardData } from '@/lib/shop';
 import { home } from '@/routes';
 import { index as shopIndex } from '@/routes/shop';
@@ -61,20 +63,17 @@ const props = defineProps<{
 }>();
 
 const sorts = [
-    { value: 'featured', label: 'Featured · জনপ্রিয়' },
-    { value: 'price_asc', label: 'Price: low to high · কম দাম আগে' },
-    { value: 'price_desc', label: 'Price: high to low · বেশি দাম আগে' },
-    { value: 'newest', label: 'Newest · নতুন' },
+    { value: 'featured', label: 'Featured' },
+    { value: 'price_asc', label: 'Price: low to high' },
+    { value: 'price_desc', label: 'Price: high to low' },
+    { value: 'newest', label: 'Newest' },
 ];
 
 const filtersOpen = ref(false);
 
 const heading = computed(() => {
     if (props.current) {
-        return (
-            props.current.name +
-            (props.current.nameBn ? ` · ${props.current.nameBn}` : '')
-        );
+        return localName(props.current);
     }
 
     if (props.currentBrand) {
@@ -82,10 +81,10 @@ const heading = computed(() => {
     }
 
     if (props.filters.q) {
-        return `Results for “${props.filters.q}”`;
+        return t('Results for “:query”', { query: props.filters.q });
     }
 
-    return props.filters.deals ? 'Deals · অফার' : 'All products · সব পণ্য';
+    return props.filters.deals ? t('Deals') : t('All products');
 });
 
 type Query = Record<string, string | null>;
@@ -122,7 +121,7 @@ const chips = computed(() => {
 
     if (props.current) {
         list.push({
-            label: props.current.name,
+            label: localName(props.current),
             href: urlWith({ category: null }),
         });
     }
@@ -142,7 +141,7 @@ const chips = computed(() => {
     }
 
     if (props.filters.deals) {
-        list.push({ label: 'Deals', href: urlWith({ deals: null }) });
+        list.push({ label: t('Deals'), href: urlWith({ deals: null }) });
     }
 
     return list;
@@ -156,25 +155,28 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
     <Head :title="heading" />
 
     <div class="mx-auto max-w-7xl px-4 py-8">
-        <nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
+        <nav
+            :aria-label="$t('Breadcrumb')"
+            class="text-sm text-muted-foreground"
+        >
             <ol class="flex flex-wrap items-center gap-1.5">
                 <li>
-                    <Link :href="home()" class="hover:text-foreground"
-                        >Home</Link
-                    >
+                    <Link :href="home()" class="hover:text-foreground">{{
+                        $t('Home')
+                    }}</Link>
                 </li>
                 <li aria-hidden="true"><ChevronRight class="size-3.5" /></li>
                 <li>
-                    <Link :href="shopIndex()" class="hover:text-foreground"
-                        >Shop</Link
-                    >
+                    <Link :href="shopIndex()" class="hover:text-foreground">{{
+                        $t('Shop')
+                    }}</Link>
                 </li>
                 <template v-if="current || currentBrand">
                     <li aria-hidden="true">
                         <ChevronRight class="size-3.5" />
                     </li>
                     <li class="font-medium text-foreground" aria-current="page">
-                        {{ current?.name ?? currentBrand?.name }}
+                        {{ current ? localName(current) : currentBrand?.name }}
                     </li>
                 </template>
             </ol>
@@ -204,10 +206,20 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                         {{ current?.description ?? currentBrand?.description }}
                     </p>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        <template v-if="products.total && products.from"
-                            >Showing {{ products.from }}–{{ products.to }} of
-                        </template>
-                        {{ products.total }} products · টি পণ্য
+                        <template v-if="products.total && products.from">{{
+                            $t('Showing :from–:to of :total products', {
+                                from: products.from,
+                                to: products.to ?? products.from,
+                                total: products.total,
+                            })
+                        }}</template>
+                        <template v-else>{{
+                            $tc(
+                                ':count product',
+                                ':count products',
+                                products.total,
+                            )
+                        }}</template>
                     </p>
                 </div>
             </div>
@@ -220,9 +232,9 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                     @click="filtersOpen = !filtersOpen"
                 >
                     <SlidersHorizontal class="size-4" aria-hidden="true" />
-                    Filters
+                    {{ $t('Filters') }}
                 </button>
-                <label for="sort" class="sr-only">Sort · সাজান</label>
+                <label for="sort" class="sr-only">{{ $t('Sort') }}</label>
                 <select
                     id="sort"
                     :value="filters.sort"
@@ -238,7 +250,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                         :key="sort.value"
                         :value="sort.value"
                     >
-                        {{ sort.label }}
+                        {{ $t(sort.label) }}
                     </option>
                 </select>
             </div>
@@ -248,7 +260,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
             v-if="unknownCategory"
             class="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
         >
-            That category isn't available — showing all products.
+            {{ $t("That category isn't available — showing all products.") }}
         </p>
 
         <div class="mt-6 grid gap-8 lg:grid-cols-[240px_1fr]">
@@ -257,13 +269,13 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                 id="shop-filters"
                 class="space-y-8 lg:block"
                 :class="filtersOpen ? 'block' : 'hidden'"
-                aria-label="Filters"
+                :aria-label="$t('Filters')"
             >
-                <nav aria-label="Filter by category">
+                <nav :aria-label="$t('Filter by category')">
                     <h2
                         class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                     >
-                        Category · ক্যাটাগরি
+                        {{ $t('Category') }}
                     </h2>
                     <ul class="mt-3 space-y-0.5 text-sm">
                         <li>
@@ -276,7 +288,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                                         : ''
                                 "
                                 :aria-current="!current ? 'page' : undefined"
-                                >All · সব</Link
+                                >{{ $t('All') }}</Link
                             >
                         </li>
                         <li v-for="category in categories" :key="category.slug">
@@ -300,7 +312,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                                 "
                             >
                                 <span class="truncate">{{
-                                    category.name
+                                    localName(category)
                                 }}</span>
                                 <span
                                     class="rounded-full bg-muted px-2 text-xs text-muted-foreground tabular-nums"
@@ -311,11 +323,11 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                     </ul>
                 </nav>
 
-                <nav v-if="brands.length" aria-label="Filter by brand">
+                <nav v-if="brands.length" :aria-label="$t('Filter by brand')">
                     <h2
                         class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                     >
-                        Brand · ব্র্যান্ড
+                        {{ $t('Brand') }}
                     </h2>
                     <ul class="mt-3 space-y-0.5 text-sm">
                         <li v-for="brand in brands" :key="brand.slug">
@@ -380,7 +392,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                     <h2
                         class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                     >
-                        Offers · অফার
+                        {{ $t('Offers') }}
                     </h2>
                     <Link
                         :href="urlWith({ deals: filters.deals ? null : '1' })"
@@ -393,7 +405,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                         :aria-current="filters.deals ? 'true' : undefined"
                     >
                         <Tag class="size-4" aria-hidden="true" />
-                        On sale only
+                        {{ $t('On sale only') }}
                     </Link>
                 </div>
             </aside>
@@ -405,7 +417,9 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                         <Link
                             :href="chip.href"
                             class="inline-flex items-center gap-1.5 rounded-full border bg-card py-1 pr-2 pl-3 text-sm transition hover:border-foreground/30"
-                            :aria-label="`Remove filter ${chip.label}`"
+                            :aria-label="
+                                $t('Remove filter :name', { name: chip.label })
+                            "
                         >
                             {{ chip.label }}
                             <X class="size-3.5" aria-hidden="true" />
@@ -415,7 +429,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                         <Link
                             :href="shopIndex()"
                             class="inline-flex items-center px-2 py-1 text-sm font-medium text-brand hover:underline"
-                            >Clear all</Link
+                            >{{ $t('Clear all') }}</Link
                         >
                     </li>
                 </ul>
@@ -438,15 +452,15 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                         <PackageSearch class="size-7" aria-hidden="true" />
                     </span>
                     <p class="mt-4 font-semibold">
-                        No products found · কোনো পণ্য পাওয়া যায়নি
+                        {{ $t('No products found') }}
                     </p>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        Try another category, brand or search word.
+                        {{ $t('Try another category, brand or search word.') }}
                     </p>
                     <Link
                         :href="shopIndex()"
                         class="mt-5 inline-flex h-10 items-center rounded-xl border px-4 text-sm font-semibold hover:bg-muted"
-                        >See all products · সব পণ্য</Link
+                        >{{ $t('See all products') }}</Link
                     >
                 </div>
 
@@ -454,13 +468,13 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                 <nav
                     v-if="products.last_page > 1"
                     class="mt-10 flex items-center justify-center gap-1.5"
-                    aria-label="Pagination"
+                    :aria-label="$t('Pagination')"
                 >
                     <Link
                         v-if="products.prev_page_url"
                         :href="products.prev_page_url"
                         class="inline-flex size-10 items-center justify-center rounded-xl border hover:bg-muted"
-                        aria-label="Previous page"
+                        :aria-label="$t('Previous page')"
                     >
                         <ChevronLeft class="size-4" aria-hidden="true" />
                     </Link>
@@ -487,7 +501,7 @@ const pageLinks = computed(() => props.products.links.slice(1, -1));
                         v-if="products.next_page_url"
                         :href="products.next_page_url"
                         class="inline-flex size-10 items-center justify-center rounded-xl border hover:bg-muted"
-                        aria-label="Next page"
+                        :aria-label="$t('Next page')"
                     >
                         <ChevronRight class="size-4" aria-hidden="true" />
                     </Link>

@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\KycController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
@@ -13,12 +14,15 @@ use App\Http\Controllers\PaymentSimulatorController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SponsorLookupController;
+use App\Http\Controllers\SponsorSearchController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WithdrawalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+// Language switcher (বাংলা / English) for the shop, sign-in pages and the member app.
+Route::post('locale', LocaleController::class)->middleware('throttle:30,1')->name('locale.update');
 // The full membership and commission rules, linked from the shop footer and registration.
 Route::get('membership', MembershipController::class)->name('membership');
 
@@ -26,6 +30,10 @@ Route::get('membership', MembershipController::class)->name('membership');
 Route::get('shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('shop/{product:slug}', [ShopController::class, 'show'])->name('shop.show');
 
+// Sponsor picker on the registration form (search), then the exact-ID check.
+Route::get('sponsors', SponsorSearchController::class)
+    ->middleware('throttle:60,1')
+    ->name('sponsors.index');
 Route::get('sponsors/{code}', SponsorLookupController::class)
     ->middleware('throttle:30,1')
     ->where('code', '[A-Za-z]{3}-\d{6,}')

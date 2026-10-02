@@ -16,6 +16,7 @@ use App\Models\FraudFlag;
 use App\Models\IncomeTransaction;
 use App\Models\KycDocument;
 use App\Models\Member;
+use App\Models\MembershipSection;
 use App\Models\Package;
 use App\Models\Product;
 use App\Models\Rank;
@@ -173,6 +174,12 @@ class AdminAuditTrailTest extends TestCase
             'admin.categories.store' => fn () => ['POST', route('admin.categories.store'), ['name' => 'Audio', 'sort_order' => '1', 'is_active' => '1']],
             'admin.categories.update' => fn () => ['PUT', route('admin.categories.update', Category::query()->create(['name' => 'Gadgets'])), [
                 'name' => 'Gadgets & more', 'sort_order' => '2', 'is_active' => '1',
+            ]],
+            'admin.membership.store' => fn () => ['POST', route('admin.membership.store'), [
+                'title_en' => 'Who can join', 'body_en' => '<p>Anyone.</p>', 'sort_order' => '1', 'is_active' => '1',
+            ]],
+            'admin.membership.update' => fn () => ['PUT', route('admin.membership.update', MembershipSection::query()->create(['title_en' => 'Old', 'body_en' => '<p>Old.</p>'])), [
+                'title_en' => 'New', 'body_en' => '<p>New.</p>', 'sort_order' => '2', 'is_active' => '1',
             ]],
             'admin.brands.store' => fn () => ['POST', route('admin.brands.store'), ['name' => 'Sonic', 'sort_order' => '1', 'is_active' => '1']],
             'admin.brands.update' => fn () => ['PUT', route('admin.brands.update', Brand::factory()->create()), [

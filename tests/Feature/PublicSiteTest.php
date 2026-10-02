@@ -50,7 +50,7 @@ class PublicSiteTest extends TestCase
                 ->where('rates.weeklyCap', '৳20,000.00')
                 ->where('rates.monthlyCap', '৳50,000.00')
                 ->where('rates.minWithdrawal', '৳1,000.00')
-                ->where('ranks', ['Member', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond']));
+                ->where('ranks', fn ($ranks) => collect($ranks)->pluck('name')->all() === ['Member', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond']));
 
         // An admin rate change shows up at once.
         CommissionRule::query()->where('key', CommissionRule::REFERRAL_RATE_BPS)->update(['value' => '750']);

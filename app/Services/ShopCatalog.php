@@ -16,7 +16,7 @@ use Laravel\Fortify\Features;
 class ShopCatalog
 {
     /** Relations card() reads — eager load them on every product list. */
-    public const CARD_RELATIONS = ['media', 'category:id,name', 'brand:id,name,slug'];
+    public const CARD_RELATIONS = ['media', 'category:id,name,name_bn', 'brand:id,name,slug'];
 
     /**
      * @return Builder<Product>
@@ -40,7 +40,7 @@ class ShopCatalog
             'name' => $product->name,
             'brand' => $product->brand?->name,
             'brandSlug' => $product->brand?->slug,
-            'category' => $product->category?->name,
+            'category' => $product->category?->localName(),
             'price' => Money::format($product->price),
             'compareAt' => $product->discountPercent() === null ? null : Money::format((int) $product->compare_at_price),
             'discount' => $product->discountPercent(),

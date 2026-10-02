@@ -12,15 +12,15 @@ import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile · প্রোফাইল',
+        title: 'Profile',
         href: editProfile(),
     },
     {
-        title: 'Security · নিরাপত্তা',
+        title: 'Security',
         href: editSecurity(),
     },
     {
-        title: 'Appearance · থিম',
+        title: 'Appearance',
         href: editAppearance(),
     },
 ];
@@ -31,15 +31,15 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
 <template>
     <div class="px-4 py-6">
         <Heading
-            title="Settings · সেটিংস"
-            description="Manage your profile and account settings · প্রোফাইল ও অ্যাকাউন্ট সেটিংস"
+            :title="$t('Settings')"
+            :description="$t('Manage your profile and account settings')"
         />
 
         <div class="flex flex-col lg:flex-row lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">
                 <nav
                     class="flex flex-col space-y-1 space-x-0"
-                    aria-label="Settings"
+                    :aria-label="$t('Settings')"
                 >
                     <Button
                         v-for="item in sidebarNavItems"
@@ -53,7 +53,7 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
                     >
                         <Link :href="item.href">
                             <component :is="item.icon" class="h-4 w-4" />
-                            {{ item.title }}
+                            {{ $t(item.title) }}
                         </Link>
                     </Button>
                 </nav>

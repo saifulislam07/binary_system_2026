@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Http\Middleware\SetLocale;
 use App\Notifications\ResetPasswordLink;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $name
  * @property string $email
  * @property string|null $phone
+ * @property string|null $locale
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $ip_registered
@@ -32,7 +35,7 @@ use Spatie\Permission\Traits\HasRoles;
  */
 #[Fillable(['name', 'email', 'phone', 'password', 'ip_registered', 'device_registered'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
@@ -51,6 +54,16 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Notifications and mail go out in the member's chosen language.
+     */
+    public function preferredLocale(): string
+    {
+        return $this->locale !== null && SetLocale::supports($this->locale)
+            ? $this->locale
+            : (string) config('business.default_locale');
     }
 
     /** @return HasOne<Member, $this> */

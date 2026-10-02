@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\FraudFlagController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\KycController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\MembershipPageController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\PendingMemberController;
 use App\Http\Controllers\Admin\ProductController;
@@ -124,6 +125,12 @@ Route::middleware(['auth:admin', EnsureAdminIsActive::class])->group(function ()
         Route::post('packages', [PackageController::class, 'store'])->name('packages.store');
         Route::get('packages/{package}/edit', [PackageController::class, 'edit'])->name('packages.edit');
         Route::put('packages/{package}', [PackageController::class, 'update'])->name('packages.update');
+        // Text of the public membership page (rates there come from the settings above).
+        Route::get('membership', [MembershipPageController::class, 'index'])->name('membership.index');
+        Route::get('membership/create', [MembershipPageController::class, 'create'])->name('membership.create');
+        Route::post('membership', [MembershipPageController::class, 'store'])->name('membership.store');
+        Route::get('membership/{section}/edit', [MembershipPageController::class, 'edit'])->name('membership.edit');
+        Route::put('membership/{section}', [MembershipPageController::class, 'update'])->name('membership.update');
         Route::get('ranks', [RankController::class, 'index'])->name('ranks.index');
         Route::put('ranks', [RankController::class, 'updateRanks'])->name('ranks.update');
         Route::post('bonus-rules', [RankController::class, 'storeBonusRule'])->name('bonus-rules.store');

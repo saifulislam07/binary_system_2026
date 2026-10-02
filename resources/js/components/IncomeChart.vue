@@ -193,13 +193,15 @@ const lastIndex = computed(() => props.points.length - 1);
 
         <details class="mt-3 text-sm">
             <summary class="cursor-pointer text-muted-foreground">
-                Show as table
+                {{ $t('Show as table') }}
             </summary>
             <table class="mt-2 w-full">
                 <thead class="text-left text-muted-foreground">
                     <tr>
-                        <th class="py-1 font-medium">Period</th>
-                        <th class="py-1 text-right font-medium">Net income</th>
+                        <th class="py-1 font-medium">{{ $t('Period') }}</th>
+                        <th class="py-1 text-right font-medium">
+                            {{ $t('Net income') }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>

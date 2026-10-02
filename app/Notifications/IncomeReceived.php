@@ -36,18 +36,20 @@ class IncomeReceived extends MemberNotification
     public function title(): string
     {
         return match ($this->transaction->type) {
-            WalletTransactionType::ReferralBonus => 'Referral bonus received · রেফারেল বোনাস',
-            WalletTransactionType::BinaryCommission => 'Binary commission received · বাইনারি কমিশন',
-            WalletTransactionType::RankBonus => 'Rank bonus received · র‍্যাঙ্ক বোনাস',
-            default => 'Bonus received · বোনাস',
+            WalletTransactionType::ReferralBonus => __('Referral bonus received'),
+            WalletTransactionType::BinaryCommission => __('Binary commission received'),
+            WalletTransactionType::RankBonus => __('Rank bonus received'),
+            default => __('Bonus received'),
         };
     }
 
     public function message(object $notifiable): string
     {
-        return Money::format($this->transaction->amount).' was added to your wallet'
-            .(filled($this->transaction->description) ? ' — '.$this->transaction->description : '')
-            .'.';
+        $amount = Money::format($this->transaction->amount);
+
+        return filled($this->transaction->description)
+            ? __(':amount was added to your wallet — :description.', ['amount' => $amount, 'description' => $this->transaction->description])
+            : __(':amount was added to your wallet.', ['amount' => $amount]);
     }
 
     public function path(): string

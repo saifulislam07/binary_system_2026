@@ -11,12 +11,12 @@ class PasswordChanged extends MemberNotification
 
     public function title(): string
     {
-        return 'Your password was changed · পাসওয়ার্ড পরিবর্তিত';
+        return __('Your password was changed');
     }
 
     public function message(object $notifiable): string
     {
-        return 'Your account password was just changed. If this was not you, reset your password now and contact support.';
+        return __('Your account password was just changed. If this was not you, reset your password now and contact support.');
     }
 
     public function path(): string

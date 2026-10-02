@@ -22,13 +22,12 @@ class NewDeviceLogin extends MemberNotification
 
     public function title(): string
     {
-        return 'New sign-in to your account · নতুন লগইন';
+        return __('New sign-in to your account');
     }
 
     public function message(object $notifiable): string
     {
-        return 'Your account was just signed in to from a new device or network (IP '.($this->login->ip ?? 'unknown').'). '
-            .'If this was you, no action is needed. If not, change your password now.';
+        return __('Your account was just signed in to from a new device or network (IP :ip). If this was you, no action is needed. If not, change your password now.', ['ip' => $this->login->ip ?? __('unknown')]);
     }
 
     public function path(): string
@@ -38,7 +37,7 @@ class NewDeviceLogin extends MemberNotification
 
     public function actionText(): string
     {
-        return 'Change password · পাসওয়ার্ড পরিবর্তন';
+        return __('Change password');
     }
 
     protected function urgent(): bool

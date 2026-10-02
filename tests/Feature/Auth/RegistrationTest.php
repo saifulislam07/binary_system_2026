@@ -161,4 +161,36 @@ class RegistrationTest extends TestCase
 
         $this->getJson(route('sponsors.show', 'MBR-999999'))->assertNotFound();
     }
+
+    public function test_the_sponsor_picker_searches_active_members_by_id_or_name()
+    {
+        $this->sponsor->user->update(['name' => 'Karim Hossain Khan']);
+        $code = (string) $this->sponsor->member_code;
+        $pending = Member::factory()->create();
+        $pending->user->update(['name' => 'Karim Pending']);
+
+        // Part of the ID (with or without the prefix) or of the name.
+        foreach ([substr($code, -3), strtolower(substr($code, 0, 7)), 'karim', 'Hoss'] as $term) {
+            $this->getJson(route('sponsors.index', ['q' => $term]))
+                ->assertOk()
+                ->assertJsonPath('results.0.code', $code)
+                ->assertJsonPath('results.0.name', 'Karim H. K.') // never the full name
+                ->assertJsonCount(1, 'results'); // pending sign-ups are not offered
+        }
+
+        // Too short to search: nothing, so the list can't be scraped letter by letter.
+        $this->getJson(route('sponsors.index', ['q' => 'Ka']))->assertExactJson(['results' => []]);
+        $this->getJson(route('sponsors.index', ['q' => '1']))->assertExactJson(['results' => []]);
+        $this->getJson(route('sponsors.index', ['q' => '%%%']))->assertExactJson(['results' => []]);
+    }
+
+    public function test_the_sponsor_picker_returns_a_handful_of_matches_at_most()
+    {
+        foreach (range(1, 12) as $i) {
+            $member = app(PlacementService::class)->activateMember(Member::factory()->create(['sponsor_id' => $this->sponsor->id]));
+            $member->user->update(['name' => "Sabbir {$i}"]);
+        }
+
+        $this->getJson(route('sponsors.index', ['q' => 'Sabbir']))->assertJsonCount(8, 'results');
+    }
 }

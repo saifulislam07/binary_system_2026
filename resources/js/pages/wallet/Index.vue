@@ -71,10 +71,10 @@ const statusClass: Record<string, string> = {
 </script>
 
 <template>
-    <Head title="Wallet" />
+    <Head :title="$t('Wallet')" />
 
     <div class="flex flex-col gap-6 p-4">
-        <h1 class="text-xl font-semibold">Wallet · ওয়ালেট</h1>
+        <h1 class="text-xl font-semibold">{{ $t('Wallet') }}</h1>
 
         <WalletSummary :summary="summary" />
 
@@ -83,16 +83,16 @@ const statusClass: Record<string, string> = {
             @submit.prevent="applyFilters"
         >
             <div class="grid gap-2">
-                <Label for="type">Type · ধরন</Label>
+                <Label for="type">{{ $t('Type') }}</Label>
                 <select id="type" v-model="form.type" :class="fieldClass">
-                    <option :value="null">All types</option>
+                    <option :value="null">{{ $t('All types') }}</option>
                     <option v-for="t in types" :key="t.value" :value="t.value">
                         {{ t.label }}
                     </option>
                 </select>
             </div>
             <div class="grid gap-2">
-                <Label for="from">From · থেকে</Label>
+                <Label for="from">{{ $t('From') }}</Label>
                 <input
                     id="from"
                     v-model="form.from"
@@ -101,7 +101,7 @@ const statusClass: Record<string, string> = {
                 />
             </div>
             <div class="grid gap-2">
-                <Label for="to">To · পর্যন্ত</Label>
+                <Label for="to">{{ $t('To') }}</Label>
                 <input
                     id="to"
                     v-model="form.to"
@@ -110,10 +110,12 @@ const statusClass: Record<string, string> = {
                 />
             </div>
             <div class="flex items-end gap-2">
-                <Button type="submit" data-test="apply-filters">Filter</Button>
-                <Button type="button" variant="outline" @click="resetFilters"
-                    >Reset</Button
-                >
+                <Button type="submit" data-test="apply-filters">{{
+                    $t('Filter')
+                }}</Button>
+                <Button type="button" variant="outline" @click="resetFilters">{{
+                    $t('Reset')
+                }}</Button>
             </div>
         </form>
 
@@ -121,15 +123,23 @@ const statusClass: Record<string, string> = {
             <table class="w-full min-w-[720px] text-sm">
                 <thead class="bg-muted/50 text-left text-muted-foreground">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Date</th>
-                        <th class="px-4 py-2 font-medium">Type</th>
-                        <th class="px-4 py-2 text-right font-medium">Amount</th>
+                        <th class="px-4 py-2 font-medium">{{ $t('Date') }}</th>
+                        <th class="px-4 py-2 font-medium">{{ $t('Type') }}</th>
                         <th class="px-4 py-2 text-right font-medium">
-                            Balance
+                            {{ $t('Amount') }}
                         </th>
-                        <th class="px-4 py-2 font-medium">Reference</th>
-                        <th class="px-4 py-2 font-medium">Description</th>
-                        <th class="px-4 py-2 font-medium">Status</th>
+                        <th class="px-4 py-2 text-right font-medium">
+                            {{ $t('Balance') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Reference') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Description') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Status') }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -168,7 +178,7 @@ const statusClass: Record<string, string> = {
                                     'rounded-full px-2 py-0.5 text-xs',
                                     statusClass[t.status] ?? '',
                                 ]"
-                                >{{ t.status }}</span
+                                >{{ $t(t.status) }}</span
                             >
                         </td>
                     </tr>
@@ -177,7 +187,7 @@ const statusClass: Record<string, string> = {
                             colspan="7"
                             class="px-4 py-8 text-center text-muted-foreground"
                         >
-                            No transactions yet · কোনো লেনদেন নেই
+                            {{ $t('No transactions yet') }}
                         </td>
                     </tr>
                 </tbody>
@@ -187,7 +197,7 @@ const statusClass: Record<string, string> = {
         <nav
             v-if="transactions.last_page > 1"
             class="flex items-center justify-between text-sm"
-            aria-label="Pagination"
+            :aria-label="$t('Pagination')"
         >
             <Button
                 variant="outline"
@@ -195,13 +205,20 @@ const statusClass: Record<string, string> = {
                 :disabled="!transactions.prev_page_url"
                 as-child
             >
-                <Link :href="transactions.prev_page_url ?? '#'" preserve-scroll
-                    >Previous</Link
+                <Link
+                    :href="transactions.prev_page_url ?? '#'"
+                    preserve-scroll
+                    >{{ $t('Previous') }}</Link
                 >
             </Button>
             <span class="text-muted-foreground"
-                >Page {{ transactions.current_page }} of
-                {{ transactions.last_page }} ({{ transactions.total }})</span
+                >{{
+                    $t('Page :page of :last', {
+                        page: transactions.current_page,
+                        last: transactions.last_page,
+                    })
+                }}
+                ({{ transactions.total }})</span
             >
             <Button
                 variant="outline"
@@ -209,8 +226,10 @@ const statusClass: Record<string, string> = {
                 :disabled="!transactions.next_page_url"
                 as-child
             >
-                <Link :href="transactions.next_page_url ?? '#'" preserve-scroll
-                    >Next</Link
+                <Link
+                    :href="transactions.next_page_url ?? '#'"
+                    preserve-scroll
+                    >{{ $t('Next') }}</Link
                 >
             </Button>
         </nav>

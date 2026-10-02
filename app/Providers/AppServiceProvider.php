@@ -11,6 +11,7 @@ use App\Models\Commission;
 use App\Models\CommissionCycle;
 use App\Models\KycDocument;
 use App\Models\Member;
+use App\Models\MembershipSection;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\Product;
@@ -64,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
             'category' => Category::class,
             'product' => Product::class,
             'brand' => Brand::class,
+            'membership_section' => MembershipSection::class,
         ]);
     }
 

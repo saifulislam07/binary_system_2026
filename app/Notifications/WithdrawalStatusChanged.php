@@ -30,11 +30,11 @@ class WithdrawalStatusChanged extends MemberNotification
     public function title(): string
     {
         return match ($this->status) {
-            WithdrawalStatus::Pending => 'Withdrawal requested · উত্তোলনের অনুরোধ গৃহীত',
-            WithdrawalStatus::Approved => 'Withdrawal approved · উত্তোলন অনুমোদিত',
-            WithdrawalStatus::Processing => 'Withdrawal processing · উত্তোলন প্রক্রিয়াধীন',
-            WithdrawalStatus::Paid => 'Withdrawal paid · উত্তোলন পরিশোধিত',
-            WithdrawalStatus::Rejected => 'Withdrawal rejected · উত্তোলন বাতিল',
+            WithdrawalStatus::Pending => __('Withdrawal requested'),
+            WithdrawalStatus::Approved => __('Withdrawal approved'),
+            WithdrawalStatus::Processing => __('Withdrawal processing'),
+            WithdrawalStatus::Paid => __('Withdrawal paid'),
+            WithdrawalStatus::Rejected => __('Withdrawal rejected'),
         };
     }
 
@@ -44,12 +44,13 @@ class WithdrawalStatusChanged extends MemberNotification
         $id = $this->withdrawal->id;
 
         return match ($this->status) {
-            WithdrawalStatus::Pending => "Your withdrawal #{$id} of {$amount} was received. The amount is on hold until it is processed.",
-            WithdrawalStatus::Approved => "Your withdrawal #{$id} of {$amount} was approved and will be paid out soon.",
-            WithdrawalStatus::Processing => "Your withdrawal #{$id} of {$amount} is being paid out now.",
-            WithdrawalStatus::Paid => "Your withdrawal #{$id} of {$amount} was paid"
-                .(filled($this->withdrawal->payout_reference) ? " (reference {$this->withdrawal->payout_reference})" : '').'.',
-            WithdrawalStatus::Rejected => "Your withdrawal #{$id} of {$amount} was rejected: {$this->withdrawal->rejection_reason}. The amount is back in your wallet.",
+            WithdrawalStatus::Pending => __('Your withdrawal #:id of :amount was received. The amount is on hold until it is processed.', ['id' => $id, 'amount' => $amount]),
+            WithdrawalStatus::Approved => __('Your withdrawal #:id of :amount was approved and will be paid out soon.', ['id' => $id, 'amount' => $amount]),
+            WithdrawalStatus::Processing => __('Your withdrawal #:id of :amount is being paid out now.', ['id' => $id, 'amount' => $amount]),
+            WithdrawalStatus::Paid => filled($this->withdrawal->payout_reference)
+                ? __('Your withdrawal #:id of :amount was paid (reference :reference).', ['id' => $id, 'amount' => $amount, 'reference' => $this->withdrawal->payout_reference])
+                : __('Your withdrawal #:id of :amount was paid.', ['id' => $id, 'amount' => $amount]),
+            WithdrawalStatus::Rejected => __('Your withdrawal #:id of :amount was rejected: :reason. The amount is back in your wallet.', ['id' => $id, 'amount' => $amount, 'reason' => $this->withdrawal->rejection_reason]),
         };
     }
 

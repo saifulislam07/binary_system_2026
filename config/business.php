@@ -38,6 +38,13 @@ return [
     // allowed to create/drop `<database>_restore_check` — enable on staging.
     'backup_verify_restore' => (bool) env('BACKUP_VERIFY_RESTORE', false),
 
+    // Languages of the member-facing site (shop, sign-in, member app). The
+    // admin panel, mail to admins and the CLI stay in APP_LOCALE (English).
+    // Visitors start in `default_locale`; the switcher stores their choice in
+    // the session and, for members, on users.locale.
+    'locales' => ['bn' => 'বাংলা', 'en' => 'English'],
+    'default_locale' => env('MEMBER_LOCALE', 'bn'),
+
     // Public contact details for the shop's footer. Blank ones are hidden.
     'contact' => [
         'phone' => env('SUPPORT_PHONE'),

@@ -23,11 +23,11 @@ withDefaults(
 <template>
     <section
         class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        aria-label="Wallet summary"
+        :aria-label="$t('Wallet summary')"
     >
         <div class="rounded-xl border p-4" data-test="wallet-available">
             <p class="text-sm text-muted-foreground">
-                Available balance · ব্যালেন্স
+                {{ $t('Available balance') }}
             </p>
             <p class="mt-1 text-2xl font-semibold tabular-nums">
                 {{ summary.available }}
@@ -36,12 +36,12 @@ withDefaults(
                 v-if="showLink"
                 :href="wallet()"
                 class="mt-2 inline-block text-sm underline underline-offset-4"
-                >View wallet</Link
+                >{{ $t('View wallet') }}</Link
             >
         </div>
         <div class="rounded-xl border p-4" data-test="wallet-referral">
             <p class="text-sm text-muted-foreground">
-                Referral income · {{ summary.period }}
+                {{ $t('Referral income') }} · {{ summary.period }}
             </p>
             <p class="mt-1 text-2xl font-semibold tabular-nums">
                 {{ summary.referral }}
@@ -49,7 +49,7 @@ withDefaults(
         </div>
         <div class="rounded-xl border p-4" data-test="wallet-binary">
             <p class="text-sm text-muted-foreground">
-                Binary income · last cycle
+                {{ $t('Binary income · last cycle') }}
             </p>
             <p class="mt-1 text-2xl font-semibold tabular-nums">
                 {{ summary.binary }}
@@ -60,7 +60,7 @@ withDefaults(
         </div>
         <div class="rounded-xl border p-4" data-test="wallet-lifetime">
             <p class="text-sm text-muted-foreground">
-                Total lifetime income · মোট আয়
+                {{ $t('Total lifetime income') }}
             </p>
             <p class="mt-1 text-2xl font-semibold tabular-nums">
                 {{ summary.lifetime }}

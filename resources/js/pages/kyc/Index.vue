@@ -39,19 +39,19 @@ const docType = ref<'nid' | 'passport'>('nid');
 
 const statusText: Record<string, { label: string; class: string }> = {
     not_submitted: {
-        label: 'Not submitted · জমা দেওয়া হয়নি',
+        label: 'Not submitted',
         class: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
     },
     pending: {
-        label: 'Under review · যাচাই চলছে',
+        label: 'Under review',
         class: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200',
     },
     approved: {
-        label: 'Approved · অনুমোদিত',
+        label: 'Approved',
         class: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
     },
     rejected: {
-        label: 'Rejected · বাতিল',
+        label: 'Rejected',
         class: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
     },
 };
@@ -61,21 +61,21 @@ const fieldClass =
 </script>
 
 <template>
-    <Head title="Profile & KYC" />
+    <Head :title="$t('Profile & KYC')" />
 
     <div class="flex max-w-3xl flex-col gap-8 p-4">
         <section class="flex flex-col gap-4">
-            <h1 class="text-xl font-semibold">Profile · প্রোফাইল</h1>
+            <h1 class="text-xl font-semibold">{{ $t('Profile') }}</h1>
             <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-                <dt class="text-muted-foreground">Name</dt>
+                <dt class="text-muted-foreground">{{ $t('Name') }}</dt>
                 <dd>{{ profile.name }}</dd>
-                <dt class="text-muted-foreground">Email</dt>
+                <dt class="text-muted-foreground">{{ $t('Email') }}</dt>
                 <dd>{{ profile.email }}</dd>
-                <dt class="text-muted-foreground">Mobile</dt>
+                <dt class="text-muted-foreground">{{ $t('Mobile') }}</dt>
                 <dd>{{ profile.phone ?? '—' }}</dd>
             </dl>
             <p class="text-xs text-muted-foreground">
-                Change your name or email under Settings → Profile.
+                {{ $t('Change your name or email under Settings → Profile.') }}
             </p>
 
             <Form
@@ -83,7 +83,7 @@ const fieldClass =
                 v-slot="{ errors, processing }"
                 class="grid gap-2"
             >
-                <Label for="address">Address · ঠিকানা</Label>
+                <Label for="address">{{ $t('Address') }}</Label>
                 <textarea
                     id="address"
                     name="address"
@@ -98,7 +98,7 @@ const fieldClass =
                     variant="outline"
                     class="w-fit"
                     :disabled="processing"
-                    >Save address</Button
+                    >{{ $t('Save address') }}</Button
                 >
             </Form>
         </section>
@@ -106,7 +106,7 @@ const fieldClass =
         <section class="flex flex-col gap-4">
             <div class="flex items-center gap-3">
                 <h2 class="text-lg font-semibold">
-                    KYC verification · পরিচয় যাচাই
+                    {{ $t('KYC verification') }}
                 </h2>
                 <span
                     :class="[
@@ -114,7 +114,7 @@ const fieldClass =
                         statusText[status]?.class,
                     ]"
                     data-test="kyc-status"
-                    >{{ statusText[status]?.label ?? status }}</span
+                    >{{ $t(statusText[status]?.label ?? status) }}</span
                 >
             </div>
 
@@ -132,7 +132,7 @@ const fieldClass =
                             name="type"
                             value="nid"
                         />
-                        National ID · জাতীয় পরিচয়পত্র
+                        {{ $t('National ID') }}
                     </label>
                     <label class="flex items-center gap-2">
                         <input
@@ -141,14 +141,16 @@ const fieldClass =
                             name="type"
                             value="passport"
                         />
-                        Passport · পাসপোর্ট
+                        {{ $t('Passport') }}
                     </label>
                 </div>
                 <InputError :message="errors.type" />
 
                 <div class="grid gap-2">
                     <Label for="document_number">{{
-                        docType === 'nid' ? 'NID number' : 'Passport number'
+                        docType === 'nid'
+                            ? $t('NID number')
+                            : $t('Passport number')
                     }}</Label>
                     <Input
                         id="document_number"
@@ -156,17 +158,17 @@ const fieldClass =
                         required
                         :placeholder="
                             docType === 'nid'
-                                ? '10, 13 or 17 digits'
-                                : 'e.g. A01234567'
+                                ? $t('10, 13 or 17 digits')
+                                : $t('e.g. A01234567')
                         "
                     />
                     <InputError :message="errors.document_number" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="document"
-                        >Document scan (JPG, PNG or PDF, max 5 MB)</Label
-                    >
+                    <Label for="document">{{
+                        $t('Document scan (JPG, PNG or PDF, max 5 MB)')
+                    }}</Label>
                     <input
                         id="document"
                         name="document"
@@ -179,7 +181,9 @@ const fieldClass =
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="photo">Your photo (JPG or PNG, max 3 MB)</Label>
+                    <Label for="photo">{{
+                        $t('Your photo (JPG or PNG, max 3 MB)')
+                    }}</Label>
                     <input
                         id="photo"
                         name="photo"
@@ -198,7 +202,7 @@ const fieldClass =
                     data-test="submit-kyc"
                 >
                     <Spinner v-if="processing" />
-                    Submit for review · জমা দিন
+                    {{ $t('Submit for review') }}
                 </Button>
             </Form>
 
@@ -209,10 +213,18 @@ const fieldClass =
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-left text-muted-foreground">
                         <tr>
-                            <th class="px-4 py-2 font-medium">Submitted</th>
-                            <th class="px-4 py-2 font-medium">Document</th>
-                            <th class="px-4 py-2 font-medium">Status</th>
-                            <th class="px-4 py-2 font-medium">Note</th>
+                            <th class="px-4 py-2 font-medium">
+                                {{ $t('Submitted') }}
+                            </th>
+                            <th class="px-4 py-2 font-medium">
+                                {{ $t('Document') }}
+                            </th>
+                            <th class="px-4 py-2 font-medium">
+                                {{ $t('Status') }}
+                            </th>
+                            <th class="px-4 py-2 font-medium">
+                                {{ $t('Note') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -227,7 +239,12 @@ const fieldClass =
                                         'rounded-full px-2 py-0.5 text-xs',
                                         statusText[d.status]?.class,
                                     ]"
-                                    >{{ statusText[d.status]?.label }}</span
+                                    >{{
+                                        $t(
+                                            statusText[d.status]?.label ??
+                                                d.status,
+                                        )
+                                    }}</span
                                 >
                             </td>
                             <td class="px-4 py-2 text-muted-foreground">

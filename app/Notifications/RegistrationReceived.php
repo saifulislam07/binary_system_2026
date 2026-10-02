@@ -18,16 +18,16 @@ class RegistrationReceived extends MemberNotification
 
     public function title(): string
     {
-        return 'Registration received · নিবন্ধন সম্পন্ন';
+        return __('Registration received');
     }
 
     public function message(object $notifiable): string
     {
         $package = $this->member->package()->value('name');
 
-        return 'Welcome! Your account is created. Complete the payment'
-            .($package !== null ? " for the {$package} package" : '')
-            .' to activate it and get your member ID.';
+        return $package !== null
+            ? __('Welcome! Your account is created. Complete the payment for the :package package to activate it and get your member ID.', ['package' => $package])
+            : __('Welcome! Your account is created. Complete the payment to activate it and get your member ID.');
     }
 
     public function path(): string
@@ -37,6 +37,6 @@ class RegistrationReceived extends MemberNotification
 
     public function actionText(): string
     {
-        return 'Complete payment · পেমেন্ট করুন';
+        return __('Complete payment');
     }
 }

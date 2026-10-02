@@ -61,6 +61,14 @@ class Category extends Model implements HasMedia
         return $this->hasMany(Product::class);
     }
 
+    /**
+     * The name in the current language (Bangla when one was entered).
+     */
+    public function localName(): string
+    {
+        return app()->getLocale() === 'bn' && filled($this->name_bn) ? $this->name_bn : $this->name;
+    }
+
     public function label(): string
     {
         return $this->name_bn ? "{$this->name} · {$this->name_bn}" : $this->name;

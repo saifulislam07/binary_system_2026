@@ -8,6 +8,7 @@ use App\Models\CommissionRule;
 use App\Models\Package;
 use App\Models\Rank;
 use App\Models\Setting;
+use App\Services\MembershipPageService;
 use Illuminate\Database\Seeder;
 
 /**
@@ -26,6 +27,9 @@ class ReferenceDataSeeder extends Seeder
         $this->seedSettings();
         $this->seedBonusRules();
         $this->seedAdmin();
+
+        // Starter text for the membership page; skipped once admins have sections.
+        app(MembershipPageService::class)->seedDefaults();
     }
 
     private function seedPackages(): void

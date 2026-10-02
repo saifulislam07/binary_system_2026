@@ -44,10 +44,10 @@ class IncomeController extends Controller
         return Inertia::render('income/Index', [
             'tab' => $tab,
             'tabs' => [
-                'referral' => 'Referral · রেফারেল',
-                'binary' => 'Binary · বাইনারি',
-                'rank' => 'Rank bonus · র‍্যাংক',
-                'other' => 'Other bonus · অন্যান্য',
+                'referral' => __('Referral'),
+                'binary' => __('Binary'),
+                'rank' => __('Rank bonus'),
+                'other' => __('Other bonus'),
             ],
             'filters' => ['from' => $filters['from'] ?? null, 'to' => $filters['to'] ?? null],
             'net' => Money::format($net),
@@ -74,14 +74,14 @@ class IncomeController extends Controller
         return [$net, $query->orderByDesc('cycle_date')->orderByDesc('id')->paginate(20)->withQueryString()
             ->through(fn (Commission $c) => [
                 'id' => $c->id,
-                'date' => $c->cycle_date->format('d M Y'),
+                'date' => $c->cycle_date->translatedFormat('d M Y'),
                 'type' => ucfirst($c->type->value),
                 'amount' => Money::format($c->amount),
                 'negative' => $c->amount < 0,
                 'status' => $c->status->value,
                 'source' => match (true) {
-                    $c->sourceSale !== null => 'Sale by '.($c->sourceSale->member->member_code ?? '#'.$c->sourceSale->member_id),
-                    $c->cycle !== null => 'Cycle '.$c->cycle->cycle_date->toDateString(),
+                    $c->sourceSale !== null => __('Sale by :code', ['code' => $c->sourceSale->member->member_code ?? '#'.$c->sourceSale->member_id]),
+                    $c->cycle !== null => __('Cycle :date', ['date' => $c->cycle->cycle_date->toDateString()]),
                     default => null,
                 },
                 'description' => $c->description,
@@ -105,12 +105,12 @@ class IncomeController extends Controller
         return [$net, $query->orderByDesc('cycle_date')->orderByDesc('id')->paginate(20)->withQueryString()
             ->through(fn (Bonus $b) => [
                 'id' => $b->id,
-                'date' => $b->cycle_date?->format('d M Y'),
+                'date' => $b->cycle_date?->translatedFormat('d M Y'),
                 'type' => ucfirst($b->type->value),
                 'amount' => Money::format($b->amount),
                 'negative' => false,
                 'status' => $b->status->value,
-                'source' => ucfirst($b->type->value).' bonus',
+                'source' => __(ucfirst($b->type->value).' bonus'),
                 'description' => $b->description,
             ])];
     }

@@ -13,6 +13,7 @@ import {
 } from '@lucide/vue';
 import { computed, nextTick, onMounted, provide, ref, shallowRef } from 'vue';
 import TreeNode from '@/components/TreeNode.vue';
+import { t } from '@/lib/i18n';
 import { treeContextKey } from '@/lib/tree';
 import type { TreeNodeData } from '@/lib/tree';
 import { index as teamIndex, tree as treeRoute } from '@/routes/team';
@@ -55,13 +56,13 @@ async function loadRoot(code: string): Promise<TreeNodeData | null> {
     });
 
     if (response.status === 403 || response.status === 404) {
-        findError.value = `${code} isn't in your team · আপনার দলে নেই`;
+        findError.value = t(":code isn't in your team", { code });
 
         return null;
     }
 
     if (!response.ok) {
-        findError.value = 'Could not load the tree. Please try again.';
+        findError.value = t('Could not load the tree. Please try again.');
 
         return null;
     }
@@ -367,24 +368,27 @@ const leftPct = computed(() =>
 );
 
 const legend = [
-    { label: 'Active · সক্রিয়', color: '#16a34a' },
-    { label: 'Pending · অপেক্ষমাণ', color: '#d97706' },
-    { label: 'Suspended · স্থগিত', color: '#dc2626' },
+    { label: 'Active', color: '#16a34a' },
+    { label: 'Pending', color: '#d97706' },
+    { label: 'Suspended', color: '#dc2626' },
 ];
 </script>
 
 <template>
-    <Head title="Team" />
+    <Head :title="$t('Team')" />
 
     <div class="flex flex-col gap-6 p-4">
         <div class="flex flex-wrap items-end justify-between gap-2">
             <div>
                 <h1 class="text-xl font-semibold tracking-tight">
-                    My team · আমার দল
+                    {{ $t('My team') }}
                 </h1>
                 <p class="text-sm text-muted-foreground">
-                    Your placement tree: every member below you, on your left
-                    and right.
+                    {{
+                        $t(
+                            'Your placement tree: every member below you, on your left and right.',
+                        )
+                    }}
                 </p>
             </div>
         </div>
@@ -398,7 +402,7 @@ const legend = [
                         <UserRound class="size-5" aria-hidden="true" />
                     </span>
                     <p class="text-sm text-muted-foreground">
-                        Sponsor · স্পনসর
+                        {{ $t('Sponsor') }}
                     </p>
                 </div>
                 <template v-if="sponsor">
@@ -410,7 +414,7 @@ const legend = [
                     </p>
                 </template>
                 <p v-else class="mt-3 text-muted-foreground">
-                    None (top of the tree)
+                    {{ $t('None (top of the tree)') }}
                 </p>
             </div>
 
@@ -418,31 +422,42 @@ const legend = [
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <p class="text-sm text-muted-foreground">
-                            Left team · বাম
+                            {{ $t('Left team') }}
                         </p>
                         <p class="mt-1 text-3xl font-semibold tabular-nums">
                             {{ legs.left.total }}
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            {{ legs.left.active }} active
+                            {{
+                                $t(':count active', { count: legs.left.active })
+                            }}
                         </p>
                     </div>
                     <div class="text-right">
                         <p class="text-sm text-muted-foreground">
-                            Right team · ডান
+                            {{ $t('Right team') }}
                         </p>
                         <p class="mt-1 text-3xl font-semibold tabular-nums">
                             {{ legs.right.total }}
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            {{ legs.right.active }} active
+                            {{
+                                $t(':count active', {
+                                    count: legs.right.active,
+                                })
+                            }}
                         </p>
                     </div>
                 </div>
                 <div
                     class="mt-4 flex h-2 overflow-hidden rounded-full bg-muted"
                     role="img"
-                    :aria-label="`Left ${legs.left.total}, right ${legs.right.total}`"
+                    :aria-label="
+                        $t('Left :left, right :right', {
+                            left: legs.left.total,
+                            right: legs.right.total,
+                        })
+                    "
                 >
                     <span class="bg-brand" :style="{ width: `${leftPct}%` }" />
                     <span
@@ -460,7 +475,7 @@ const legend = [
                         <Users class="size-5" aria-hidden="true" />
                     </span>
                     <p class="text-sm text-muted-foreground">
-                        Personally sponsored · সরাসরি রেফারেল
+                        {{ $t('Personally sponsored') }}
                     </p>
                 </div>
                 <p class="mt-3 text-3xl font-semibold tabular-nums">
@@ -472,7 +487,7 @@ const legend = [
         <section
             ref="frame"
             class="flex flex-col overflow-hidden rounded-2xl border bg-card"
-            aria-label="Binary tree"
+            :aria-label="$t('Binary tree')"
         >
             <!-- Toolbar -->
             <div
@@ -483,9 +498,9 @@ const legend = [
                     role="search"
                     @submit.prevent="find"
                 >
-                    <label for="find-member" class="sr-only"
-                        >Find a member by code</label
-                    >
+                    <label for="find-member" class="sr-only">{{
+                        $t('Find a member by code')
+                    }}</label>
                     <div class="relative">
                         <Search
                             class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -494,7 +509,7 @@ const legend = [
                         <input
                             id="find-member"
                             v-model="findCode"
-                            placeholder="Find member · MBR-100004"
+                            :placeholder="$t('Find member') + ' · MBR-100004'"
                             class="h-9 w-56 rounded-lg border border-input bg-background pr-3 pl-8 text-sm uppercase outline-none placeholder:normal-case focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15"
                         />
                     </div>
@@ -503,7 +518,7 @@ const legend = [
                         class="h-9 rounded-lg bg-brand px-3 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-60"
                         :disabled="finding"
                     >
-                        Show
+                        {{ $t('Show') }}
                     </button>
                     <button
                         v-if="trail.length"
@@ -511,7 +526,7 @@ const legend = [
                         class="inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium hover:bg-muted"
                         @click="back"
                     >
-                        Back
+                        {{ $t('Back') }}
                     </button>
                     <button
                         v-if="trail.length"
@@ -520,19 +535,19 @@ const legend = [
                         @click="backToMe"
                     >
                         <ArrowUpToLine class="size-4" aria-hidden="true" />
-                        Back to me
+                        {{ $t('Back to me') }}
                     </button>
                 </form>
 
                 <div
                     class="flex items-center gap-1"
                     role="group"
-                    aria-label="Zoom"
+                    :aria-label="$t('Zoom')"
                 >
                     <button
                         type="button"
                         class="flex size-9 items-center justify-center rounded-lg border hover:bg-muted"
-                        aria-label="Zoom out"
+                        :aria-label="$t('Zoom out')"
                         @click="zoomTo(scale / 1.2)"
                     >
                         <Minus class="size-4" aria-hidden="true" />
@@ -540,7 +555,7 @@ const legend = [
                     <button
                         type="button"
                         class="h-9 min-w-14 rounded-lg px-2 text-sm font-medium tabular-nums hover:bg-muted"
-                        aria-label="Reset zoom"
+                        :aria-label="$t('Reset zoom')"
                         @click="((scale = 1), center())"
                     >
                         {{ Math.round(scale * 100) }}%
@@ -548,7 +563,7 @@ const legend = [
                     <button
                         type="button"
                         class="flex size-9 items-center justify-center rounded-lg border hover:bg-muted"
-                        aria-label="Zoom in"
+                        :aria-label="$t('Zoom in')"
                         @click="zoomTo(scale * 1.2)"
                     >
                         <Plus class="size-4" aria-hidden="true" />
@@ -556,8 +571,8 @@ const legend = [
                     <button
                         type="button"
                         class="ml-1 flex size-9 items-center justify-center rounded-lg border hover:bg-muted"
-                        aria-label="Fit to screen"
-                        title="Fit to screen"
+                        :aria-label="$t('Fit to screen')"
+                        :title="$t('Fit to screen')"
                         @click="fit"
                     >
                         <Scan class="size-4" aria-hidden="true" />
@@ -565,8 +580,8 @@ const legend = [
                     <button
                         type="button"
                         class="flex size-9 items-center justify-center rounded-lg border hover:bg-muted"
-                        aria-label="Full screen"
-                        title="Full screen"
+                        :aria-label="$t('Full screen')"
+                        :title="$t('Full screen')"
                         @click="fullscreen"
                     >
                         <Maximize class="size-4" aria-hidden="true" />
@@ -587,7 +602,11 @@ const legend = [
                 class="relative min-h-160 flex-1 touch-none overflow-hidden bg-[radial-gradient(circle,color-mix(in_srgb,var(--muted-foreground)_22%,transparent)_1px,transparent_1.5px)] bg-size-[22px_22px] outline-none select-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset"
                 :class="panning ? 'cursor-grabbing' : 'cursor-grab'"
                 tabindex="0"
-                aria-label="Tree canvas. Drag or use the arrow keys to move, plus and minus to zoom."
+                :aria-label="
+                    $t(
+                        'Tree canvas. Drag or use the arrow keys to move, plus and minus to zoom.',
+                    )
+                "
                 @pointerdown="onPointerDown"
                 @click.capture="swallowClickAfterDrag"
                 @pointermove="onPointerMove"
@@ -609,7 +628,7 @@ const legend = [
                     v-if="selected"
                     data-panel
                     class="absolute top-4 right-4 w-72 max-w-[calc(100%-2rem)] cursor-default rounded-2xl border bg-card p-4 shadow-xl"
-                    aria-label="Member details"
+                    :aria-label="$t('Member details')"
                 >
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
@@ -623,7 +642,7 @@ const legend = [
                         <button
                             type="button"
                             class="-mt-1 -mr-1 flex size-8 items-center justify-center rounded-lg hover:bg-muted"
-                            aria-label="Close details"
+                            :aria-label="$t('Close details')"
                             @click="selected = null"
                         >
                             <X class="size-4" aria-hidden="true" />
@@ -632,29 +651,31 @@ const legend = [
                     <dl class="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
                         <div>
                             <dt class="text-xs text-muted-foreground">
-                                Status
+                                {{ $t('Status') }}
                             </dt>
                             <dd class="font-medium capitalize">
-                                {{ selected.status }}
+                                {{ $t(selected.status) }}
                             </dd>
                         </div>
                         <div>
                             <dt class="text-xs text-muted-foreground">
-                                Package
+                                {{ $t('Package') }}
                             </dt>
                             <dd class="font-medium">
                                 {{ selected.package ?? '—' }}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-muted-foreground">Rank</dt>
+                            <dt class="text-xs text-muted-foreground">
+                                {{ $t('Rank') }}
+                            </dt>
                             <dd class="font-medium">
-                                {{ selected.rank ?? '—' }}
+                                {{ selected.rank ? $t(selected.rank) : '—' }}
                             </dd>
                         </div>
                         <div>
                             <dt class="text-xs text-muted-foreground">
-                                Joined
+                                {{ $t('Joined') }}
                             </dt>
                             <dd class="font-medium tabular-nums">
                                 {{ selected.joined ?? '—' }}
@@ -662,7 +683,7 @@ const legend = [
                         </div>
                         <div>
                             <dt class="text-xs text-muted-foreground">
-                                Left BV
+                                {{ $t('Left BV') }}
                             </dt>
                             <dd class="font-medium tabular-nums">
                                 {{ bv.format(selected.leftBv) }}
@@ -670,7 +691,7 @@ const legend = [
                         </div>
                         <div>
                             <dt class="text-xs text-muted-foreground">
-                                Right BV
+                                {{ $t('Right BV') }}
                             </dt>
                             <dd class="font-medium tabular-nums">
                                 {{ bv.format(selected.rightBv) }}
@@ -678,7 +699,7 @@ const legend = [
                         </div>
                         <div class="col-span-2">
                             <dt class="text-xs text-muted-foreground">
-                                Team volume (lifetime)
+                                {{ $t('Team volume (lifetime)') }}
                             </dt>
                             <dd class="font-medium tabular-nums">
                                 {{ bv.format(selected.teamBv) }} BV
@@ -692,7 +713,7 @@ const legend = [
                         :disabled="finding"
                         @click="showFrom(selected.code)"
                     >
-                        Show tree from here · এখান থেকে দেখুন
+                        {{ $t('Show tree from here') }}
                     </button>
                 </aside>
             </div>
@@ -711,22 +732,29 @@ const legend = [
                             :style="{ background: item.color }"
                             aria-hidden="true"
                         />
-                        {{ item.label }}
+                        {{ $t(item.label) }}
                     </li>
                     <li class="flex items-center gap-1.5">
                         <span
                             class="size-2.5 rounded-full border-2 border-dashed border-muted-foreground/50"
                             aria-hidden="true"
                         />
-                        Vacant · খালি
+                        {{ $t('Vacant') }}
                     </li>
                 </ul>
                 <p class="hidden sm:block">
-                    Drag to move · Ctrl + scroll to zoom · click a member for
-                    details, + to open their team
+                    {{
+                        $t(
+                            'Drag to move · Ctrl + scroll to zoom · click a member for details, + to open their team',
+                        )
+                    }}
                 </p>
                 <p class="sm:hidden">
-                    Drag to move · pinch to zoom · tap a member for details
+                    {{
+                        $t(
+                            'Drag to move · pinch to zoom · tap a member for details',
+                        )
+                    }}
                 </p>
             </div>
         </section>

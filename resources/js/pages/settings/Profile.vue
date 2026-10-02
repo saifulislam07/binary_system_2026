@@ -31,15 +31,15 @@ const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
-    <Head title="Profile settings" />
+    <Head :title="$t('Profile settings')" />
 
-    <h1 class="sr-only">Profile settings</h1>
+    <h1 class="sr-only">{{ $t('Profile settings') }}</h1>
 
     <div class="flex flex-col space-y-6">
         <Heading
             variant="small"
-            title="Profile · প্রোফাইল"
-            description="Update your name and email address · নাম ও ইমেইল হালনাগাদ করুন"
+            :title="$t('Profile')"
+            :description="$t('Update your name and email address')"
         />
 
         <Form
@@ -48,7 +48,7 @@ const user = computed(() => page.props.auth.user);
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="name">Name · নাম</Label>
+                <Label for="name">{{ $t('Name') }}</Label>
                 <Input
                     id="name"
                     class="mt-1 block w-full"
@@ -56,13 +56,13 @@ const user = computed(() => page.props.auth.user);
                     :default-value="user.name"
                     required
                     autocomplete="name"
-                    placeholder="Full name"
+                    :placeholder="$t('Full name')"
                 />
                 <InputError class="mt-2" :message="errors.name" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="email">Email address · ইমেইল</Label>
+                <Label for="email">{{ $t('Email address') }}</Label>
                 <Input
                     id="email"
                     type="email"
@@ -71,14 +71,16 @@ const user = computed(() => page.props.auth.user);
                     :default-value="user.email"
                     required
                     autocomplete="username"
-                    placeholder="Email address"
+                    :placeholder="$t('Email address')"
                 />
                 <InputError class="mt-2" :message="errors.email" />
             </div>
 
             <div class="flex items-center gap-4">
-                <Button :disabled="processing" data-test="update-profile-button"
-                    >Save · সংরক্ষণ</Button
+                <Button
+                    :disabled="processing"
+                    data-test="update-profile-button"
+                    >{{ $t('Save') }}</Button
                 >
             </div>
         </Form>
@@ -90,7 +92,6 @@ const user = computed(() => page.props.auth.user);
         class="text-sm text-muted-foreground"
         data-test="delete-account-note"
     >
-        To close your member account, contact support · অ্যাকাউন্ট বন্ধ করতে
-        সাপোর্টে যোগাযোগ করুন
+        {{ $t('To close your member account, contact support.') }}
     </p>
 </template>

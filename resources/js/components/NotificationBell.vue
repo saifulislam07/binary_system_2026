@@ -8,6 +8,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { pickLanguage } from '@/lib/i18n';
 import { notificationIcon, timeAgo } from '@/lib/notifications';
 import type { AppNotification } from '@/lib/notifications';
 import { index, read, readAll, recent } from '@/routes/notifications';
@@ -85,8 +86,8 @@ function markAllRead() {
                 class="relative"
                 :aria-label="
                     unread > 0
-                        ? `Notifications, ${unread} unread`
-                        : 'Notifications'
+                        ? $t('Notifications, :count unread', { count: unread })
+                        : $t('Notifications')
                 "
             >
                 <Bell class="size-5" />
@@ -105,14 +106,14 @@ function markAllRead() {
             class="w-[min(24rem,calc(100vw-2rem))] p-0"
         >
             <div class="flex items-center justify-between border-b px-3 py-2">
-                <p class="text-sm font-medium">Notifications · নোটিফিকেশন</p>
+                <p class="text-sm font-medium">{{ $t('Notifications') }}</p>
                 <button
                     v-if="unread > 0"
                     type="button"
                     class="text-xs text-primary underline-offset-4 hover:underline"
                     @click="markAllRead"
                 >
-                    Mark all read
+                    {{ $t('Mark all read') }}
                 </button>
             </div>
 
@@ -121,19 +122,19 @@ function markAllRead() {
                     v-if="loading && items === null"
                     class="px-3 py-6 text-center text-sm text-muted-foreground"
                 >
-                    Loading…
+                    {{ $t('Loading…') }}
                 </p>
                 <p
                     v-else-if="failed"
                     class="px-3 py-6 text-center text-sm text-muted-foreground"
                 >
-                    Could not load notifications.
+                    {{ $t('Could not load notifications.') }}
                 </p>
                 <p
                     v-else-if="items !== null && items.length === 0"
                     class="px-3 py-6 text-center text-sm text-muted-foreground"
                 >
-                    No notifications yet · এখনো কোনো নোটিফিকেশন নেই
+                    {{ $t('No notifications yet') }}
                 </p>
                 <ul v-else-if="items !== null" class="divide-y">
                     <li v-for="item in items" :key="item.id">
@@ -152,7 +153,7 @@ function markAllRead() {
                                     class="block text-sm"
                                     :class="item.read ? '' : 'font-semibold'"
                                 >
-                                    {{ item.title }}
+                                    {{ pickLanguage(item.title) }}
                                 </span>
                                 <span
                                     class="line-clamp-2 block text-xs text-muted-foreground"
@@ -168,7 +169,7 @@ function markAllRead() {
                             <span
                                 v-if="!item.read"
                                 class="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
-                                aria-label="Unread"
+                                :aria-label="$t('Unread')"
                             />
                         </button>
                     </li>
@@ -180,7 +181,7 @@ function markAllRead() {
                     :href="index()"
                     class="text-xs text-primary underline-offset-4 hover:underline"
                 >
-                    View all · সব দেখুন
+                    {{ $t('View all') }}
                 </Link>
             </div>
         </DropdownMenuContent>

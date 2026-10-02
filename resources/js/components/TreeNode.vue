@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Minus, Plus, UserPlus } from '@lucide/vue';
 import { computed, inject, ref } from 'vue';
+import { t } from '@/lib/i18n';
 import { treeContextKey } from '@/lib/tree';
 import type { TreeNodeData } from '@/lib/tree';
 import { tree as treeRoute } from '@/routes/team';
@@ -43,7 +44,7 @@ async function toggle() {
 
             node.value = await response.json();
         } catch {
-            error.value = 'Could not load this branch.';
+            error.value = t('Could not load this branch.');
             loading.value = false;
 
             return;
@@ -108,7 +109,7 @@ const leftShare = computed(() => {
             }"
             :data-status="node.status"
             :aria-pressed="selected"
-            :aria-label="`${node.name}, ${node.code}, ${node.status}`"
+            :aria-label="`${node.name}, ${node.code}, ${$t(node.status)}`"
             @click="context?.select(node)"
         >
             <span class="flex items-center gap-2.5">
@@ -132,16 +133,16 @@ const leftShare = computed(() => {
                 <span
                     v-if="node.rank && node.rank !== 'Member'"
                     class="bt-tag is-rank"
-                    >{{ node.rank }}</span
+                    >{{ $t(node.rank) }}</span
                 >
                 <span v-if="!node.active" class="bt-tag">{{
-                    node.status
+                    $t(node.status)
                 }}</span>
             </span>
             <span class="mt-2.5 block text-[10.5px] text-muted-foreground">
                 <span class="flex justify-between tabular-nums">
-                    <span>L {{ bv.format(node.leftBv) }}</span>
-                    <span>R {{ bv.format(node.rightBv) }}</span>
+                    <span>{{ $t('L') }} {{ bv.format(node.leftBv) }}</span>
+                    <span>{{ $t('R') }} {{ bv.format(node.rightBv) }}</span>
                 </span>
                 <span class="bt-bar" aria-hidden="true">
                     <span class="l" :style="{ width: `${leftShare}%` }" />
@@ -155,7 +156,7 @@ const leftShare = computed(() => {
             type="button"
             class="bt-toggle"
             :aria-expanded="open"
-            :aria-label="open ? 'Collapse team' : 'Expand team'"
+            :aria-label="open ? $t('Collapse team') : $t('Expand team')"
             :disabled="loading"
             @click="toggle"
         >
@@ -183,7 +184,7 @@ const leftShare = computed(() => {
                 :class="side === 'left' ? 'is-left' : 'is-right'"
             >
                 <span class="bt-side">{{
-                    side === 'left' ? 'Left · বাম' : 'Right · ডান'
+                    side === 'left' ? $t('Left') : $t('Right')
                 }}</span>
                 <TreeNode
                     v-if="node.children[side]"
@@ -195,7 +196,7 @@ const leftShare = computed(() => {
                         class="mx-auto mb-1 size-5 opacity-60"
                         aria-hidden="true"
                     />
-                    Vacant · খালি
+                    {{ $t('Vacant') }}
                 </div>
             </div>
         </div>

@@ -16,7 +16,9 @@ use Illuminate\Notifications\Notification;
  * WhatsApp when those channels are switched on in config/notifications.php.
  *
  * Queued, and only after the surrounding DB transaction commits, so a
- * rolled-back activation or payout never tells anyone anything.
+ * rolled-back activation or payout never tells anyone anything. Texts use
+ * __(): Laravel renders each notification in the member's preferred locale
+ * (User::preferredLocale()), so it is stored and sent in their language.
  */
 abstract class MemberNotification extends Notification implements ShouldQueue
 {
@@ -33,7 +35,7 @@ abstract class MemberNotification extends Notification implements ShouldQueue
     abstract public function kind(): string;
 
     /**
-     * Bilingual title: "English · বাংলা".
+     * Short title, translated with __().
      */
     abstract public function title(): string;
 
@@ -49,7 +51,7 @@ abstract class MemberNotification extends Notification implements ShouldQueue
 
     public function actionText(): string
     {
-        return 'Open · দেখুন';
+        return __('Open');
     }
 
     /**
@@ -98,7 +100,7 @@ abstract class MemberNotification extends Notification implements ShouldQueue
     {
         $mail = (new MailMessage)
             ->subject($this->title())
-            ->greeting('Hello'.(filled($notifiable->name ?? null) ? ' '.$notifiable->name : '').',')
+            ->greeting(filled($notifiable->name ?? null) ? __('Hello :name,', ['name' => $notifiable->name]) : __('Hello,'))
             ->line($this->message($notifiable));
 
         if ($this->path() !== null) {

@@ -20,21 +20,21 @@ enum WalletTransactionType: string
     case Reversal = 'reversal';
 
     /**
-     * Bilingual label for member-facing screens.
+     * Label in the current language (member pages translate it to Bangla).
      */
     public function label(): string
     {
         return match ($this) {
-            self::ReferralBonus => 'Referral bonus · রেফারেল বোনাস',
-            self::BinaryCommission => 'Binary commission · বাইনারি কমিশন',
-            self::RankBonus => 'Rank bonus · র‍্যাংক বোনাস',
-            self::SalesBonus => 'Sales bonus · সেলস বোনাস',
-            self::LeadershipBonus => 'Leadership bonus · লিডারশিপ বোনাস',
-            self::PerformanceBonus => 'Performance bonus · পারফরম্যান্স বোনাস',
-            self::Withdrawal => 'Withdrawal · উত্তোলন',
-            self::Adjustment => 'Adjustment · সমন্বয়',
-            self::Refund => 'Refund · ফেরত',
-            self::Reversal => 'Reversal · বাতিল',
+            self::ReferralBonus => __('Referral bonus'),
+            self::BinaryCommission => __('Binary commission'),
+            self::RankBonus => __('Rank bonus'),
+            self::SalesBonus => __('Sales bonus'),
+            self::LeadershipBonus => __('Leadership bonus'),
+            self::PerformanceBonus => __('Performance bonus'),
+            self::Withdrawal => __('Withdrawal'),
+            self::Adjustment => __('Adjustment'),
+            self::Refund => __('Refund'),
+            self::Reversal => __('Reversal'),
         };
     }
 

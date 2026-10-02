@@ -18,6 +18,8 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: {
             name: string;
+            locale: 'bn' | 'en';
+            locales: Record<string, string>;
             auth: Auth;
             sidebarOpen: boolean;
             unreadNotifications?: number;
@@ -36,5 +38,7 @@ declare module 'vue' {
         $inertia: typeof Router;
         $page: Page;
         $headManager: ReturnType<typeof createHeadManager>;
+        $t: typeof import('@/lib/i18n').t;
+        $tc: typeof import('@/lib/i18n').tc;
     }
 }

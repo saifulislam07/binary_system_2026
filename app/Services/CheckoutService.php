@@ -27,11 +27,11 @@ class CheckoutService
     public function checkout(Member $member, Package $package, GatewayName $gatewayName): array
     {
         if ($member->status === MemberStatus::Suspended) {
-            throw new PaymentException('Suspended members cannot place orders.');
+            throw new PaymentException(__('Suspended members cannot place orders.'));
         }
 
         if (! $package->is_active) {
-            throw new PaymentException('This package is not available.');
+            throw new PaymentException(__('This package is not available.'));
         }
 
         if (! $this->gateways->isAvailable($gatewayName)) {

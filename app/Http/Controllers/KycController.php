@@ -28,11 +28,11 @@ class KycController extends Controller
             'canSubmit' => $current === null || $current->status === KycStatus::Rejected,
             'documents' => $documents->map(fn (KycDocument $d) => [
                 'id' => $d->id,
-                'type' => $d->type === KycDocumentType::Nid ? 'NID' : 'Passport',
+                'type' => $d->type === KycDocumentType::Nid ? __('NID') : __('Passport'),
                 // Never echo the full number back.
                 'number' => str_repeat('•', max(0, strlen($d->document_number) - 4)).substr($d->document_number, -4),
                 'status' => $d->status->value,
-                'submitted' => $d->created_at?->format('d M Y'),
+                'submitted' => $d->created_at?->translatedFormat('d M Y'),
                 'rejectionReason' => $d->rejection_reason,
             ]),
             'profile' => [

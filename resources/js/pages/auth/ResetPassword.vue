@@ -11,8 +11,8 @@ import { update } from '@/routes/password';
 
 defineOptions({
     layout: {
-        title: 'Reset password · নতুন পাসওয়ার্ড',
-        description: 'Choose a new password · নতুন পাসওয়ার্ড দিন',
+        title: 'Reset password',
+        description: 'Choose a new password.',
     },
 });
 
@@ -26,7 +26,7 @@ const inputEmail = ref(props.email);
 </script>
 
 <template>
-    <Head title="Reset password · নতুন পাসওয়ার্ড" />
+    <Head :title="$t('Reset password')" />
 
     <Form
         v-bind="update.form()"
@@ -36,7 +36,7 @@ const inputEmail = ref(props.email);
     >
         <div class="grid gap-6">
             <div class="grid gap-2">
-                <Label for="email">Email · ইমেইল</Label>
+                <Label for="email">{{ $t('Email address') }}</Label>
                 <Input
                     id="email"
                     type="email"
@@ -50,29 +50,29 @@ const inputEmail = ref(props.email);
             </div>
 
             <div class="grid gap-2">
-                <Label for="password">New password · নতুন পাসওয়ার্ড</Label>
+                <Label for="password">{{ $t('New password') }}</Label>
                 <PasswordInput
                     id="password"
                     name="password"
                     autocomplete="new-password"
                     class="mt-1 block w-full"
                     autofocus
-                    placeholder="Password"
+                    :placeholder="$t('Password')"
                     :passwordrules="passwordRules"
                 />
                 <InputError :message="errors.password" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="password_confirmation"
-                    >Confirm password · আবার লিখুন</Label
-                >
+                <Label for="password_confirmation">{{
+                    $t('Confirm password')
+                }}</Label>
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
                     autocomplete="new-password"
                     class="mt-1 block w-full"
-                    placeholder="Confirm password"
+                    :placeholder="$t('Confirm password')"
                     :passwordrules="passwordRules"
                 />
                 <InputError :message="errors.password_confirmation" />
@@ -80,12 +80,12 @@ const inputEmail = ref(props.email);
 
             <Button
                 type="submit"
-                class="mt-4 w-full"
+                class="mt-4 h-11 w-full text-base"
                 :disabled="processing"
                 data-test="reset-password-button"
             >
                 <Spinner v-if="processing" />
-                Reset password · পাসওয়ার্ড বদলান
+                {{ $t('Reset password') }}
             </Button>
         </div>
     </Form>

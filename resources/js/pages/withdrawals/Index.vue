@@ -64,14 +64,15 @@ const statusClass: Record<string, string> = {
 </script>
 
 <template>
-    <Head title="Withdrawals" />
+    <Head :title="$t('Withdrawals')" />
 
     <div class="flex flex-col gap-6 p-4">
         <div>
-            <h1 class="text-xl font-semibold">Withdrawals · উত্তোলন</h1>
+            <h1 class="text-xl font-semibold">{{ $t('Withdrawals') }}</h1>
             <p class="text-sm text-muted-foreground">
-                Available: <strong data-test="balance">{{ balance }}</strong> ·
-                Minimum withdrawal: {{ minimum }}
+                {{ $t('Available') }}:
+                <strong data-test="balance">{{ balance }}</strong> ·
+                {{ $t('Minimum withdrawal') }}: {{ minimum }}
             </p>
         </div>
 
@@ -83,7 +84,7 @@ const statusClass: Record<string, string> = {
             class="grid gap-4 rounded-xl border p-4 md:max-w-xl"
         >
             <div class="grid gap-2">
-                <Label for="amount">Amount (৳) · পরিমাণ</Label>
+                <Label for="amount">{{ $t('Amount (৳)') }}</Label>
                 <Input
                     id="amount"
                     name="amount"
@@ -96,7 +97,7 @@ const statusClass: Record<string, string> = {
 
             <fieldset class="grid gap-2">
                 <legend class="mb-1 text-sm font-medium">
-                    Pay to · প্রাপকের অ্যাকাউন্ট
+                    {{ $t('Pay to') }}
                 </legend>
                 <label
                     v-for="m in savedMethods"
@@ -112,7 +113,7 @@ const statusClass: Record<string, string> = {
                 </label>
                 <label class="flex items-center gap-2 text-sm">
                     <input v-model="methodChoice" type="radio" value="new" />
-                    New account · নতুন অ্যাকাউন্ট
+                    {{ $t('New account') }}
                 </label>
                 <input
                     v-if="!usingNew"
@@ -132,7 +133,7 @@ const statusClass: Record<string, string> = {
                             name="method"
                             value="mobile_banking"
                         />
-                        Mobile banking · মোবাইল ব্যাংকিং
+                        {{ $t('Mobile banking') }}
                     </label>
                     <label class="flex items-center gap-2">
                         <input
@@ -141,7 +142,7 @@ const statusClass: Record<string, string> = {
                             name="method"
                             value="bank"
                         />
-                        Bank · ব্যাংক
+                        {{ $t('Bank') }}
                     </label>
                 </div>
                 <InputError :message="errors.method" />
@@ -151,7 +152,7 @@ const statusClass: Record<string, string> = {
                     class="grid gap-4 sm:grid-cols-2"
                 >
                     <div class="grid gap-2">
-                        <Label for="provider">Provider</Label>
+                        <Label for="provider">{{ $t('Provider') }}</Label>
                         <select
                             id="provider"
                             name="provider"
@@ -168,9 +169,9 @@ const statusClass: Record<string, string> = {
                         <InputError :message="errors.provider" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="mobile_number"
-                            >Mobile number · মোবাইল নম্বর</Label
-                        >
+                        <Label for="mobile_number">{{
+                            $t('Mobile number')
+                        }}</Label>
                         <Input
                             id="mobile_number"
                             name="mobile_number"
@@ -183,26 +184,26 @@ const statusClass: Record<string, string> = {
 
                 <div v-else class="grid gap-4 sm:grid-cols-2">
                     <div class="grid gap-2">
-                        <Label for="bank_name">Bank name · ব্যাংক</Label>
+                        <Label for="bank_name">{{ $t('Bank name') }}</Label>
                         <Input id="bank_name" name="bank_name" />
                         <InputError :message="errors.bank_name" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="branch_name">Branch · শাখা</Label>
+                        <Label for="branch_name">{{ $t('Branch') }}</Label>
                         <Input id="branch_name" name="branch_name" />
                         <InputError :message="errors.branch_name" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="account_name"
-                            >Account name · হিসাবের নাম</Label
-                        >
+                        <Label for="account_name">{{
+                            $t('Account name')
+                        }}</Label>
                         <Input id="account_name" name="account_name" />
                         <InputError :message="errors.account_name" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="account_number"
-                            >Account number · হিসাব নম্বর</Label
-                        >
+                        <Label for="account_number">{{
+                            $t('Account number')
+                        }}</Label>
                         <Input
                             id="account_number"
                             name="account_number"
@@ -211,9 +212,9 @@ const statusClass: Record<string, string> = {
                         <InputError :message="errors.account_number" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="routing_number"
-                            >Routing number (optional)</Label
-                        >
+                        <Label for="routing_number">{{
+                            $t('Routing number (optional)')
+                        }}</Label>
                         <Input
                             id="routing_number"
                             name="routing_number"
@@ -231,7 +232,7 @@ const statusClass: Record<string, string> = {
                         value="1"
                         checked
                     />
-                    Save this account for next time
+                    {{ $t('Save this account for next time') }}
                 </label>
             </template>
 
@@ -242,22 +243,30 @@ const statusClass: Record<string, string> = {
                 data-test="request-withdrawal"
             >
                 <Spinner v-if="processing" />
-                Request withdrawal · উত্তোলনের অনুরোধ
+                {{ $t('Request withdrawal') }}
             </Button>
         </Form>
         <p v-else class="text-sm text-muted-foreground">
-            Withdrawals are available once your account is active.
+            {{ $t('Withdrawals are available once your account is active.') }}
         </p>
 
         <div class="overflow-x-auto rounded-xl border">
             <table class="w-full min-w-[640px] text-sm">
                 <thead class="bg-muted/50 text-left text-muted-foreground">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Requested</th>
-                        <th class="px-4 py-2 text-right font-medium">Amount</th>
-                        <th class="px-4 py-2 font-medium">Account</th>
-                        <th class="px-4 py-2 font-medium">Status</th>
-                        <th class="px-4 py-2 font-medium">Note</th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Requested') }}
+                        </th>
+                        <th class="px-4 py-2 text-right font-medium">
+                            {{ $t('Amount') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Account') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ $t('Status') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">{{ $t('Note') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -289,9 +298,9 @@ const statusClass: Record<string, string> = {
                             <template v-if="w.rejectionReason">{{
                                 w.rejectionReason
                             }}</template>
-                            <template v-else-if="w.processedAt"
-                                >Paid {{ w.processedAt }}</template
-                            >
+                            <template v-else-if="w.processedAt">{{
+                                $t('Paid :date', { date: w.processedAt })
+                            }}</template>
                         </td>
                     </tr>
                     <tr v-if="withdrawals.data.length === 0">
@@ -299,7 +308,7 @@ const statusClass: Record<string, string> = {
                             colspan="5"
                             class="px-4 py-8 text-center text-muted-foreground"
                         >
-                            No withdrawals yet · কোনো উত্তোলন নেই
+                            {{ $t('No withdrawals yet') }}
                         </td>
                     </tr>
                 </tbody>
@@ -309,7 +318,7 @@ const statusClass: Record<string, string> = {
         <nav
             v-if="withdrawals.last_page > 1"
             class="flex items-center justify-between text-sm"
-            aria-label="Pagination"
+            :aria-label="$t('Pagination')"
         >
             <Button
                 variant="outline"
@@ -317,22 +326,28 @@ const statusClass: Record<string, string> = {
                 :disabled="!withdrawals.prev_page_url"
                 as-child
             >
-                <Link :href="withdrawals.prev_page_url ?? '#'" preserve-scroll
-                    >Previous</Link
+                <Link
+                    :href="withdrawals.prev_page_url ?? '#'"
+                    preserve-scroll
+                    >{{ $t('Previous') }}</Link
                 >
             </Button>
-            <span class="text-muted-foreground"
-                >Page {{ withdrawals.current_page }} of
-                {{ withdrawals.last_page }}</span
-            >
+            <span class="text-muted-foreground">{{
+                $t('Page :page of :last', {
+                    page: withdrawals.current_page,
+                    last: withdrawals.last_page,
+                })
+            }}</span>
             <Button
                 variant="outline"
                 size="sm"
                 :disabled="!withdrawals.next_page_url"
                 as-child
             >
-                <Link :href="withdrawals.next_page_url ?? '#'" preserve-scroll
-                    >Next</Link
+                <Link
+                    :href="withdrawals.next_page_url ?? '#'"
+                    preserve-scroll
+                    >{{ $t('Next') }}</Link
                 >
             </Button>
         </nav>

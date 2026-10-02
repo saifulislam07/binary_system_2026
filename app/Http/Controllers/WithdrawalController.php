@@ -43,13 +43,13 @@ class WithdrawalController extends Controller
                 ->paginate(15)
                 ->through(fn (Withdrawal $w) => [
                     'id' => $w->id,
-                    'date' => $w->created_at?->format('d M Y, h:i A'),
+                    'date' => $w->created_at?->translatedFormat('d M Y, h:i A'),
                     'amount' => Money::format($w->amount),
                     'account' => self::describe($w->method, $w->account_details),
                     'status' => $w->status->value,
                     'statusLabel' => $w->status->label(),
                     'rejectionReason' => $w->rejection_reason,
-                    'processedAt' => $w->processed_at?->format('d M Y'),
+                    'processedAt' => $w->processed_at?->translatedFormat('d M Y'),
                 ]),
         ]);
     }
@@ -96,11 +96,11 @@ class WithdrawalController extends Controller
         if ($type === WithdrawalMethodType::MobileBanking) {
             $number = $details['mobile_number'] ?? '';
             $local = str_starts_with($number, '+88') ? substr($number, 3) : $number;
-            $provider = WithdrawalRequest::MOBILE_PROVIDERS[$details['provider'] ?? ''] ?? 'Mobile banking';
+            $provider = WithdrawalRequest::MOBILE_PROVIDERS[$details['provider'] ?? ''] ?? __('Mobile banking');
 
             return $provider.' · '.substr($local, 0, 5).'***'.substr($local, -3);
         }
 
-        return ($details['bank_name'] ?? 'Bank').' · ****'.substr($details['account_number'] ?? '', -4);
+        return ($details['bank_name'] ?? __('Bank')).' · ****'.substr($details['account_number'] ?? '', -4);
     }
 }

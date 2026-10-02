@@ -12,7 +12,13 @@ import {
 import { computed, onMounted } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import ProductCard from '@/components/shop/ProductCard.vue';
-import { buyPackageUrl, joinUrl, rememberReferral, tints } from '@/lib/shop';
+import {
+    buyPackageUrl,
+    joinUrl,
+    localName,
+    rememberReferral,
+    tints,
+} from '@/lib/shop';
 import type { ProductCardData } from '@/lib/shop';
 import { index as shopIndex, show as productShow } from '@/routes/shop';
 
@@ -69,24 +75,24 @@ const productCount = computed(() =>
 const steps = [
     {
         icon: PackageCheck,
-        title: 'Choose a package · প্যাকেজ বাছুন',
+        title: 'Choose a package',
         text: 'Each package is a bundle of our products.',
     },
     {
         icon: UserPlus,
-        title: 'Create your account · অ্যাকাউন্ট খুলুন',
+        title: 'Create your account',
         text: 'Sign up in two minutes with a referral ID.',
     },
     {
         icon: CreditCard,
-        title: 'Pay securely · নিরাপদে পেমেন্ট',
+        title: 'Pay securely',
         text: 'bKash, Nagad or card — your order is confirmed at once.',
     },
 ];
 </script>
 
 <template>
-    <Head title="Shop electronics · ইলেকট্রনিক্স" />
+    <Head :title="$t('Shop electronics')" />
 
     <!-- Hero -->
     <section class="mx-auto max-w-7xl px-4 pt-6">
@@ -109,7 +115,7 @@ const steps = [
                         class="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm ring-1 ring-white/20"
                         data-test="sponsor-invite"
                     >
-                        Referred by · রেফারেল
+                        {{ $t('Referred by') }}
                         <strong>{{ sponsorCode }}</strong>
                     </p>
                     <p
@@ -120,19 +126,20 @@ const steps = [
                             class="size-2 rounded-full bg-emerald-400"
                             aria-hidden="true"
                         />
-                        Genuine electronics · আসল ইলেকট্রনিক্স
+                        {{ $t('Genuine electronics') }}
                     </p>
                     <h1
                         class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl"
                     >
-                        Quality gadgets{{ ' ' }}<br class="hidden sm:block" />
+                        {{ $t('Quality gadgets') }}{{ ' '
+                        }}<br class="hidden sm:block" />
                         <span
                             class="bg-linear-to-r from-[#8cc0ff] to-white bg-clip-text text-transparent"
-                            >at fair prices.</span
+                            >{{ $t('at fair prices.') }}</span
                         >
                     </h1>
-                    <p class="mt-4 text-xl text-white/80">
-                        মানসম্মত গ্যাজেট, ন্যায্য দামে
+                    <p class="mt-4 text-lg text-white/80">
+                        {{ $t('Genuine products, sold in clear bundles.') }}
                     </p>
 
                     <div class="mt-8 flex flex-wrap gap-3">
@@ -140,14 +147,14 @@ const steps = [
                             :href="shopIndex()"
                             class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-[#0b1a33] shadow-lg shadow-black/20 transition hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1a33] focus-visible:outline-none sm:w-auto"
                         >
-                            Shop now · কেনাকাটা করুন
+                            {{ $t('Shop now') }}
                             <ArrowRight class="size-4" aria-hidden="true" />
                         </Link>
                         <a
                             href="#packages"
                             class="inline-flex min-h-12 w-full items-center justify-center rounded-xl px-6 font-medium ring-1 ring-white/30 transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:w-auto"
                         >
-                            See packages · প্যাকেজ দেখুন
+                            {{ $t('See packages') }}
                         </a>
                     </div>
 
@@ -155,19 +162,25 @@ const steps = [
                         class="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-white/15 pt-6"
                     >
                         <div v-if="startingPrice">
-                            <dt class="text-xs text-white/60">Packages from</dt>
+                            <dt class="text-xs text-white/60">
+                                {{ $t('Packages from') }}
+                            </dt>
                             <dd class="mt-1 text-lg font-semibold tabular-nums">
                                 {{ startingPrice }}
                             </dd>
                         </div>
                         <div v-if="productCount">
-                            <dt class="text-xs text-white/60">Products</dt>
+                            <dt class="text-xs text-white/60">
+                                {{ $t('Products') }}
+                            </dt>
                             <dd class="mt-1 text-lg font-semibold tabular-nums">
                                 {{ productCount }}
                             </dd>
                         </div>
                         <div v-if="brands.length">
-                            <dt class="text-xs text-white/60">Brands</dt>
+                            <dt class="text-xs text-white/60">
+                                {{ $t('Brands') }}
+                            </dt>
                             <dd class="mt-1 text-lg font-semibold tabular-nums">
                                 {{ brands.length }}
                             </dd>
@@ -262,12 +275,14 @@ const steps = [
     >
         <div class="flex items-end justify-between gap-4">
             <div>
-                <p class="text-sm font-semibold text-brand">Browse</p>
+                <p class="text-sm font-semibold text-brand">
+                    {{ $t('Browse') }}
+                </p>
                 <h2
                     id="categories-title"
                     class="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
                 >
-                    Shop by category · ক্যাটাগরি
+                    {{ $t('Shop by category') }}
                 </h2>
             </div>
         </div>
@@ -300,13 +315,11 @@ const steps = [
                     </span>
                     <span
                         class="mt-3 text-sm font-semibold group-hover:text-brand"
-                        >{{ category.name }}</span
+                        >{{ localName(category) }}</span
                     >
-                    <span class="text-xs text-muted-foreground"
-                        ><template v-if="category.nameBn"
-                            >{{ category.nameBn }} · </template
-                        >{{ category.count }} items</span
-                    >
+                    <span class="text-xs text-muted-foreground">{{
+                        $tc(':count item', ':count items', category.count)
+                    }}</span>
                 </Link>
             </li>
         </ul>
@@ -326,22 +339,23 @@ const steps = [
                     <p
                         class="inline-flex items-center gap-1.5 text-sm font-semibold text-deal"
                     >
-                        <Tag class="size-4" aria-hidden="true" /> Price drops
+                        <Tag class="size-4" aria-hidden="true" />
+                        {{ $t('Price drops') }}
                     </p>
                     <h2
                         id="deals-title"
                         class="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
                     >
-                        Deals · অফার
+                        {{ $t('Deals') }}
                     </h2>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        Real savings against the previous price.
+                        {{ $t('Real savings against the previous price.') }}
                     </p>
                 </div>
                 <Link
                     :href="shopIndex({ query: { deals: 1 } })"
                     class="inline-flex items-center gap-1 text-sm font-semibold text-deal hover:underline"
-                    >All deals · সব অফার
+                    >{{ $t('All deals') }}
                     <ArrowRight class="size-4" aria-hidden="true"
                 /></Link>
             </div>
@@ -361,18 +375,20 @@ const steps = [
     >
         <div class="flex flex-wrap items-end justify-between gap-2">
             <div>
-                <p class="text-sm font-semibold text-brand">Hand-picked</p>
+                <p class="text-sm font-semibold text-brand">
+                    {{ $t('Hand-picked') }}
+                </p>
                 <h2
                     id="featured-title"
                     class="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
                 >
-                    Featured products · জনপ্রিয় পণ্য
+                    {{ $t('Featured products') }}
                 </h2>
             </div>
             <Link
                 :href="shopIndex()"
                 class="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
-                >View all · সব দেখুন
+                >{{ $t('View all') }}
                 <ArrowRight class="size-4" aria-hidden="true"
             /></Link>
         </div>
@@ -393,7 +409,7 @@ const steps = [
             id="brands-title"
             class="text-center text-sm font-semibold tracking-wider text-muted-foreground uppercase"
         >
-            Shop by brand · ব্র্যান্ড
+            {{ $t('Shop by brand') }}
         </h2>
         <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <li v-for="brand in brands" :key="brand.slug">
@@ -414,9 +430,9 @@ const steps = [
                         class="text-lg font-bold tracking-tight text-foreground/70 transition group-hover:text-brand"
                         >{{ brand.name }}</span
                     >
-                    <span class="mt-0.5 text-[11px] text-muted-foreground"
-                        >{{ brand.count }} items</span
-                    >
+                    <span class="mt-0.5 text-[11px] text-muted-foreground">{{
+                        $tc(':count item', ':count items', brand.count)
+                    }}</span>
                 </Link>
             </li>
         </ul>
@@ -430,15 +446,21 @@ const steps = [
         aria-labelledby="packages-title"
     >
         <div class="max-w-2xl">
-            <p class="text-sm font-semibold text-brand">Bundles</p>
+            <p class="text-sm font-semibold text-brand">
+                {{ $t('Bundles') }}
+            </p>
             <h2
                 id="packages-title"
                 class="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
             >
-                Value packages · প্যাকেজ
+                {{ $t('Value packages') }}
             </h2>
             <p class="mt-2 text-muted-foreground">
-                Bundles of our products — choose one and check out in minutes.
+                {{
+                    $t(
+                        'Bundles of our products — choose one and check out in minutes.',
+                    )
+                }}
             </p>
         </div>
         <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -486,7 +508,7 @@ const steps = [
                             <p
                                 class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
                             >
-                                What's inside · ভেতরে যা আছে
+                                {{ $t("What's inside") }}
                             </p>
                             <ul class="mt-2.5 space-y-2 text-sm">
                                 <li
@@ -520,7 +542,7 @@ const steps = [
                                     class="size-4"
                                     aria-hidden="true"
                                 />
-                                Buy now · এখনই কিনুন
+                                {{ $t('Buy now') }}
                             </Link>
                         </div>
                     </div>
@@ -540,7 +562,7 @@ const steps = [
                 id="how-title"
                 class="text-2xl font-semibold tracking-tight sm:text-3xl"
             >
-                How to order · কীভাবে অর্ডার করবেন
+                {{ $t('How to order') }}
             </h2>
             <ol class="mt-8 grid gap-8 md:grid-cols-3">
                 <li
@@ -560,12 +582,12 @@ const steps = [
                         </span>
                         <span
                             class="text-sm font-semibold text-muted-foreground"
-                            >Step {{ i + 1 }}</span
+                            >{{ $t('Step :number', { number: i + 1 }) }}</span
                         >
                     </div>
-                    <h3 class="mt-4 font-semibold">{{ step.title }}</h3>
+                    <h3 class="mt-4 font-semibold">{{ $t(step.title) }}</h3>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        {{ step.text }}
+                        {{ $t(step.text) }}
                     </p>
                 </li>
             </ol>
@@ -588,17 +610,17 @@ const steps = [
             />
             <div>
                 <p class="text-2xl font-semibold tracking-tight">
-                    Ready to start? · শুরু করতে প্রস্তুত?
+                    {{ $t('Ready to start?') }}
                 </p>
                 <p class="mt-1 text-white/80">
-                    Create your account in two minutes.
+                    {{ $t('Create your account in two minutes.') }}
                 </p>
             </div>
             <Link
                 :href="joinUrl()"
                 class="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 font-semibold text-brand shadow-lg shadow-black/10 transition hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand focus-visible:outline-none"
             >
-                Create account · অ্যাকাউন্ট খুলুন
+                {{ $t('Create account') }}
                 <ArrowRight class="size-4" aria-hidden="true" />
             </Link>
         </div>

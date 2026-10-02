@@ -77,8 +77,8 @@ function onTouchEnd(event: TouchEvent) {
 
 const assurances = [
     { icon: ShieldCheck, text: 'Payment confirmed with the gateway' },
-    { icon: BadgeCheck, text: 'Genuine product · আসল পণ্য' },
-    { icon: Languages, text: 'Shop in বাংলা & English' },
+    { icon: BadgeCheck, text: 'Genuine product' },
+    { icon: Languages, text: 'Shop in Bangla & English' },
 ];
 </script>
 
@@ -93,18 +93,21 @@ const assurances = [
     </Head>
 
     <div class="mx-auto max-w-7xl px-4 py-6">
-        <nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
+        <nav
+            :aria-label="$t('Breadcrumb')"
+            class="text-sm text-muted-foreground"
+        >
             <ol class="flex flex-wrap items-center gap-1.5">
                 <li>
-                    <Link :href="home()" class="hover:text-foreground"
-                        >Home</Link
-                    >
+                    <Link :href="home()" class="hover:text-foreground">{{
+                        $t('Home')
+                    }}</Link>
                 </li>
                 <li aria-hidden="true"><ChevronRight class="size-3.5" /></li>
                 <li>
-                    <Link :href="shopIndex()" class="hover:text-foreground"
-                        >Shop</Link
-                    >
+                    <Link :href="shopIndex()" class="hover:text-foreground">{{
+                        $t('Shop')
+                    }}</Link>
                 </li>
                 <template v-if="product.categorySlug && product.category">
                     <li aria-hidden="true">
@@ -135,7 +138,7 @@ const assurances = [
         <div class="mt-6 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
             <!-- Gallery -->
             <section
-                aria-label="Photos"
+                :aria-label="$t('Photos')"
                 class="lg:sticky lg:top-36 lg:self-start"
             >
                 <div
@@ -147,7 +150,13 @@ const assurances = [
                         v-if="shown"
                         :key="shown.id"
                         :src="shown.large"
-                        :alt="`${product.name} — photo ${active + 1} of ${count}`"
+                        :alt="
+                            $t(':name — photo :number of :count', {
+                                name: product.name,
+                                number: active + 1,
+                                count,
+                            })
+                        "
                         class="aspect-square w-full animate-in object-contain duration-300 fade-in sm:aspect-4/3"
                     />
                     <div
@@ -165,7 +174,7 @@ const assurances = [
                         <button
                             type="button"
                             class="absolute top-1/2 left-3 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition hover:bg-white focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-                            aria-label="Previous photo"
+                            :aria-label="$t('Previous photo')"
                             @click="go(-1)"
                         >
                             <ChevronLeft class="size-5" aria-hidden="true" />
@@ -173,7 +182,7 @@ const assurances = [
                         <button
                             type="button"
                             class="absolute top-1/2 right-3 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-md transition hover:bg-white focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-                            aria-label="Next photo"
+                            :aria-label="$t('Next photo')"
                             @click="go(1)"
                         >
                             <ChevronRight class="size-5" aria-hidden="true" />
@@ -187,7 +196,7 @@ const assurances = [
                 <ul
                     v-if="count > 1"
                     class="mt-3 flex gap-3 overflow-x-auto pb-1"
-                    aria-label="Choose a photo"
+                    :aria-label="$t('Choose a photo')"
                 >
                     <li
                         v-for="(image, i) in product.gallery"
@@ -202,7 +211,7 @@ const assurances = [
                                     ? 'ring-brand'
                                     : 'opacity-70 ring-transparent hover:opacity-100'
                             "
-                            :aria-label="`Photo ${i + 1}`"
+                            :aria-label="$t('Photo :number', { number: i + 1 })"
                             :aria-pressed="i === active"
                             @click="active = i"
                         >
@@ -243,7 +252,7 @@ const assurances = [
                     {{ product.name }}
                 </h1>
                 <p class="mt-2 text-sm text-muted-foreground">
-                    SKU {{ product.sku }}
+                    {{ $t('SKU :sku', { sku: product.sku }) }}
                     <template v-if="product.category">
                         · {{ product.category }}</template
                     >
@@ -264,7 +273,11 @@ const assurances = [
                         >
                         <span
                             class="rounded-full bg-deal/10 px-2.5 py-1 text-sm font-semibold text-deal"
-                            >Save {{ product.discount }}%</span
+                            >{{
+                                $t('Save :percent%', {
+                                    percent: product.discount ?? 0,
+                                })
+                            }}</span
                         >
                     </template>
                 </div>
@@ -299,16 +312,21 @@ const assurances = [
                         </span>
                         <div>
                             <h2 id="buy-title" class="font-semibold">
-                                Get it in a package · প্যাকেজে কিনুন
+                                {{ $t('Get it in a package') }}
                             </h2>
                             <p
                                 v-if="packages.length"
                                 class="text-sm text-muted-foreground"
                             >
-                                This product comes in the package{{
-                                    packages.length > 1 ? 's' : ''
+                                {{
+                                    packages.length > 1
+                                        ? $t(
+                                              'This product comes in the packages below.',
+                                          )
+                                        : $t(
+                                              'This product comes in the package below.',
+                                          )
                                 }}
-                                below.
                             </p>
                         </div>
                     </div>
@@ -321,14 +339,21 @@ const assurances = [
                         >
                             <div>
                                 <p class="font-semibold">
-                                    {{ pkg.name }} package
+                                    {{
+                                        $t(':name package', { name: pkg.name })
+                                    }}
                                 </p>
                                 <p class="text-sm text-muted-foreground">
                                     <span
                                         class="font-semibold text-foreground tabular-nums"
                                         >{{ pkg.price }}</span
                                     ><template v-if="pkg.quantity > 1">
-                                        · includes {{ pkg.quantity }}</template
+                                        ·
+                                        {{
+                                            $t('includes :count', {
+                                                count: pkg.quantity,
+                                            })
+                                        }}</template
                                     >
                                 </p>
                             </div>
@@ -341,12 +366,12 @@ const assurances = [
                                     class="size-4"
                                     aria-hidden="true"
                                 />
-                                Buy · কিনুন
+                                {{ $t('Buy') }}
                             </Link>
                         </li>
                     </ul>
                     <p v-else class="px-5 py-4 text-sm text-muted-foreground">
-                        Coming soon in a package · শীঘ্রই প্যাকেজে পাওয়া যাবে
+                        {{ $t('Coming soon in a package') }}
                     </p>
                 </section>
 
@@ -362,7 +387,7 @@ const assurances = [
                             aria-hidden="true"
                         />
                         <span class="text-muted-foreground">{{
-                            item.text
+                            $t(item.text)
                         }}</span>
                     </li>
                 </ul>
@@ -376,7 +401,7 @@ const assurances = [
             aria-labelledby="about-title"
         >
             <h2 id="about-title" class="text-xl font-semibold tracking-tight">
-                About this product · পণ্যের বিবরণ
+                {{ $t('About this product') }}
             </h2>
             <!-- Sanitized on the server (App\Support\RichText). -->
             <div
@@ -397,7 +422,7 @@ const assurances = [
                     id="related-title"
                     class="text-xl font-semibold tracking-tight sm:text-2xl"
                 >
-                    You may also like · আরও দেখুন
+                    {{ $t('You may also like') }}
                 </h2>
                 <Link
                     v-if="product.categorySlug"
@@ -405,7 +430,11 @@ const assurances = [
                         shopIndex({ query: { category: product.categorySlug } })
                     "
                     class="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
-                    >More in {{ product.category }}
+                    >{{
+                        $t('More in :category', {
+                            category: product.category ?? '',
+                        })
+                    }}
                     <ChevronRight class="size-4" aria-hidden="true"
                 /></Link>
             </div>

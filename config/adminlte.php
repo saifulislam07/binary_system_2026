@@ -864,6 +864,7 @@ return [
                 ['text' => 'Business rules', 'route' => 'admin.settings.index', 'icon' => 'bi bi-sliders', 'can' => 'manage-settings'],
                 ['text' => 'Packages', 'route' => 'admin.packages.index', 'icon' => 'bi bi-box-seam', 'can' => 'manage-settings'],
                 ['text' => 'Ranks & bonuses', 'route' => 'admin.ranks.index', 'icon' => 'bi bi-trophy', 'can' => 'manage-settings'],
+                ['text' => 'Membership page', 'route' => 'admin.membership.index', 'icon' => 'bi bi-file-earmark-richtext', 'can' => 'manage-settings'],
                 ['text' => 'Admins & roles', 'route' => 'admin.admins.index', 'icon' => 'bi bi-shield-lock', 'can' => 'manage-admins'],
             ],
         ],

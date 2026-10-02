@@ -10,6 +10,7 @@ import {
     Wallet,
 } from '@lucide/vue';
 import type { Component } from 'vue';
+import { currentLocale } from '@/lib/i18n';
 
 export type AppNotification = {
     id: string;
@@ -36,8 +37,6 @@ export function notificationIcon(kind: string): Component {
     return icons[kind] ?? Bell;
 }
 
-const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-
 const steps: [Intl.RelativeTimeFormatUnit, number][] = [
     ['second', 60],
     ['minute', 60],
@@ -54,6 +53,9 @@ export function timeAgo(iso: string | null): string {
         return '';
     }
 
+    const relative = new Intl.RelativeTimeFormat(currentLocale(), {
+        numeric: 'auto',
+    });
     let value = (new Date(iso).getTime() - Date.now()) / 1000;
 
     for (const [unit, size] of steps) {

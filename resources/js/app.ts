@@ -5,6 +5,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import ShopLayout from '@/layouts/ShopLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
+import { t, tc } from '@/lib/i18n';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Binary Business';
 
@@ -26,6 +27,9 @@ void createInertiaApp({
         }
     },
     withApp: (app) => {
+        // Translation helpers for templates ($t, $tc); see lib/i18n.ts.
+        app.config.globalProperties.$t = t;
+        app.config.globalProperties.$tc = tc;
         app.directive('focus', {
             mounted: (el: HTMLElement, shouldFocus) => {
                 if (shouldFocus.value !== false) {

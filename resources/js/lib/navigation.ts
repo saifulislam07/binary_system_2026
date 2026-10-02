@@ -18,18 +18,21 @@ import { index as wallet } from '@/routes/wallet';
 import { index as withdrawals } from '@/routes/withdrawals';
 import type { NavItem } from '@/types';
 
-/** The member app's main menu (sidebar and header layouts share it). */
+/**
+ * The member app's main menu (sidebar and header layouts share it). Titles
+ * are translation keys; the menus render them with $t().
+ */
 export const memberNavItems: NavItem[] = [
-    { title: 'Dashboard · ড্যাশবোর্ড', href: dashboard().url, icon: LayoutGrid },
-    { title: 'Income · আয়', href: income().url, icon: ChartColumn },
-    { title: 'Team · দল', href: team().url, icon: Network },
-    { title: 'Wallet · ওয়ালেট', href: wallet().url, icon: Wallet },
+    { title: 'Dashboard', href: dashboard().url, icon: LayoutGrid },
+    { title: 'Income', href: income().url, icon: ChartColumn },
+    { title: 'Team', href: team().url, icon: Network },
+    { title: 'Wallet', href: wallet().url, icon: Wallet },
     {
-        title: 'Withdrawals · উত্তোলন',
+        title: 'Withdrawals',
         href: withdrawals().url,
         icon: ArrowDownToLine,
     },
-    { title: 'Referral link · রেফারেল', href: referral().url, icon: Share2 },
-    { title: 'Profile & KYC · প্রোফাইল', href: kyc().url, icon: BadgeCheck },
-    { title: 'Packages · প্যাকেজ', href: checkout().url, icon: Package },
+    { title: 'Referral link', href: referral().url, icon: Share2 },
+    { title: 'Profile & KYC', href: kyc().url, icon: BadgeCheck },
+    { title: 'Packages', href: checkout().url, icon: Package },
 ];

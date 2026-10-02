@@ -337,9 +337,18 @@ commission:run {date}`), one transaction per member, idempotent per
           details, opening hours, ratings or delivery promises.
         - **Product-first, not hidden:** the owner wants the shop front to
           read as a normal store, so it carries no team/BV/sponsor/commission
-          talk. The full rules live on `/membership` (`MembershipController`,
-          live rates from `commission_rules`/`settings`), linked from the shop
-          footer. Registration shows the earnings disclaimer plus that link
+          talk. The full rules live on `/membership`, linked from the shop
+          footer. Everything there is live:
+            - **Text:** admin-written `membership_sections` (English +
+              optional Bangla, sanitized rich text), edited under Settings →
+              Membership page via `MembershipPageService`.
+              `ReferenceDataSeeder` adds starter sections only when there
+              are none.
+            - **Numbers:** packages (price, BV, referral bonus), rates, caps
+              and over-cap behaviour, the rank ladder and active bonus rules,
+              all read from their tables (`MembershipController`).
+            - **Never state a rule the code doesn't enforce** (e.g.
+              withdrawals do not check KYC). Registration shows the earnings disclaimer plus that link
           above the submit button. Never remove those disclosures: nobody
           may pay to join without seeing that membership is sponsor-based and
           income isn't guaranteed.
@@ -350,8 +359,33 @@ commission:run {date}`), one transaction per member, idempotent per
       `public/favicon.svg` and `public/images/logo.svg` (admin logo and
       preloader). The PNG/ICO icons were rendered from the same shape with
       GD. Brand blue is `#2a78d6`.
-    - **Member menu:** defined once in `resources/js/lib/navigation.ts`.
-      Every member-facing label is "English · বাংলা".
+    - **Member menu:** defined once in `resources/js/lib/navigation.ts`;
+      titles are translation keys rendered with `$t()`.
+- **Languages (বাংলা / English):** the member-facing site (shop, sign-in,
+  member app) shows one language at a time; the admin panel stays
+  English.
+    - **Choosing:** `SetLocale` picks the session choice, then
+      `users.locale`, then `business.default_locale` (`MEMBER_LOCALE`,
+      default `bn`; tests run with `en`). The switcher
+      (`LanguageSwitcher.vue`, in the shop bar, auth pages, member header and
+      Settings → Appearance) posts to `locale.update`, which also saves it on
+      the member's account.
+    - **Writing text:** never hardcode UI text or write "English · বাংলা"
+      labels again. The English text is the key: `$t('…')` / `$tc()` in
+      templates, `t()` from `lib/i18n.ts` in scripts, `__()` in PHP. Every key
+      needs a Bangla entry in `lang/bn.json`. Runtime keys (statuses, ranks,
+      enum values passed to `$t()`) go in `lang/dynamic-keys.json`.
+      `Unit\TranslationCoverageTest` (and `node
+      scripts/missing-translations.mjs`) fails on any missing key or
+      placeholder mismatch.
+    - **Server side:** validation/auth/password messages live in
+      `lang/bn/*.php`. Notifications use `__()` and are rendered in the
+      member's language (`User::preferredLocale()`). Dates for member pages
+      use `translatedFormat()`. Category names come from `name`/`name_bn`
+      (`Category::localName()`, `localName()` in `lib/shop.ts`).
+    - **Stored data stays as written:** wallet/income descriptions,
+      announcements, product and package names. Notifications stored before
+      the switch are "English · বাংলা"; `pickLanguage()` shows the right half.
     - **Error pages:** `resources/views/errors/*` are bilingual and
       self-contained (inline CSS, no Vite, no DB) so they render even when
       the app can't.

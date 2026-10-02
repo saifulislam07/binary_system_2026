@@ -13,6 +13,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.ts',
                 'resources/js/admin/product-form.ts',
+                'resources/js/admin/rich-text.ts',
             ],
             refresh: true,
             fonts: [

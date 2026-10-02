@@ -22,7 +22,7 @@ class OrderController extends Controller
                 'status' => $order->status->value,
                 'amount' => Money::format($order->amount),
                 'package' => $order->package->name,
-                'paidAt' => $order->paid_at?->toDayDateTimeString(),
+                'paidAt' => $order->paid_at?->translatedFormat('D, d M Y, h:i A'),
                 'memberCode' => $order->member->member_code,
                 'memberStatus' => $order->member->status->value,
             ],

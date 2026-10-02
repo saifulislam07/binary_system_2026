@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureActiveMember;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\ThrottleAuthEndpoints;
 use App\Http\Middleware\UseAdminGuard;
 use Illuminate\Foundation\Application;
@@ -39,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias(['member.active' => EnsureActiveMember::class]);
 
         $middleware->web(append: [
+            SetLocale::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -73,7 +75,7 @@ return Application::configure(basePath: dirname(__DIR__))
             $status = $response->getStatusCode();
 
             if ($status === 419) {
-                Inertia::flash('toast', ['type' => 'error', 'message' => 'The page expired — please try again. · পাতার মেয়াদ শেষ, আবার চেষ্টা করুন।']);
+                Inertia::flash('toast', ['type' => 'error', 'message' => __('The page expired — please try again.')]);
 
                 return back();
             }
@@ -87,8 +89,8 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             Inertia::flash('toast', ['type' => 'error', 'message' => $status === 429
-                ? 'Too many attempts — wait a minute. · অনেকবার চেষ্টা হয়েছে, এক মিনিট অপেক্ষা করুন।'
-                : 'That didn’t work. Please try again. · কাজটি হয়নি, আবার চেষ্টা করুন।']);
+                ? __('Too many attempts — wait a minute.')
+                : __('That didn’t work. Please try again.')]);
 
             return back();
         });

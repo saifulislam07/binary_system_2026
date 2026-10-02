@@ -22,15 +22,16 @@ class OrderCompleted extends MemberNotification
 
     public function title(): string
     {
-        return 'Purchase complete · ক্রয় সম্পন্ন';
+        return __('Purchase complete');
     }
 
     public function message(object $notifiable): string
     {
-        $package = $this->sale->package()->value('name') ?? 'package';
-
-        return 'We received '.Money::format($this->sale->amount)." for the {$package} package. "
-            .'It adds '.Money::format($this->sale->bv_value, symbol: false).' BV to your upline’s team volume.';
+        return __('We received :amount for the :package package. It adds :bv BV to your upline’s team volume.', [
+            'amount' => Money::format($this->sale->amount),
+            'package' => $this->sale->package()->value('name') ?? '',
+            'bv' => Money::format($this->sale->bv_value, symbol: false),
+        ]);
     }
 
     public function path(): ?string

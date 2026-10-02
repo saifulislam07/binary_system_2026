@@ -71,7 +71,7 @@ class MemberOverviewService
             $to = $weekly ? $from->copy()->addDays(6) : $from->copy();
 
             $periods[] = [
-                'label' => $weekly ? 'Wk '.$from->format('j M') : $from->format('j M'),
+                'label' => $weekly ? __('Wk :date', ['date' => $from->translatedFormat('j M')]) : $from->translatedFormat('j M'),
                 'from' => $from->toDateString(),
                 'to' => $to->toDateString(),
                 'amount' => 0,

@@ -17,9 +17,9 @@ enum PaymentGateway: string
     {
         return match ($this) {
             self::Bkash => 'bKash',
-            self::Sslcommerz => 'Card / Internet banking (SSLCommerz)',
+            self::Sslcommerz => __('Card / Internet banking (SSLCommerz)'),
             self::Nagad => 'Nagad',
-            self::Simulator => 'Payment simulator (dev only)',
+            self::Simulator => __('Payment simulator (dev only)'),
         };
     }
 }

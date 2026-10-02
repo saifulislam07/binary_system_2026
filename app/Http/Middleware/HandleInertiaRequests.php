@@ -42,6 +42,9 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            // Member-facing language (see SetLocale); the Vue t() helper reads it.
+            'locale' => app()->getLocale(),
+            'locales' => config('business.locales'),
             'auth' => [
                 'user' => $user,
             ],

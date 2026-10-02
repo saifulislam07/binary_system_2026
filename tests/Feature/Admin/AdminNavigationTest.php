@@ -34,6 +34,7 @@ class AdminNavigationTest extends TestCase
         'admin.announcements.index' => 'send-announcements',
         'admin.packages.index' => 'manage-settings',
         'admin.ranks.index' => 'manage-settings',
+        'admin.membership.index' => 'manage-settings',
         'admin.admins.index' => 'manage-admins',
         'admin.products.index' => 'manage-catalog',
         'admin.categories.index' => 'manage-catalog',
