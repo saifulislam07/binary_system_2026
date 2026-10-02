@@ -10,7 +10,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
         <h1 class="m-0">Binary Tree</h1>
         <form method="GET" class="d-flex gap-2" role="search">
-            <input name="member" value="{{ $searched }}" class="form-control form-control-sm" placeholder="Member code, e.g. MBR-100004" aria-label="Member code">
+            <input name="member" value="{{ $searched }}" class="form-control form-control-sm" placeholder="Code, name, email or phone" aria-label="Find a member by code, name, email or phone">
             <button class="btn btn-primary btn-sm text-nowrap">Show subtree</button>
             @if ($searched !== '')
                 <a href="{{ route('admin.tree.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">Top</a>
@@ -22,10 +22,42 @@
 @section('content')
     @include('admin.partials.flash')
 
-    @if ($root === null)
+    @if ($matches->isNotEmpty())
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    {{ $matches->count() >= $matchLimit ? "First {$matchLimit}" : $matches->count() }} members match <strong>{{ $searched }}</strong> — pick one
+                </h3>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($matches as $match)
+                            <tr>
+                                <td class="font-monospace">{{ $match->member_code }}</td>
+                                <td>{{ $match->user?->name }}</td>
+                                <td>@include('admin.partials.status-badge', ['status' => $match->status->value])</td>
+                                <td class="text-end">
+                                    <a href="{{ route('admin.tree.index', ['member' => $match->member_code]) }}" class="btn btn-outline-primary btn-sm">Show subtree</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @elseif ($root === null)
         <div class="callout callout-warning">
             @if ($searched !== '')
-                No placed member with code <strong>{{ $searched }}</strong>.
+                No member in the tree matches <strong>{{ $searched }}</strong>. Pending members appear here once they're activated.
             @else
                 The tree is empty.
             @endif

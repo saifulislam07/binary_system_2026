@@ -10,7 +10,9 @@ use App\Models\Member;
 use App\Models\TeamVolume;
 use App\Services\PlacementAdjustmentService;
 use App\Services\TeamService;
+use App\Support\PhoneNumber;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,20 +20,30 @@ use Illuminate\Validation\Rule;
 
 class TreeController extends Controller
 {
+    /** Most matches listed when a search is ambiguous. */
+    private const MATCH_LIMIT = 20;
+
     /**
-     * Tree browser. Starts at ?member=CODE, or at the top of the tree.
+     * Tree browser. Starts at the member found by ?member= (code, name, email
+     * or phone), or at the top of the tree. Several matches → a pick list.
      */
     public function index(Request $request): View
     {
-        $code = strtoupper(trim((string) $request->query('member', '')));
+        $search = trim((string) $request->query('member', ''));
+        $matches = new Collection;
 
-        $root = $code !== ''
-            ? Member::query()->with('user:id,name')->where('member_code', $code)->whereHas('binaryNode')->first()
-            : Member::query()->with('user:id,name')->whereNull('placement_parent_id')->whereHas('binaryNode')->first();
+        if ($search === '') {
+            $root = Member::query()->with('user:id,name')->whereNull('placement_parent_id')->whereHas('binaryNode')->first();
+        } else {
+            $matches = $this->placedMatching($search);
+            $root = $matches->count() === 1 ? $matches->first() : null;
+        }
 
         return view('admin.tree.index', [
             'root' => $root,
-            'searched' => $code,
+            'searched' => $search,
+            'matches' => $root === null ? $matches : new Collection,
+            'matchLimit' => self::MATCH_LIMIT,
             'history' => $root === null ? collect() : TeamVolume::query()
                 ->with('cycle:id,cycle_date')
                 ->where('member_id', $root->id)
@@ -39,6 +51,41 @@ class TreeController extends Controller
                 ->limit(15)
                 ->get(),
         ]);
+    }
+
+    /**
+     * Members in the tree matching a search. A full code — "MBR-100004",
+     * "mbr100004" or just "100004" — wins outright; otherwise a partial
+     * code, name, email or phone.
+     *
+     * @return Collection<int, Member>
+     */
+    private function placedMatching(string $search): Collection
+    {
+        $placed = fn () => Member::query()->with('user:id,name')->whereHas('binaryNode');
+
+        if (preg_match('/^(?:MBR)?[\s-]*(\d+)$/i', $search, $digits) === 1) {
+            $exact = $placed()->where('member_code', 'MBR-'.$digits[1])->first();
+
+            if ($exact !== null) {
+                return new Collection([$exact]);
+            }
+        }
+
+        $like = '%'.addcslashes($search, '%_\\').'%';
+        $phone = PhoneNumber::normalize($search);
+
+        return $placed()
+            ->where(fn ($query) => $query
+                ->where('member_code', 'like', $like)
+                ->orWhereHas('user', fn ($user) => $user
+                    ->where('name', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('phone', 'like', $like)
+                    ->when(PhoneNumber::isValid($phone), fn ($q) => $q->orWhere('phone', $phone))))
+            ->orderBy('member_code')
+            ->limit(self::MATCH_LIMIT)
+            ->get();
     }
 
     /**

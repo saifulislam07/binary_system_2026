@@ -155,4 +155,38 @@ class PlacementAdjustmentTest extends TestCase
             ->assertJsonPath('children.left.code', $this->a->member_code)
             ->assertJsonPath('children.left.children.left.code', $this->c->member_code);
     }
+
+    public function test_tree_search_finds_members_by_code_variants_name_and_phone()
+    {
+        $this->a->user->forceFill(['name' => 'Rahima Unique Begum', 'phone' => '+8801712345678'])->save();
+        $digits = substr($this->c->member_code, 4);
+
+        foreach ([$this->c->member_code, strtolower($this->c->member_code), $digits, 'MBR'.$digits] as $search) {
+            $this->actingAs($this->admin, 'admin')
+                ->get(route('admin.tree.index', ['member' => $search]))
+                ->assertOk()
+                ->assertSee('Subtree of')
+                ->assertSee('data-root="'.$this->c->member_code.'"', false);
+        }
+
+        foreach (['Unique Begum', '01712-345678'] as $search) {
+            $this->actingAs($this->admin, 'admin')
+                ->get(route('admin.tree.index', ['member' => $search]))
+                ->assertOk()
+                ->assertSee('data-root="'.$this->a->member_code.'"', false);
+        }
+
+        // Several matches → a pick list instead of a tree.
+        $this->actingAs($this->admin, 'admin')
+            ->get(route('admin.tree.index', ['member' => 'MBR-']))
+            ->assertOk()
+            ->assertSee('pick one')
+            ->assertSee($this->d->member_code)
+            ->assertDontSee('Subtree of');
+
+        $this->actingAs($this->admin, 'admin')
+            ->get(route('admin.tree.index', ['member' => 'nobody-like-this']))
+            ->assertOk()
+            ->assertSee('No member in the tree matches');
+    }
 }
