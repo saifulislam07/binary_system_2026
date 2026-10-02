@@ -25,7 +25,7 @@
 @section('content')
     <h2 class="section-label mt-0">Members</h2>
     <div class="row">
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="members_total">
                 <span class="info-box-icon text-bg-primary shadow-sm"><i class="bi bi-people-fill"></i></span>
                 <div class="info-box-content">
@@ -34,7 +34,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="members_active">
                 <span class="info-box-icon text-bg-success shadow-sm"><i class="bi bi-person-check-fill"></i></span>
                 <div class="info-box-content">
@@ -43,7 +43,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="members_new">
                 <span class="info-box-icon text-bg-info shadow-sm"><i class="bi bi-person-plus-fill"></i></span>
                 <div class="info-box-content">
@@ -52,7 +52,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="members_pending">
                 <span class="info-box-icon text-bg-warning shadow-sm"><i class="bi bi-hourglass-split"></i></span>
                 <div class="info-box-content">
@@ -65,7 +65,7 @@
 
     <h2 class="section-label">Sales &amp; payouts</h2>
     <div class="row">
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="sales_amount">
                 <span class="info-box-icon text-bg-primary shadow-sm"><i class="bi bi-bag-check-fill"></i></span>
                 <div class="info-box-content">
@@ -75,7 +75,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="sales_today">
                 <span class="info-box-icon text-bg-info shadow-sm"><i class="bi bi-calendar-day"></i></span>
                 <div class="info-box-content">
@@ -85,7 +85,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="commission_paid">
                 <span class="info-box-icon text-bg-secondary shadow-sm"><i class="bi bi-diagram-3-fill"></i></span>
                 <div class="info-box-content">
@@ -94,7 +94,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="info-box" data-metric="withdrawals_open">
                 <span class="info-box-icon text-bg-warning shadow-sm"><i class="bi bi-box-arrow-up-right"></i></span>
                 <div class="info-box-content">

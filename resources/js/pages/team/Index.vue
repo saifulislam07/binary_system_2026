@@ -86,7 +86,7 @@ async function showFrom(code: string | null) {
             selected.value = data;
             findCode.value = '';
             await nextTick();
-            center();
+            openView();
         }
     } finally {
         finding.value = false;
@@ -108,7 +108,7 @@ async function back() {
         root.value = previous;
         selected.value = null;
         await nextTick();
-        center();
+        openView();
     }
 }
 
@@ -117,7 +117,7 @@ async function backToMe() {
     root.value = props.tree;
     selected.value = null;
     await nextTick();
-    center();
+    openView();
 }
 
 /* ---------- Pan & zoom ---------- */
@@ -172,6 +172,21 @@ function center() {
     }
 }
 
+/**
+ * Starting view: full size where the tree fits across, zoomed out (down to
+ * 45%) on narrow screens so both legs show.
+ */
+function openView() {
+    const box = viewport.value?.getBoundingClientRect();
+    const width = canvas.value?.offsetWidth ?? 0;
+
+    if (box && width) {
+        scale.value = Math.min(1, Math.max(0.45, (box.width - 24) / width));
+    }
+
+    center();
+}
+
 function fit() {
     const box = viewport.value?.getBoundingClientRect();
     const width = canvas.value?.offsetWidth ?? 0;
@@ -188,13 +203,39 @@ function fit() {
     y.value = Math.max(16, (box.height - height * scale.value) / 2);
 }
 
+// Panning may start on a card too (on phones they cover most of the
+// canvas): it only becomes a drag after a few pixels, and then the tap
+// that would follow is swallowed. Two fingers pinch to zoom.
+const pointers = new Map<number, { x: number; y: number }>();
+let pinch: { distance: number; scale: number } | null = null;
+let dragged = false;
+
+function pinchState() {
+    const [a, b] = [...pointers.values()];
+    const box = viewport.value!.getBoundingClientRect();
+
+    return {
+        distance: Math.hypot(a.x - b.x, a.y - b.y),
+        midX: (a.x + b.x) / 2 - box.left,
+        midY: (a.y + b.y) / 2 - box.top,
+    };
+}
+
 function onPointerDown(event: PointerEvent) {
-    if (
-        (event.target as HTMLElement).closest('button, a, input, [data-panel]')
-    ) {
+    if ((event.target as HTMLElement).closest('input, [data-panel]')) {
         return;
     }
 
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (pointers.size === 2) {
+        pinch = { distance: pinchState().distance, scale: scale.value };
+        drag = null;
+
+        return;
+    }
+
+    dragged = false;
     drag = {
         id: event.pointerId,
         startX: event.clientX,
@@ -202,23 +243,66 @@ function onPointerDown(event: PointerEvent) {
         x: x.value,
         y: y.value,
     };
-    panning.value = true;
-    viewport.value?.setPointerCapture(event.pointerId);
 }
 
 function onPointerMove(event: PointerEvent) {
+    if (!pointers.has(event.pointerId)) {
+        return;
+    }
+
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (pinch && pointers.size === 2) {
+        const now = pinchState();
+        zoomTo(
+            pinch.scale * (now.distance / pinch.distance),
+            now.midX,
+            now.midY,
+        );
+        dragged = true;
+
+        return;
+    }
+
     if (!drag || drag.id !== event.pointerId) {
         return;
     }
 
-    x.value = drag.x + event.clientX - drag.startX;
-    y.value = drag.y + event.clientY - drag.startY;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+
+    if (!dragged && Math.hypot(dx, dy) < 6) {
+        return;
+    }
+
+    if (!dragged) {
+        dragged = true;
+        panning.value = true;
+        viewport.value?.setPointerCapture(event.pointerId);
+    }
+
+    x.value = drag.x + dx;
+    y.value = drag.y + dy;
 }
 
 function onPointerUp(event: PointerEvent) {
-    if (drag?.id === event.pointerId) {
+    pointers.delete(event.pointerId);
+
+    if (pointers.size < 2) {
+        pinch = null;
+    }
+
+    if (drag?.id === event.pointerId || pointers.size === 0) {
         drag = null;
         panning.value = false;
+    }
+}
+
+function swallowClickAfterDrag(event: MouseEvent) {
+    if (dragged) {
+        event.stopPropagation();
+        event.preventDefault();
+        dragged = false;
     }
 }
 
@@ -269,7 +353,7 @@ function fullscreen() {
     }
 }
 
-onMounted(center);
+onMounted(openView);
 
 /* ---------- Summary ---------- */
 
@@ -505,6 +589,7 @@ const legend = [
                 tabindex="0"
                 aria-label="Tree canvas. Drag or use the arrow keys to move, plus and minus to zoom."
                 @pointerdown="onPointerDown"
+                @click.capture="swallowClickAfterDrag"
                 @pointermove="onPointerMove"
                 @pointerup="onPointerUp"
                 @pointercancel="onPointerUp"
@@ -636,9 +721,12 @@ const legend = [
                         Vacant · খালি
                     </li>
                 </ul>
-                <p>
+                <p class="hidden sm:block">
                     Drag to move · Ctrl + scroll to zoom · click a member for
                     details, + to open their team
+                </p>
+                <p class="sm:hidden">
+                    Drag to move · pinch to zoom · tap a member for details
                 </p>
             </div>
         </section>

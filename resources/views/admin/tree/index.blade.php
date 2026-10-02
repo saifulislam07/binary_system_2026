@@ -61,7 +61,7 @@
                     <span><i style="background: var(--at-red)"></i> Suspended</span>
                     <span><i style="border: 2px dashed var(--at-muted)"></i> Vacant slot</span>
                 </div>
-                <span class="text-body-secondary">Drag to move · Ctrl + scroll to zoom · <i class="bi bi-plus-circle"></i> opens a member's team</span>
+                <span class="text-body-secondary">Drag to move · Ctrl + scroll or pinch to zoom · <i class="bi bi-plus-circle"></i> opens a member's team</span>
             </div>
         </div>
 
@@ -334,21 +334,72 @@
         apply();
     };
 
+    // Starting view: full size where the tree fits across, zoomed out (down
+    // to 45%) on narrow screens so both legs show.
+    const openView = () => {
+        scale = Math.min(1, Math.max(0.45, (viewport.clientWidth - 24) / host.offsetWidth));
+        center();
+    };
+
+    // A drag may start anywhere, cards included; it only counts after a few
+    // pixels, and then the click that would follow is swallowed. Two
+    // fingers pinch to zoom.
+    const pointers = new Map();
+    let pinch = null, dragged = false;
+    const pinchState = () => {
+        const [a, b] = [...pointers.values()];
+        const box = viewport.getBoundingClientRect();
+        return { distance: Math.hypot(a.x - b.x, a.y - b.y), midX: (a.x + b.x) / 2 - box.left, midY: (a.y + b.y) / 2 - box.top };
+    };
+
     viewport.addEventListener('pointerdown', (event) => {
-        if (event.target.closest('button, a')) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size === 2) {
+            pinch = { distance: pinchState().distance, scale };
+            drag = null;
+            return;
+        }
+        dragged = false;
         drag = { id: event.pointerId, sx: event.clientX, sy: event.clientY, x, y };
-        viewport.classList.add('is-panning');
-        viewport.setPointerCapture(event.pointerId);
     });
     viewport.addEventListener('pointermove', (event) => {
+        if (!pointers.has(event.pointerId)) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pinch && pointers.size === 2) {
+            const now = pinchState();
+            zoomTo(pinch.scale * (now.distance / pinch.distance), now.midX, now.midY);
+            dragged = true;
+            return;
+        }
         if (!drag || drag.id !== event.pointerId) return;
-        x = drag.x + event.clientX - drag.sx;
-        y = drag.y + event.clientY - drag.sy;
+        const dx = event.clientX - drag.sx;
+        const dy = event.clientY - drag.sy;
+        if (!dragged && Math.hypot(dx, dy) < 6) return;
+        if (!dragged) {
+            dragged = true;
+            viewport.classList.add('is-panning');
+            viewport.setPointerCapture(event.pointerId);
+        }
+        x = drag.x + dx;
+        y = drag.y + dy;
         apply();
     });
-    const endDrag = () => { drag = null; viewport.classList.remove('is-panning'); };
+    const endDrag = (event) => {
+        pointers.delete(event.pointerId);
+        if (pointers.size < 2) pinch = null;
+        if (drag?.id === event.pointerId || pointers.size === 0) {
+            drag = null;
+            viewport.classList.remove('is-panning');
+        }
+    };
     viewport.addEventListener('pointerup', endDrag);
     viewport.addEventListener('pointercancel', endDrag);
+    viewport.addEventListener('click', (event) => {
+        if (!dragged) return;
+        event.stopPropagation();
+        event.preventDefault();
+        dragged = false;
+    }, true);
 
     // Ctrl/⌘ + wheel zooms at the cursor; a plain wheel still scrolls the page.
     viewport.addEventListener('wheel', (event) => {
@@ -391,7 +442,7 @@
     });
 
     fetchNode(host.dataset.root)
-        .then((data) => { host.replaceChildren(render(data, true)); center(); })
+        .then((data) => { host.replaceChildren(render(data, true)); openView(); })
         .catch(() => { host.textContent = 'Could not load the tree.'; });
 })();
 </script>

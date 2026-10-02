@@ -390,7 +390,9 @@ const assurances = [
             class="mt-16"
             aria-labelledby="related-title"
         >
-            <div class="flex items-end justify-between gap-2">
+            <div
+                class="flex flex-wrap items-end justify-between gap-x-4 gap-y-2"
+            >
                 <h2
                     id="related-title"
                     class="text-xl font-semibold tracking-tight sm:text-2xl"

@@ -458,6 +458,7 @@ a {
 .info-box .info-box-content {
     padding: 0;
     line-height: 1.3;
+    min-width: 0;
 }
 
 .info-box .info-box-text {
@@ -465,6 +466,7 @@ a {
     font-weight: 600;
     color: var(--at-muted);
     text-transform: none;
+    white-space: normal;
 }
 
 .info-box .info-box-number {
@@ -875,6 +877,12 @@ a {
     flex: none;
 }
 
+@media (max-width: 575.98px) {
+    .feature-row .feature-check {
+        display: none;
+    }
+}
+
 /* ---------- Photo uploader ---------- */
 
 .uploader-drop {
@@ -1023,6 +1031,12 @@ a {
 
 .card > .tree-viewport {
     border-radius: 0;
+}
+
+@media (max-width: 575.98px) {
+    .tree-viewport {
+        height: 520px;
+    }
 }
 
 .tree-viewport.is-panning {

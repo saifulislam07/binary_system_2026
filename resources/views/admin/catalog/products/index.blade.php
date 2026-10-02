@@ -54,7 +54,7 @@
     <div class="card">
         <div class="card-body p-0 table-responsive">
             <table class="table mb-0 align-middle">
-                <thead><tr><th>Product</th><th>Category</th><th class="text-end">Price</th><th class="text-end">In packages</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th style="min-width: 13rem">Product</th><th class="d-none d-md-table-cell">Category</th><th class="text-end">Price</th><th class="text-end d-none d-md-table-cell">In packages</th><th class="d-none d-sm-table-cell">Status</th><th></th></tr></thead>
                 <tbody>
                     @forelse ($products as $product)
                         <tr data-product="{{ $product->slug }}">
@@ -71,13 +71,13 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ $product->category->name ?? '—' }}</td>
-                            <td class="text-end tabular-nums">
+                            <td class="d-none d-md-table-cell">{{ $product->category->name ?? '—' }}</td>
+                            <td class="text-end tabular-nums text-nowrap">
                                 {{ $money($product->price) }}
                                 @if ($product->compare_at_price)<div class="small text-body-secondary text-decoration-line-through">{{ $money($product->compare_at_price) }}</div>@endif
                             </td>
-                            <td class="text-end tabular-nums">{{ $product->packages_count }}</td>
-                            <td>
+                            <td class="text-end tabular-nums d-none d-md-table-cell">{{ $product->packages_count }}</td>
+                            <td class="d-none d-sm-table-cell">
                                 @if ($product->is_active)<span class="badge text-bg-success">In shop</span>@else<span class="badge text-bg-secondary">Hidden</span>@endif
                                 @if ($product->is_featured)<span class="badge text-bg-warning">Featured</span>@endif
                             </td>
