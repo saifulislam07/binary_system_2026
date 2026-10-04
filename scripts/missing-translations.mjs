@@ -4,13 +4,19 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
+const root = new URL('..', import.meta.url).pathname.replace(
+    /^\/([A-Z]:)/,
+    '$1',
+);
 const bn = JSON.parse(readFileSync(join(root, 'lang/bn.json'), 'utf8'));
 
 const walk = (dir, exts) =>
     readdirSync(dir).flatMap((name) => {
         const path = join(dir, name);
-        if (statSync(path).isDirectory()) return /ui$|actions$|routes$|wayfinder$/.test(path) ? [] : walk(path, exts);
+        if (statSync(path).isDirectory())
+            return /ui$|actions$|routes$|wayfinder$/.test(path)
+                ? []
+                : walk(path, exts);
         return exts.some((e) => name.endsWith(e)) ? [path] : [];
     });
 
@@ -19,11 +25,15 @@ const files = [
     ...walk(join(root, 'app'), ['.php']),
     ...walk(join(root, 'bootstrap'), ['app.php']),
 ];
-const call = /(?:\$tc?|\btc?|__)\(\s*(['"])((?:\\.|(?!\1).)*)\1(?:\s*,\s*(['"])((?:\\.|(?!\3).)*)\3)?/g;
+const call =
+    /(?:\$tc?|\btc?|__)\(\s*(['"])((?:\\.|(?!\1).)*)\1(?:\s*,\s*(['"])((?:\\.|(?!\3).)*)\3)?/g;
 // Keys held in data and translated where rendered (menus, steps, legends).
-const property = /\b(?:title|label|text|description):\s*(['"])((?:\\.|(?!\1).)+)\1/g;
+const property =
+    /\b(?:title|label|text|description):\s*(['"])((?:\\.|(?!\1).)+)\1/g;
 // Keys built at runtime (statuses, ranks, enum values) — see lang/bn.json.
-const dynamic = JSON.parse(readFileSync(join(root, 'lang/dynamic-keys.json'), 'utf8'));
+const dynamic = JSON.parse(
+    readFileSync(join(root, 'lang/dynamic-keys.json'), 'utf8'),
+);
 const missing = new Map();
 
 for (const key of dynamic) {
@@ -32,8 +42,12 @@ for (const key of dynamic) {
 
 for (const file of files) {
     const text = readFileSync(file, 'utf8');
-    const memberJs = file.includes('resources') && !/[\\/]admin[\\/]/.test(file);
-    const matches = [...text.matchAll(call), ...(memberJs ? text.matchAll(property) : [])];
+    const memberJs =
+        file.includes('resources') && !/[\\/]admin[\\/]/.test(file);
+    const matches = [
+        ...text.matchAll(call),
+        ...(memberJs ? text.matchAll(property) : []),
+    ];
     for (const m of matches) {
         const keys = [m[2]];
         if (m[0].includes('tc(') && m[4] !== undefined) keys.push(m[4]);
@@ -45,7 +59,13 @@ for (const file of files) {
 }
 
 if (process.argv.includes('--json')) {
-    console.log(JSON.stringify(Object.fromEntries([...missing.keys()].map((k) => [k, ''])), null, 4));
+    console.log(
+        JSON.stringify(
+            Object.fromEntries([...missing.keys()].map((k) => [k, ''])),
+            null,
+            4,
+        ),
+    );
 } else {
     for (const [key, file] of missing) console.log(`${file}: ${key}`);
     console.log(`${missing.size} missing`);

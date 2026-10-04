@@ -349,9 +349,9 @@ commission:run {date}`), one transaction per member, idempotent per
               all read from their tables (`MembershipController`).
             - **Never state a rule the code doesn't enforce** (e.g.
               withdrawals do not check KYC). Registration shows the earnings disclaimer plus that link
-          above the submit button. Never remove those disclosures: nobody
-          may pay to join without seeing that membership is sponsor-based and
-          income isn't guaranteed.
+              above the submit button. Never remove those disclosures: nobody
+              may pay to join without seeing that membership is sponsor-based and
+              income isn't guaranteed.
         - **Earnings disclaimer:** keep it (income depends on genuine sales,
           nothing is guaranteed, nothing is paid for recruiting alone), and
           never add income promises.
@@ -375,8 +375,8 @@ commission:run {date}`), one transaction per member, idempotent per
       templates, `t()` from `lib/i18n.ts` in scripts, `__()` in PHP. Every key
       needs a Bangla entry in `lang/bn.json`. Runtime keys (statuses, ranks,
       enum values passed to `$t()`) go in `lang/dynamic-keys.json`.
-      `Unit\TranslationCoverageTest` (and `node
-      scripts/missing-translations.mjs`) fails on any missing key or
+      `Unit\TranslationCoverageTest` (and
+      `node scripts/missing-translations.mjs`) fails on any missing key or
       placeholder mismatch.
     - **Server side:** validation/auth/password messages live in
       `lang/bn/*.php`. Notifications use `__()` and are rendered in the
