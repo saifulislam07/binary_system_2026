@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Withdrawals;
 
+use App\Enums\KycStatus;
 use App\Enums\WalletTransactionStatus;
 use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalMethodType;
 use App\Enums\WithdrawalStatus;
 use App\Exceptions\WithdrawalException;
 use App\Models\Admin;
+use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Setting;
 use App\Models\WalletTransaction;
@@ -43,6 +45,7 @@ class WithdrawalServiceTest extends TestCase
         $this->withdrawals = app(WithdrawalService::class);
         $this->wallets = app(WalletService::class);
         $this->member = Member::factory()->active()->create();
+        KycDocument::factory()->approved()->create(['member_id' => $this->member->id]);
         $this->admin = Admin::factory()->superAdmin()->create();
 
         $this->wallets->credit($this->member, 500_000, WalletTransactionType::ReferralBonus); // ৳5,000
@@ -51,6 +54,31 @@ class WithdrawalServiceTest extends TestCase
     private function requestWithdrawal(int $amount = 200_000): Withdrawal
     {
         return $this->withdrawals->request($this->member, $amount, WithdrawalMethodType::MobileBanking, self::BKASH);
+    }
+
+    public function test_withdrawing_requires_approved_kyc()
+    {
+        $member = Member::factory()->active()->create();
+        $this->wallets->credit($member, 500_000, WalletTransactionType::ReferralBonus);
+
+        foreach ([null, KycStatus::Pending, KycStatus::Rejected] as $status) {
+            if ($status !== null) {
+                KycDocument::factory()->create(['member_id' => $member->id, 'status' => $status]);
+            }
+
+            try {
+                $this->withdrawals->request($member, 200_000, WithdrawalMethodType::MobileBanking, self::BKASH);
+                $this->fail('Withdrawal allowed with KYC '.($status->value ?? 'missing'));
+            } catch (WithdrawalException $e) {
+                $this->assertSame('Verify your identity (KYC) before withdrawing.', $e->getMessage());
+            }
+        }
+
+        $this->assertSame(0, Withdrawal::query()->where('member_id', $member->id)->count());
+        $this->assertSame(500_000, $this->wallets->balance($member), 'nothing held');
+
+        KycDocument::factory()->approved()->create(['member_id' => $member->id]);
+        $this->assertSame(WithdrawalStatus::Pending, $this->withdrawals->request($member, 200_000, WithdrawalMethodType::MobileBanking, self::BKASH)->status);
     }
 
     private function assertBalance(int $expected): void

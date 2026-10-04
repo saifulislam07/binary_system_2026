@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { index as kycIndex } from '@/routes/kyc';
 import { index as withdrawalsIndex, store } from '@/routes/withdrawals';
 
 type SavedMethod = { id: number; label: string; isDefault: boolean };
@@ -29,6 +30,7 @@ type Paginated<T> = {
 
 const props = defineProps<{
     canRequest: boolean;
+    kyc: 'approved' | 'pending' | 'rejected' | 'none';
     balance: string;
     minimum: string;
     providers: Record<string, string>;
@@ -77,7 +79,7 @@ const statusClass: Record<string, string> = {
         </div>
 
         <Form
-            v-if="canRequest"
+            v-if="canRequest && kyc === 'approved'"
             v-bind="store.form()"
             :reset-on-success="['amount']"
             v-slot="{ errors, processing }"
@@ -246,6 +248,41 @@ const statusClass: Record<string, string> = {
                 {{ $t('Request withdrawal') }}
             </Button>
         </Form>
+        <div
+            v-else-if="canRequest"
+            class="grid gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm md:max-w-xl dark:border-amber-900 dark:bg-amber-950/40"
+            data-test="kyc-required"
+        >
+            <p class="font-medium">
+                {{ $t('Verify your identity to withdraw') }}
+            </p>
+            <p v-if="kyc === 'pending'" class="text-muted-foreground">
+                {{
+                    $t(
+                        'Your documents are under review. You can withdraw once they are approved.',
+                    )
+                }}
+            </p>
+            <p v-else-if="kyc === 'rejected'" class="text-muted-foreground">
+                {{
+                    $t(
+                        'Your last KYC submission was not approved. Please submit your documents again.',
+                    )
+                }}
+            </p>
+            <p v-else class="text-muted-foreground">
+                {{
+                    $t(
+                        'Withdrawals are paid only to members whose NID or passport has been verified. It takes a few minutes to submit.',
+                    )
+                }}
+            </p>
+            <div v-if="kyc !== 'pending'">
+                <Button as-child size="sm">
+                    <Link :href="kycIndex()">{{ $t('Go to KYC') }}</Link>
+                </Button>
+            </div>
+        </div>
         <p v-else class="text-sm text-muted-foreground">
             {{ $t('Withdrawals are available once your account is active.') }}
         </p>

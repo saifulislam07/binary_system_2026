@@ -7,6 +7,7 @@ use App\Enums\WithdrawalMethodType;
 use App\Models\Admin;
 use App\Models\Expense;
 use App\Models\IncomeTransaction;
+use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Sale;
 use App\Services\MatchingService;
@@ -47,6 +48,7 @@ class AdminDashboardTest extends TestCase
         Expense::factory()->create(['category' => ExpenseCategory::Salary, 'amount' => 300_000, 'date' => '2026-08-15']);
 
         $root = Member::query()->where('member_code', 'MBR-100001')->firstOrFail();
+        KycDocument::factory()->approved()->create(['member_id' => $root->id]);
         app(WithdrawalService::class)->request($root, 150_000, WithdrawalMethodType::MobileBanking, ['provider' => 'bkash', 'mobile_number' => '+8801712345678']);
 
         $this->admin = Admin::factory()->superAdmin()->create();

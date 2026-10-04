@@ -117,6 +117,13 @@ const fieldClass =
                     >{{ $t(statusText[status]?.label ?? status) }}</span
                 >
             </div>
+            <p class="-mt-2 text-sm text-muted-foreground">
+                {{
+                    $t(
+                        'An approved NID or passport is needed before you can withdraw from your wallet.',
+                    )
+                }}
+            </p>
 
             <Form
                 v-if="canSubmit"

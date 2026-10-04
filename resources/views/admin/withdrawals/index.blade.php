@@ -49,6 +49,11 @@
                             <td class="text-nowrap">{{ $w->created_at?->format('d M Y H:i') }}</td>
                             <td>
                                 <a href="{{ route('admin.members.show', $w->member) }}">{{ $w->member->member_code }}</a>
+                                @if ($w->member->kyc_approved)
+                                    <span class="badge text-bg-success">KYC</span>
+                                @else
+                                    <span class="badge text-bg-warning" title="No approved KYC document">No KYC</span>
+                                @endif
                                 <div class="small text-body-secondary">{{ $w->member->user->name }} · {{ $w->member->user->phone }}</div>
                             </td>
                             <td class="text-end fw-semibold" style="font-variant-numeric: tabular-nums">{{ $money($w->amount) }}</td>

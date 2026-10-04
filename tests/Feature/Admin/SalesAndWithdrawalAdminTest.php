@@ -9,6 +9,7 @@ use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalMethodType;
 use App\Enums\WithdrawalStatus;
 use App\Models\Admin;
+use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Withdrawal;
@@ -43,6 +44,7 @@ class SalesAndWithdrawalAdminTest extends TestCase
         $this->admin = Admin::factory()->superAdmin()->create();
         $this->root = $this->root();
         $this->left = $this->join($this->root, PlacementSide::Left);
+        KycDocument::factory()->approved()->create(['member_id' => $this->left->id]);
         $this->right = $this->join($this->root, PlacementSide::Right);
     }
 

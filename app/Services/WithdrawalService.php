@@ -47,6 +47,10 @@ class WithdrawalService
             throw new WithdrawalException(__('Only active members can withdraw.'));
         }
 
+        if (! $member->hasApprovedKyc()) {
+            throw new WithdrawalException(__('Verify your identity (KYC) before withdrawing.'));
+        }
+
         if ($amount < $this->minimumAmount()) {
             throw new WithdrawalException(__('The minimum withdrawal is :min.', ['min' => Money::format($this->minimumAmount())]));
         }

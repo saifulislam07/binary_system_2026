@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\KycStatus;
 use App\Enums\MemberStatus;
 use App\Enums\WithdrawalMethodType;
 use App\Exceptions\WithdrawalException;
 use App\Http\Requests\WithdrawalRequest;
+use App\Models\Member;
 use App\Models\Withdrawal;
 use App\Models\WithdrawalMethod;
 use App\Services\WalletService;
@@ -26,6 +28,7 @@ class WithdrawalController extends Controller
 
         return Inertia::render('withdrawals/Index', [
             'canRequest' => $member->status === MemberStatus::Active,
+            'kyc' => $this->kycState($member),
             'balance' => Money::format($wallets->balance($member)),
             'minimum' => Money::format($withdrawals->minimumAmount()),
             'providers' => WithdrawalRequest::MOBILE_PROVIDERS,
@@ -84,6 +87,21 @@ class WithdrawalController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Withdrawal requested. The amount is on hold until it is processed.')]);
 
         return to_route('withdrawals.index');
+    }
+
+    /**
+     * Withdrawing needs approved KYC: approved, pending (under review),
+     * rejected (submit again) or none (not submitted yet).
+     */
+    private function kycState(Member $member): string
+    {
+        if ($member->hasApprovedKyc()) {
+            return KycStatus::Approved->value;
+        }
+
+        $latest = $member->kycDocuments()->latest('id')->value('status');
+
+        return $latest instanceof KycStatus ? $latest->value : 'none';
     }
 
     /**

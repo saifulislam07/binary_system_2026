@@ -121,7 +121,7 @@
     "Each is paid once, when you first reach it.": "প্রতিটি একবারই দেওয়া হয়, প্রথমবার পৌঁছালে।",
     "Each package is a bundle of our products.": "প্রতিটি প্যাকেজে আমাদের কয়েকটি পণ্য থাকে।",
     "Each package is a bundle of our products. Its BV is what counts toward team volume.": "প্রতিটি প্যাকেজে আমাদের কয়েকটি পণ্য থাকে। দলীয় ভলিউমে এর BV গণনা হয়।",
-    "Earnings go into your wallet. You can withdraw from :amount to bKash, Nagad or a bank account; an admin reviews every withdrawal before it is paid.": "আয় আপনার ওয়ালেটে জমা হয়। :amount থেকে বিকাশ, নগদ বা ব্যাংক অ্যাকাউন্টে উত্তোলন করতে পারবেন; প্রতিটি উত্তোলন পরিশোধের আগে একজন অ্যাডমিন যাচাই করেন।",
+    "Earnings go into your wallet. Once your identity (NID or passport) is verified, you can withdraw from :amount to bKash, Nagad or a bank account; an admin reviews every withdrawal before it is paid.": "আয় আপনার ওয়ালেটে জমা হয়। পরিচয় (এনআইডি বা পাসপোর্ট) যাচাই হলে :amount থেকে বিকাশ, নগদ বা ব্যাংক অ্যাকাউন্টে উত্তোলন করতে পারবেন; প্রতিটি উত্তোলন পরিশোধের আগে একজন অ্যাডমিন যাচাই করেন।",
     "Email": "ইমেইল",
     "Email address": "ইমেইল ঠিকানা",
     "Enter a valid Bangladeshi mobile number, e.g. 01712345678.": "সঠিক বাংলাদেশি মোবাইল নম্বর দিন, যেমন 01712345678।",
@@ -490,5 +490,12 @@
     "Your withdrawal #:id of :amount was rejected: :reason. The amount is back in your wallet.": "আপনার :amount-এর উত্তোলন #:id প্রত্যাখ্যাত হয়েছে: :reason। টাকাটি আপনার ওয়ালেটে ফেরত এসেছে।",
     "Zoom": "জুম",
     "Zoom in": "বড় করুন",
-    "Zoom out": "ছোট করুন"
+    "Zoom out": "ছোট করুন",
+    "Verify your identity (KYC) before withdrawing.": "উত্তোলনের আগে আপনার পরিচয় (KYC) যাচাই করুন।",
+    "Verify your identity to withdraw": "উত্তোলন করতে পরিচয় যাচাই করুন",
+    "Your documents are under review. You can withdraw once they are approved.": "আপনার কাগজপত্র যাচাই করা হচ্ছে। অনুমোদন হলে উত্তোলন করতে পারবেন।",
+    "Your last KYC submission was not approved. Please submit your documents again.": "আপনার আগের KYC অনুমোদিত হয়নি। অনুগ্রহ করে আবার কাগজপত্র জমা দিন।",
+    "Withdrawals are paid only to members whose NID or passport has been verified. It takes a few minutes to submit.": "শুধু যাদের এনআইডি বা পাসপোর্ট যাচাই হয়েছে তারাই উত্তোলন করতে পারেন। জমা দিতে কয়েক মিনিট লাগে।",
+    "Go to KYC": "KYC-তে যান",
+    "An approved NID or passport is needed before you can withdraw from your wallet.": "ওয়ালেট থেকে উত্তোলনের আগে অনুমোদিত এনআইডি বা পাসপোর্ট প্রয়োজন।"
 }

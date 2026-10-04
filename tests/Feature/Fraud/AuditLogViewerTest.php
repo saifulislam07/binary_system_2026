@@ -5,6 +5,7 @@ namespace Tests\Feature\Fraud;
 use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalMethodType;
 use App\Models\Admin;
+use App\Models\KycDocument;
 use App\Models\Member;
 use App\Services\MemberAdminService;
 use App\Services\WalletService;
@@ -34,6 +35,7 @@ class AuditLogViewerTest extends TestCase
         $this->admin = Admin::factory()->superAdmin()->create(['name' => 'Rahim Admin']);
         $this->other = Admin::factory()->superAdmin()->create(['name' => 'Karim Admin']);
         $this->alice = Member::factory()->active()->create();
+        KycDocument::factory()->approved()->create(['member_id' => $this->alice->id]);
         $this->bob = Member::factory()->active()->create();
 
         $wallets = app(WalletService::class);

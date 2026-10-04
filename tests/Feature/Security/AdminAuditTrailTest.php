@@ -63,6 +63,7 @@ class AdminAuditTrailTest extends TestCase
         $this->admin = Admin::factory()->superAdmin()->create();
         $this->root = $this->root();
         $this->left = $this->join($this->root, PlacementSide::Left);
+        KycDocument::factory()->approved()->create(['member_id' => $this->left->id]);
     }
 
     private function withdrawal(): Withdrawal

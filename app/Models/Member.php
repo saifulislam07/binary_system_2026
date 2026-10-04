@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\KycStatus;
 use App\Enums\MemberStatus;
 use App\Enums\PlacementSide;
 use Carbon\CarbonImmutable;
@@ -179,5 +180,14 @@ class Member extends Model
     public function isActive(): bool
     {
         return $this->status === MemberStatus::Active;
+    }
+
+    /**
+     * Identity verified: an admin approved one of their KYC documents.
+     * Required before withdrawing (WithdrawalService::request()).
+     */
+    public function hasApprovedKyc(): bool
+    {
+        return $this->kycDocuments()->where('status', KycStatus::Approved)->exists();
     }
 }

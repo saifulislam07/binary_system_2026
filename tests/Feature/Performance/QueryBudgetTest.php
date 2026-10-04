@@ -72,6 +72,7 @@ class QueryBudgetTest extends TestCase
 
             if ($i % 4 === 0) {
                 app(WalletService::class)->credit($member, 300_000, WalletTransactionType::ReferralBonus);
+                KycDocument::factory()->approved()->create(['member_id' => $member->id]);
                 app(WithdrawalService::class)->request($member, 100_000, WithdrawalMethodType::MobileBanking, ['provider' => 'bkash', 'mobile_number' => '+8801712345678']);
                 KycDocument::factory()->create(['member_id' => $member->id]);
 

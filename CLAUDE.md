@@ -174,7 +174,10 @@ commission:run {date}`), one transaction per member, idempotent per
 - **Wallet writes are guarded by a test:** `WalletLedgerTest::test_only_wallet_service_writes_to_wallets`
   fails if anything outside `WalletService` creates ledger rows or writes a
   wallet balance. Don't weaken it — route the new code through the service.
-- **Withdrawals (Phase 7):** `WithdrawalService` only. `request()` writes the
+- **Withdrawals (Phase 7):** `WithdrawalService` only. `request()` refuses
+  members without an approved KYC document (`Member::hasApprovedKyc()`;
+  owner's decision, stated on `/membership` and the withdrawal/KYC pages;
+  the admin queue shows a KYC badge), then writes the
   withdrawal + a _pending_ wallet debit (the hold, `withdrawals.wallet_transaction_id`)
   in one transaction. Transitions follow `WithdrawalStatus::allowedTransitions()`
   and require an `Admin` with `manage-withdrawals` (checked in the service).
@@ -364,8 +367,9 @@ commission:run {date}`), one transaction per member, idempotent per
             - **Numbers:** packages (price, BV, referral bonus), rates, caps
               and over-cap behaviour, the rank ladder and active bonus rules,
               all read from their tables (`MembershipController`).
-            - **Never state a rule the code doesn't enforce** (e.g.
-              withdrawals do not check KYC). Registration shows the earnings disclaimer plus that link
+            - **Never state a rule the code doesn't enforce** — and when a
+              rule changes (e.g. KYC before withdrawing), update the page in
+              the same change. Registration shows the earnings disclaimer plus that link
               above the submit button. Never remove those disclosures: nobody
               may pay to join without seeing that membership is sponsor-based and
               income isn't guaranteed.

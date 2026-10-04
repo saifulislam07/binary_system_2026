@@ -6,6 +6,7 @@ use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalMethodType;
 use App\Enums\WithdrawalStatus;
 use App\Models\Admin;
+use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Withdrawal;
 use App\Models\WithdrawalMethod;
@@ -28,6 +29,7 @@ class WithdrawalPageTest extends TestCase
         parent::setUp();
 
         $this->member = Member::factory()->active()->create();
+        KycDocument::factory()->approved()->create(['member_id' => $this->member->id]);
         app(WalletService::class)->credit($this->member, 500_000, WalletTransactionType::BinaryCommission);
     }
 
@@ -47,6 +49,27 @@ class WithdrawalPageTest extends TestCase
                 ->where('withdrawals.data.0.amount', '৳1,500.00')
                 ->where('withdrawals.data.0.account', 'Nagad · 01812***678')
                 ->where('withdrawals.data.0.status', 'pending'));
+    }
+
+    public function test_members_without_approved_kyc_are_sent_to_kyc_and_refused()
+    {
+        $member = Member::factory()->active()->create();
+        app(WalletService::class)->credit($member, 500_000, WalletTransactionType::BinaryCommission);
+        $this->actingAs($member->user);
+
+        $this->get(route('withdrawals.index'))
+            ->assertInertia(fn (Assert $page) => $page->where('canRequest', true)->where('kyc', 'none'));
+
+        KycDocument::factory()->create(['member_id' => $member->id]);
+        $this->get(route('withdrawals.index'))
+            ->assertInertia(fn (Assert $page) => $page->where('kyc', 'pending'));
+
+        $this->post(route('withdrawals.store'), ['amount' => '2000', 'method' => 'mobile_banking', 'provider' => 'bkash', 'mobile_number' => '01712345678'])
+            ->assertSessionHasErrors(['amount' => 'Verify your identity (KYC) before withdrawing.']);
+        $this->assertSame(0, Withdrawal::query()->count());
+
+        $this->actingAs($this->member->user)->get(route('withdrawals.index'))
+            ->assertInertia(fn (Assert $page) => $page->where('kyc', 'approved'));
     }
 
     public function test_member_can_request_to_a_new_mobile_account_and_save_it()
@@ -160,6 +183,7 @@ class WithdrawalPageTest extends TestCase
     public function test_members_only_see_their_own_withdrawals()
     {
         $other = Member::factory()->active()->create();
+        KycDocument::factory()->approved()->create(['member_id' => $other->id]);
         app(WalletService::class)->credit($other, 500_000, WalletTransactionType::Adjustment);
         app(WithdrawalService::class)->request($other, 150_000, WithdrawalMethodType::MobileBanking, ['provider' => 'bkash', 'mobile_number' => '+8801712345678']);
 

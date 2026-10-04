@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\KycStatus;
 use App\Enums\WithdrawalStatus;
 use App\Exceptions\WithdrawalException;
 use App\Http\Controllers\Controller;
@@ -31,7 +32,13 @@ class WithdrawalController extends Controller
             'statuses' => WithdrawalStatus::cases(),
             'counts' => $counts,
             'withdrawals' => Withdrawal::query()
-                ->with(['member:id,member_code,user_id', 'member.user:id,name,phone', 'admin:id,name'])
+                ->with([
+                    // KYC flag: requests made before KYC became required may be unverified.
+                    'member' => fn ($member) => $member->select('id', 'member_code', 'user_id')
+                        ->withExists(['kycDocuments as kyc_approved' => fn ($kyc) => $kyc->where('status', KycStatus::Approved)]),
+                    'member.user:id,name,phone',
+                    'admin:id,name',
+                ])
                 ->where('status', $status)
                 ->oldest('id') // first come, first served
                 ->paginate(25)

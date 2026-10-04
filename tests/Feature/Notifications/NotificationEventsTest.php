@@ -123,6 +123,7 @@ class NotificationEventsTest extends TestCase
     {
         Notification::fake();
         $member = Member::factory()->active()->create();
+        KycDocument::factory()->approved()->create(['member_id' => $member->id]);
         $admin = Admin::factory()->superAdmin()->create();
         app(WalletService::class)->credit($member, 1_000_000, WalletTransactionType::ReferralBonus);
         $withdrawals = app(WithdrawalService::class);

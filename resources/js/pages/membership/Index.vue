@@ -408,7 +408,7 @@ const facts = computed(() => [
             <p class="mt-3 max-w-3xl text-muted-foreground">
                 {{
                     $t(
-                        'Earnings go into your wallet. You can withdraw from :amount to bKash, Nagad or a bank account; an admin reviews every withdrawal before it is paid.',
+                        'Earnings go into your wallet. Once your identity (NID or passport) is verified, you can withdraw from :amount to bKash, Nagad or a bank account; an admin reviews every withdrawal before it is paid.',
                         { amount: rates.minWithdrawal },
                     )
                 }}

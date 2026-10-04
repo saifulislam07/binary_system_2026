@@ -28,4 +28,12 @@ class KycDocumentFactory extends Factory
             'status' => KycStatus::Pending,
         ];
     }
+
+    /**
+     * Reviewed and approved — the member may withdraw.
+     */
+    public function approved(): static
+    {
+        return $this->state(fn () => ['status' => KycStatus::Approved, 'reviewed_at' => now()]);
+    }
 }

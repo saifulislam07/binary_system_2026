@@ -7,6 +7,7 @@ use App\Enums\WalletTransactionType;
 use App\Enums\WithdrawalMethodType;
 use App\Models\Admin;
 use App\Models\FraudFlag;
+use App\Models\KycDocument;
 use App\Models\Member;
 use App\Models\Withdrawal;
 use App\Services\FraudScanService;
@@ -39,6 +40,8 @@ class SuspiciousWithdrawalTest extends TestCase
 
     private function withdraw(Member $member, int $amount): Withdrawal
     {
+        KycDocument::factory()->approved()->create(['member_id' => $member->id]);
+
         return app(WithdrawalService::class)->request($member, $amount, WithdrawalMethodType::MobileBanking, self::BKASH);
     }
 
