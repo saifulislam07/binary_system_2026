@@ -9,6 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 /**
  * Base for everything sent to a member (App\Models\User). Always stored for
@@ -132,5 +133,16 @@ abstract class MemberNotification extends Notification implements ShouldQueue
     public function toWhatsApp(object $notifiable): string
     {
         return '*'.$this->title()."*\n".$this->message($notifiable);
+    }
+
+    /**
+     * Values for the approved WhatsApp template ({{1}} title, {{2}} message)
+     * — the Cloud API only allows templates for messages we start.
+     *
+     * @return array{0: string, 1: string}
+     */
+    public function toWhatsAppTemplate(object $notifiable): array
+    {
+        return [$this->title(), Str::limit($this->message($notifiable), 700)];
     }
 }

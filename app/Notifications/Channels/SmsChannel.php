@@ -6,12 +6,10 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
 /**
- * SMS to the member's +880 mobile number.
- *
- * TODO: wire up a Bangladeshi SMS provider (e.g. SSL Wireless, BulkSMSBD,
- * Alpha SMS). Until then this stub only writes the message to the log.
- * Implement NotificationChannel in a gateway class and bind it:
- *   $this->app->bind(SmsChannel::class, SslWirelessSmsChannel::class);
+ * SMS to the member's +880 mobile number — the log-only driver
+ * (`SMS_DRIVER=log`). With `SMS_DRIVER=bulksmsbd`, AppServiceProvider
+ * resolves this class to BulkSmsBdChannel instead. Another provider is
+ * another NotificationChannel plus a case in that binding.
  */
 class SmsChannel implements NotificationChannel
 {

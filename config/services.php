@@ -37,15 +37,49 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | SMS gateway (generic driver interface, wired in Phase 13)
+    | SMS gateway (member notifications)
     |--------------------------------------------------------------------------
+    | driver: log (writes to the log only) | bulksmsbd. Sending also needs
+    | NOTIFY_SMS=true (config/notifications.php).
     */
 
     'sms' => [
         'driver' => env('SMS_DRIVER', 'log'),
-        'api_url' => env('SMS_API_URL'),
-        'api_key' => env('SMS_API_KEY'),
-        'sender_id' => env('SMS_SENDER_ID'),
+    ],
+
+    'bulksmsbd' => [
+        'base_url' => env('BULKSMSBD_BASE_URL', 'https://bulksmsbd.net/api'),
+        'api_key' => env('BULKSMSBD_API_KEY'),
+        'sender_id' => env('BULKSMSBD_SENDER_ID'),
+        'type' => env('BULKSMSBD_TYPE', 'text'),
+        'timeout' => 10,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp gateway (member notifications)
+    |--------------------------------------------------------------------------
+    | driver: log (writes to the log only) | meta (WhatsApp Business Cloud
+    | API). Sending also needs NOTIFY_WHATSAPP=true. The template must be an
+    | approved utility template whose body has {{1}} (title) and {{2}}
+    | (message), in every language listed under `languages`.
+    */
+
+    'whatsapp' => [
+        'driver' => env('WHATSAPP_DRIVER', 'log'),
+        'meta' => [
+            'graph_url' => env('WHATSAPP_GRAPH_URL', 'https://graph.facebook.com'),
+            'version' => env('WHATSAPP_GRAPH_VERSION', 'v26.0'),
+            'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+            'access_token' => env('WHATSAPP_ACCESS_TOKEN'),
+            'template' => env('WHATSAPP_TEMPLATE', 'account_update'),
+            // App locale => template language code.
+            'languages' => [
+                'bn' => env('WHATSAPP_TEMPLATE_LANG_BN', 'bn'),
+                'en' => env('WHATSAPP_TEMPLATE_LANG_EN', 'en'),
+            ],
+            'timeout' => 10,
+        ],
     ],
 
     /*

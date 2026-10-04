@@ -84,7 +84,7 @@ php artisan commission:run                           # ~15 s at 1,020 members
 | `app/Services`               | Business logic (placement, matching, wallet, withdrawals, fraud scan, backups, health, …)                      |
 | `app/Actions`                | Single-purpose actions (Fortify auth actions live in `Actions/Fortify`)                                        |
 | `app/Payments`               | Gateway contract and the bKash / SSLCommerz / Nagad / simulator gateways                                       |
-| `app/Notifications`          | Member notifications and their channels (`Channels/`: email, SMS and WhatsApp stubs)                           |
+| `app/Notifications`          | Member notifications and their channels (`Channels/`: email, BulkSMSBD SMS, Meta WhatsApp, log-only)           |
 | `app/Support`                | Framework-agnostic helpers, e.g. `Money`, `PhoneNumber`                                                        |
 | `app/Enums`                  | Enums, e.g. `AdminPermission`, statuses                                                                        |
 | `app/Http/Controllers/Admin` | Admin panel (Blade) controllers                                                                                |
@@ -258,35 +258,68 @@ After any later edit to `shared/.env`, run `php artisan optimize` in
 
 ### Production `.env` checklist
 
-| Setting                                               | Production value                                                                |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `APP_ENV` / `APP_DEBUG`                               | `production` / `false`                                                          |
-| `APP_URL`                                             | `https://your-domain` (used in emails and payment callbacks)                    |
-| `APP_KEY`                                             | generated once (step 5), never changed: it decrypts sessions and encrypted data |
-| `APP_TIMEZONE`                                        | `Asia/Dhaka`. The commission day, caps, reports and schedule follow it          |
-| `LOG_STACK` / `LOG_LEVEL`                             | `daily` / `warning` (`LOG_DAILY_DAYS=14`)                                       |
-| `DB_*`                                                | the `binary` user from step 3                                                   |
-| `CACHE_STORE` / `SESSION_DRIVER` / `QUEUE_CONNECTION` | `redis` / `redis` / `redis` (plus `REDIS_*`)                                    |
-| `SESSION_SECURE_COOKIE` / `SESSION_ENCRYPT`           | `true` / `true`                                                                 |
-| `MAIL_*`                                              | a real SMTP/API mailer. Notifications and password resets go out by email       |
-| `PAYMENT_SIMULATOR`                                   | `false` (the simulator is also blocked in code whenever `APP_ENV=production`)   |
-| `PAYMENT_GATEWAYS`                                    | the gateways you have live merchant accounts for                                |
-| `BKASH_*`                                             | `BKASH_SANDBOX=false`, live base URL and credentials from bKash                 |
-| `SSLCOMMERZ_*`                                        | `SSLCOMMERZ_SANDBOX=false`, `https://securepay.sslcommerz.com`, live store      |
-| `NAGAD_*`                                             | `NAGAD_SANDBOX=false`, live base URL, merchant ID/number, key pair              |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD`                      | the first admin's login. Change the password after the first sign-in            |
-| `ADMIN_REQUIRE_TWO_FACTOR`                            | `true`: each admin must turn on two-factor sign-in (My account) before working  |
-| `NOTIFY_MAIL` / `NOTIFY_SMS` / `NOTIFY_WHATSAPP`      | `true` / `false` / `false` until an SMS/WhatsApp gateway is bound               |
-| `BACKUP_DISKS`                                        | `backups,s3` for an offsite copy (set `AWS_*`), or at least `backups`           |
-| `BACKUP_ARCHIVE_PASSWORD`                             | long random string, stored outside the server (the archives hold KYC documents) |
-| `BACKUP_NOTIFICATION_EMAIL`                           | who gets told when a backup fails                                               |
-| `BACKUP_VERIFY_RESTORE`                               | `true` on staging (weekly restore test)                                         |
-| `HEALTH_REQUIRE_WORKERS`                              | `true` once cron and workers run (step 11)                                      |
-| `SENTRY_LARAVEL_DSN` / `SENTRY_ENVIRONMENT`           | your Sentry project DSN / `production`                                          |
-| `SUPPORT_PHONE` / `_EMAIL` / `_ADDRESS` / `_HOURS`    | shown in the shop footer; leave blank to hide                                   |
+| Setting                                               | Production value                                                                                   |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `APP_ENV` / `APP_DEBUG`                               | `production` / `false`                                                                             |
+| `APP_URL`                                             | `https://your-domain` (used in emails and payment callbacks)                                       |
+| `APP_KEY`                                             | generated once (step 5), never changed: it decrypts sessions and encrypted data                    |
+| `APP_TIMEZONE`                                        | `Asia/Dhaka`. The commission day, caps, reports and schedule follow it                             |
+| `LOG_STACK` / `LOG_LEVEL`                             | `daily` / `warning` (`LOG_DAILY_DAYS=14`)                                                          |
+| `DB_*`                                                | the `binary` user from step 3                                                                      |
+| `CACHE_STORE` / `SESSION_DRIVER` / `QUEUE_CONNECTION` | `redis` / `redis` / `redis` (plus `REDIS_*`)                                                       |
+| `SESSION_SECURE_COOKIE` / `SESSION_ENCRYPT`           | `true` / `true`                                                                                    |
+| `MAIL_*`                                              | a real SMTP/API mailer. Notifications and password resets go out by email                          |
+| `PAYMENT_SIMULATOR`                                   | `false` (the simulator is also blocked in code whenever `APP_ENV=production`)                      |
+| `PAYMENT_GATEWAYS`                                    | the gateways you have live merchant accounts for                                                   |
+| `BKASH_*`                                             | `BKASH_SANDBOX=false`, live base URL and credentials from bKash                                    |
+| `SSLCOMMERZ_*`                                        | `SSLCOMMERZ_SANDBOX=false`, `https://securepay.sslcommerz.com`, live store                         |
+| `NAGAD_*`                                             | `NAGAD_SANDBOX=false`, live base URL, merchant ID/number, key pair                                 |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD`                      | the first admin's login. Change the password after the first sign-in                               |
+| `ADMIN_REQUIRE_TWO_FACTOR`                            | `true`: each admin must turn on two-factor sign-in (My account) before working                     |
+| `NOTIFY_MAIL` / `NOTIFY_SMS` / `NOTIFY_WHATSAPP`      | `true`; SMS/WhatsApp `true` once their gateway below is set up and tested                          |
+| `SMS_DRIVER` / `BULKSMSBD_*`                          | `bulksmsbd`, API key and approved sender ID (see [Text messages](#text-messages-sms-and-whatsapp)) |
+| `WHATSAPP_DRIVER` / `WHATSAPP_*`                      | `meta`, phone number ID, permanent token, approved template                                        |
+| `BACKUP_DISKS`                                        | `backups,s3` for an offsite copy (set `AWS_*`), or at least `backups`                              |
+| `BACKUP_ARCHIVE_PASSWORD`                             | long random string, stored outside the server (the archives hold KYC documents)                    |
+| `BACKUP_NOTIFICATION_EMAIL`                           | who gets told when a backup fails                                                                  |
+| `BACKUP_VERIFY_RESTORE`                               | `true` on staging (weekly restore test)                                                            |
+| `HEALTH_REQUIRE_WORKERS`                              | `true` once cron and workers run (step 11)                                                         |
+| `SENTRY_LARAVEL_DSN` / `SENTRY_ENVIRONMENT`           | your Sentry project DSN / `production`                                                             |
+| `SUPPORT_PHONE` / `_EMAIL` / `_ADDRESS` / `_HOURS`    | shown in the shop footer; leave blank to hide                                                      |
 
 Confirm the live gateway base URLs with each provider's merchant
 documentation before launch. Test one real low-value payment per gateway.
+
+### Text messages (SMS and WhatsApp)
+
+Urgent member notifications (activation, withdrawals, password change,
+new-device sign-in, announcements marked for SMS/WhatsApp) can also go by
+text. Each channel needs its switch (`NOTIFY_SMS` / `NOTIFY_WHATSAPP`) and a
+driver; with the default `log` driver the message is only written to the log.
+
+**SMS — BulkSMSBD** (`SMS_DRIVER=bulksmsbd`)
+
+1. In the BulkSMSBD panel, copy the API key and get a sender ID approved.
+2. Whitelist the server's public IP there (otherwise every send fails with
+   code 1032).
+3. Set `BULKSMSBD_API_KEY` and `BULKSMSBD_SENDER_ID`, then `NOTIFY_SMS=true`.
+
+**WhatsApp — Meta Cloud API** (`WHATSAPP_DRIVER=meta`)
+
+1. In Meta Business Manager, add a WhatsApp Business phone number and create
+   a system user with a permanent access token (`whatsapp_business_messaging`).
+2. In WhatsApp Manager create a **utility** template named as in
+   `WHATSAPP_TEMPLATE` (default `account_update`), with a body that has
+   exactly two values — e.g. `*{{1}}*` on one line and `{{2}}` below — in
+   **Bengali (`bn`)** and **English (`en`)**. Wait for both to be approved.
+3. Set `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, then
+   `NOTIFY_WHATSAPP=true`.
+
+Both run in the queue. Timeouts, provider errors and rate limits are retried
+by the worker (3 tries); permanent refusals (bad number, low balance,
+missing template, expired token) are logged as errors — keep an eye on the
+log or Sentry after switching a channel on, and send yourself a test
+(changing your own member password sends an urgent notification).
 
 ### Deploying
 

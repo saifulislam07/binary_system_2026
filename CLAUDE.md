@@ -260,8 +260,14 @@ commission:run {date}`), one transaction per member, idempotent per
   `parent::__construct()`; bilingual `title()`, `message()`, relative
   `path()`; `urgent()` ones also go by SMS/WhatsApp). Channels implement
   `Notifications\Channels\NotificationChannel`: `EmailChannel` (Laravel
-  Mail), `SmsChannel`/`WhatsAppChannel` are log-only stubs — swap a gateway
-  by binding the channel class in AppServiceProvider; on/off switches in
+  Mail), `SmsChannel`/`WhatsAppChannel` (log-only drivers).
+  AppServiceProvider resolves those two per `services.sms.driver`
+  (`bulksmsbd` → `BulkSmsBdChannel`) and `services.whatsapp.driver`
+  (`meta` → `MetaWhatsAppChannel`, Cloud API, sent as one approved
+  template with {{1}} title / {{2}} message from `toWhatsAppTemplate()`, in
+  the member's language). Gateways throw `MessageDeliveryException` for
+  retryable failures (queue retries) and log permanent refusals, without
+  tokens or full phone numbers. On/off switches in
   `config/notifications.php`. Sent from the owning service: `RegisterMember`
   (registration), `PlacementService::activateMember` (activation),
   `OrderPaymentService` (purchase), `WalletService` (income credits of

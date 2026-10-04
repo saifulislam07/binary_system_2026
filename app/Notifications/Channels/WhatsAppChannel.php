@@ -6,12 +6,9 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
 /**
- * WhatsApp message to the member's +880 mobile number.
- *
- * TODO: wire up a WhatsApp Business API provider (Meta Cloud API or a
- * local BSP). Until then this stub only writes the message to the log.
- * Implement NotificationChannel in a gateway class and bind it:
- *   $this->app->bind(WhatsAppChannel::class, MetaCloudWhatsAppChannel::class);
+ * WhatsApp message to the member's +880 mobile number — the log-only
+ * driver (`WHATSAPP_DRIVER=log`). With `WHATSAPP_DRIVER=meta`,
+ * AppServiceProvider resolves this class to MetaWhatsAppChannel instead.
  */
 class WhatsAppChannel implements NotificationChannel
 {

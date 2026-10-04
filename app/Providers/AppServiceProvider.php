@@ -20,6 +20,10 @@ use App\Models\Refund;
 use App\Models\Sale;
 use App\Models\Wallet;
 use App\Models\Withdrawal;
+use App\Notifications\Channels\BulkSmsBdChannel;
+use App\Notifications\Channels\MetaWhatsAppChannel;
+use App\Notifications\Channels\SmsChannel;
+use App\Notifications\Channels\WhatsAppChannel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -36,7 +40,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Notifications name SmsChannel; the configured gateway stands in for it
+        // (the plain classes only write to the log).
+        $this->app->bind(SmsChannel::class, fn ($app) => match (config('services.sms.driver')) {
+            'bulksmsbd' => $app->make(BulkSmsBdChannel::class),
+            default => new SmsChannel,
+        });
+        $this->app->bind(WhatsAppChannel::class, fn ($app) => match (config('services.whatsapp.driver')) {
+            'meta' => $app->make(MetaWhatsAppChannel::class),
+            default => new WhatsAppChannel,
+        });
     }
 
     /**
