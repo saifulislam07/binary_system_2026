@@ -28,6 +28,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Router;
 use PHPUnit\Framework\Attributes\Group;
+use PragmaRX\Google2FA\Google2FA;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 use Tests\Support\BuildsNetwork;
@@ -46,7 +47,7 @@ class AdminAuditTrailTest extends TestCase
     private const BKASH = ['provider' => 'bkash', 'mobile_number' => '+8801712345678'];
 
     /** Session plumbing, not business actions. */
-    private const NOT_AUDITED = ['admin.login.store', 'admin.logout'];
+    private const NOT_AUDITED = ['admin.login.store', 'admin.two-factor.verify', 'admin.logout'];
 
     private Admin $admin;
 
@@ -191,6 +192,20 @@ class AdminAuditTrailTest extends TestCase
             'admin.products.update' => fn () => ['PUT', route('admin.products.update', Product::factory()->create()), [
                 'name' => 'Renamed product', 'sku' => 'EB-2', 'price' => '999', 'is_active' => '1', 'is_featured' => '1', 'sort_order' => '1',
             ]],
+            'admin.account.two-factor.store' => fn () => ['POST', route('admin.account.two-factor.store'), []],
+            'admin.account.two-factor.confirm' => function () {
+                $this->admin->forceFill(['two_factor_secret' => $secret = app(Google2FA::class)->generateSecretKey(32), 'two_factor_confirmed_at' => null])->save();
+
+                return ['POST', route('admin.account.two-factor.confirm'), ['code' => app(Google2FA::class)->getCurrentOtp($secret)]];
+            },
+            'admin.account.two-factor.recovery-codes' => fn () => ['POST', route('admin.account.two-factor.recovery-codes'), ['current_password' => 'password']],
+            'admin.account.two-factor.destroy' => fn () => ['DELETE', route('admin.account.two-factor.destroy'), ['current_password' => 'password']],
+            'admin.admins.two-factor.reset' => function () {
+                $other = Admin::factory()->create()->assignRole('support');
+                $other->forceFill(['two_factor_secret' => 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()])->save();
+
+                return ['DELETE', route('admin.admins.two-factor.reset', $other), []];
+            },
             'admin.account.password' => fn () => ['PUT', route('admin.account.password'), [
                 'current_password' => 'password', 'password' => 'N3w-admin-pass', 'password_confirmation' => 'N3w-admin-pass',
             ]],

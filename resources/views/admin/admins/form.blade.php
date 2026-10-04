@@ -71,4 +71,24 @@
             <a href="{{ route('admin.admins.index') }}" class="btn btn-outline-secondary">Cancel</a>
         </div>
     </form>
+
+    @if ($editing && ! $isMe)
+        <div class="card" style="max-width: 640px">
+            <div class="card-header d-flex align-items-center">
+                <h3 class="card-title mb-0">Two-factor sign-in</h3>
+                <span class="badge {{ $target->hasTwoFactorEnabled() ? 'text-bg-success' : 'text-bg-secondary' }} ms-auto">{{ $target->hasTwoFactorEnabled() ? 'On' : 'Off' }}</span>
+            </div>
+            @if ($target->hasTwoFactorEnabled())
+                <form method="POST" action="{{ route('admin.admins.two-factor.reset', $target) }}" class="card-body d-flex flex-wrap align-items-center gap-2"
+                      onsubmit="return confirm('Turn off two-factor sign-in for this admin? Only do this after checking who is asking.')">
+                    @csrf
+                    @method('DELETE')
+                    <span class="me-auto small">Lost their phone and recovery codes? Reset it so they can sign in with their password and set it up again.</span>
+                    <button class="btn btn-outline-danger">Reset two-factor</button>
+                </form>
+            @else
+                <div class="card-body small text-body-secondary">They can turn it on under “My account”.</div>
+            @endif
+        </div>
+    @endif
 @stop

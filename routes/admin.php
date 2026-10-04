@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Auth\LoginController;
+use App\Http\Controllers\Admin\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Admin\BonusController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -23,7 +24,9 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TreeController;
+use App\Http\Controllers\Admin\TwoFactorController;
 use App\Http\Controllers\Admin\WithdrawalController;
+use App\Http\Middleware\EnsureAdminHasTwoFactor;
 use App\Http\Middleware\EnsureAdminIsActive;
 use Illuminate\Support\Facades\Route;
 
@@ -39,14 +42,23 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest:admin')->group(function () {
     Route::get('login', [LoginController::class, 'create'])->name('login');
     Route::post('login', [LoginController::class, 'store'])->name('login.store');
+    // Second step for admins with two-factor on (attempts are also limited per admin).
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store'])->middleware('throttle:10,1')->name('two-factor.verify');
 });
 
-Route::middleware(['auth:admin', EnsureAdminIsActive::class])->group(function () {
+Route::middleware(['auth:admin', EnsureAdminIsActive::class, EnsureAdminHasTwoFactor::class])->group(function () {
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
 
-    // Every admin can change their own password.
+    // Every admin can change their own password and two-factor sign-in.
     Route::get('account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('account/password', [AccountController::class, 'updatePassword'])->middleware('throttle:6,1')->name('account.password');
+    Route::middleware('throttle:6,1')->group(function () {
+        Route::post('account/two-factor', [TwoFactorController::class, 'store'])->name('account.two-factor.store');
+        Route::post('account/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('account.two-factor.confirm');
+        Route::post('account/two-factor/recovery-codes', [TwoFactorController::class, 'recoveryCodes'])->name('account.two-factor.recovery-codes');
+        Route::delete('account/two-factor', [TwoFactorController::class, 'destroy'])->name('account.two-factor.destroy');
+    });
 
     Route::redirect('/', '/admin/dashboard');
     Route::get('dashboard', DashboardController::class)->name('dashboard');
@@ -164,6 +176,8 @@ Route::middleware(['auth:admin', EnsureAdminIsActive::class])->group(function ()
         Route::post('admins', [AdminUserController::class, 'store'])->name('admins.store');
         Route::get('admins/{admin}/edit', [AdminUserController::class, 'edit'])->name('admins.edit');
         Route::put('admins/{admin}', [AdminUserController::class, 'update'])->name('admins.update');
+        // Lost phone: turn another admin's two-factor off so they can set it up again.
+        Route::delete('admins/{admin}/two-factor', [AdminUserController::class, 'resetTwoFactor'])->name('admins.two-factor.reset');
         Route::post('roles', [AdminUserController::class, 'storeRole'])->name('roles.store');
         Route::put('roles/{role}', [AdminUserController::class, 'updateRole'])->name('roles.update');
     });

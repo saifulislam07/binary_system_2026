@@ -31,9 +31,12 @@ class HardeningTest extends TestCase
      */
     private const UNGATED_ADMIN_ROUTES = [
         'admin.login' => 'guest', 'admin.login.store' => 'guest',
+        'admin.two-factor.challenge' => 'guest', 'admin.two-factor.verify' => 'guest',
         'admin.logout' => 'auth', 'admin.dashboard' => 'auth', 'admin.' => 'auth',
-        // Every admin manages their own password.
+        // Every admin manages their own password and two-factor sign-in.
         'admin.account.edit' => 'auth', 'admin.account.password' => 'auth',
+        'admin.account.two-factor.store' => 'auth', 'admin.account.two-factor.confirm' => 'auth',
+        'admin.account.two-factor.recovery-codes' => 'auth', 'admin.account.two-factor.destroy' => 'auth',
     ];
 
     /**

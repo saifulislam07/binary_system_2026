@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\LoginRequest;
-use App\Models\Admin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,13 +11,13 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * Admin login on its own session guard (`admin`), separate from members.
- *
- * TODO(2FA): admin two-factor authentication is out of scope for Phase 9.
- * When added, challenge after authenticate() and before regenerate(), and
- * store the secret on the `admins` table (not `users`).
+ * Admins with two-factor on are sent to the code challenge before any
+ * session starts (see TwoFactorChallengeController).
  */
 class LoginController extends Controller
 {
+    use CompletesAdminLogin;
+
     public function create(): View
     {
         return view('admin.auth.login');
@@ -26,19 +25,15 @@ class LoginController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-        $request->session()->regenerate();
+        $admin = $request->validateCredentials();
 
-        /** @var Admin $admin */
-        $admin = Auth::guard('admin')->user();
-        $admin->forceFill([
-            'last_login_at' => now(),
-            'last_login_ip' => $request->ip(),
-        ])->save();
+        if ($admin->hasTwoFactorEnabled()) {
+            TwoFactorChallengeController::remember($request, $admin, $request->boolean('remember'));
 
-        activity('admin-auth')->causedBy($admin)->log('Admin logged in');
+            return redirect()->route('admin.two-factor.challenge');
+        }
 
-        return redirect()->intended(route('admin.dashboard'));
+        return $this->completeLogin($request, $admin, $request->boolean('remember'));
     }
 
     public function destroy(Request $request): RedirectResponse

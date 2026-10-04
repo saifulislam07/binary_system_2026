@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Admin;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,26 +28,33 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate against the admin guard. Disabled admins are
-     * rejected with the same message as bad credentials.
+     * Check the email and password against the admin guard without signing
+     * in — the controller signs in, or first asks for a two-factor code.
+     * Disabled admins are rejected with the same message as bad credentials.
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function validateCredentials(): Admin
     {
         $this->ensureIsNotRateLimited();
 
         $credentials = [...$this->only('email', 'password'), 'is_active' => true];
+        $provider = Auth::guard('admin')->getProvider();
+        $admin = $provider->retrieveByCredentials($credentials);
 
-        if (! Auth::guard('admin')->attempt($credentials, $this->boolean('remember'))) {
+        if (! $admin instanceof Admin || ! $provider->validateCredentials($admin, $credentials)) {
             RateLimiter::hit($this->throttleKey());
+            event(new Failed('admin', $admin, $credentials));
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
 
+        $provider->rehashPasswordIfRequired($admin, $credentials);
         RateLimiter::clear($this->throttleKey());
+
+        return $admin;
     }
 
     /**

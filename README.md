@@ -209,8 +209,8 @@ next to it and switches the symlink only once everything succeeded.
     ```
 
     This runs the migrations and seeds reference data and the first admin
-    (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). Sign in at `/admin` and change that
-    password straight away.
+    (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). Sign in at `/admin`, change that
+    password straight away and turn on two-factor sign-in under My account.
 
 7. **Web server + SSL:** copy `deploy/nginx.conf` to
    `/etc/nginx/sites-available/binary-system`, replace `example.com`, and
@@ -275,6 +275,7 @@ After any later edit to `shared/.env`, run `php artisan optimize` in
 | `SSLCOMMERZ_*`                                        | `SSLCOMMERZ_SANDBOX=false`, `https://securepay.sslcommerz.com`, live store      |
 | `NAGAD_*`                                             | `NAGAD_SANDBOX=false`, live base URL, merchant ID/number, key pair              |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD`                      | the first admin's login. Change the password after the first sign-in            |
+| `ADMIN_REQUIRE_TWO_FACTOR`                            | `true`: each admin must turn on two-factor sign-in (My account) before working  |
 | `NOTIFY_MAIL` / `NOTIFY_SMS` / `NOTIFY_WHATSAPP`      | `true` / `false` / `false` until an SMS/WhatsApp gateway is bound               |
 | `BACKUP_DISKS`                                        | `backups,s3` for an offsite copy (set `AWS_*`), or at least `backups`           |
 | `BACKUP_ARCHIVE_PASSWORD`                             | long random string, stored outside the server (the archives hold KYC documents) |

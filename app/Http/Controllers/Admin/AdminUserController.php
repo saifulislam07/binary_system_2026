@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveAdminRequest;
 use App\Models\Admin;
 use App\Services\AdminAccountService;
+use App\Services\AdminTwoFactorService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,6 +66,17 @@ class AdminUserController extends Controller
         }
 
         return redirect()->route('admin.admins.index')->with('success', "Admin {$admin->email} saved.");
+    }
+
+    public function resetTwoFactor(Request $request, Admin $admin, AdminTwoFactorService $twoFactor): RedirectResponse
+    {
+        if ($admin->is($this->admin($request))) {
+            return back()->with('error', 'Turn your own two-factor sign-in off under “My account”.');
+        }
+
+        $twoFactor->disable($admin, $this->admin($request));
+
+        return redirect()->route('admin.admins.edit', $admin)->with('success', "Two-factor sign-in reset for {$admin->email}. They can set it up again under “My account”.");
     }
 
     public function storeRole(Request $request, AdminAccountService $accounts): RedirectResponse

@@ -317,6 +317,17 @@ commission:run {date}`), one transaction per member, idempotent per
       The `admin` role always has every permission.
       `EnsureAdminIsActive` signs out a deactivated admin on their next
       request.
+    - **Admin two-factor:** TOTP (authenticator app) + 8 one-time recovery
+      codes, encrypted on `admins.two_factor_*`; on only once
+      `two_factor_confirmed_at` is set. All changes go through
+      `AdminTwoFactorService`. Login checks the password without signing in
+      (`LoginRequest::validateCredentials()`), then
+      `TwoFactorChallengeController` (10-minute pending step, 5 tries per
+      admin, failures go to `login_history`); both finish via the
+      `CompletesAdminLogin` trait. Each code works once (last slot cached
+      per admin). `manage-admins` can reset another admin's two-factor
+      (lost phone). `ADMIN_REQUIRE_TWO_FACTOR` (`EnsureAdminHasTwoFactor`)
+      confines admins without it to My account.
     - **Forms:** request helpers that convert input are named `*Data()`
       (e.g. `packageData()`), never `attributes()` — that name is
       FormRequest's validation-label hook.

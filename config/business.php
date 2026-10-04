@@ -56,6 +56,10 @@ return [
     // Extra members LoadTestNetworkSeeder adds (dev/staging performance runs only).
     'load_test_members' => (int) env('LOAD_TEST_MEMBERS', 1000),
 
+    // When true, every admin must turn on two-factor sign-in (authenticator
+    // app) before using the panel; until then only "My account" is reachable.
+    'admin_two_factor_required' => (bool) env('ADMIN_REQUIRE_TWO_FACTOR', false),
+
     // Initial super-admin created by DatabaseSeeder. Change the password in production.
     'seed_admin' => [
         'email' => env('ADMIN_EMAIL', 'admin@example.com'),
